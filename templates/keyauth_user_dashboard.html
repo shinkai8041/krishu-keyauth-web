@@ -996,11 +996,12 @@
       } else {
         showToast(data.message || 'Failed to patch code', 'error');
       }
-    } catch {
-      showToast('Patcher network error', 'error');
+    } catch (err) {
+      showToast(err.message || 'Auto-patching error', 'error');
     } finally {
       btn.disabled = false; btn.innerHTML = orig;
     }
+
   }
 
   function copyUserPatcherCode() {

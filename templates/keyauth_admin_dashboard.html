@@ -1965,12 +1965,13 @@
           showToast(data.message || 'Patcher generation error', 'error');
         }
       } catch (e) {
-        showToast('Network error during auto-patching', 'error');
+        showToast(e.message || 'Auto-patching error', 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = orig;
       }
     };
+
 
     window.copyPatcherCode = function() {
       if (!lastPatchedCode) {

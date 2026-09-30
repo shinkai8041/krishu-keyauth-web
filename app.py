@@ -29,7 +29,8 @@ try:
 except ImportError:
     pass
 
-from keyauth import KeyAuth, KrishuKeyAuthEngine, _hash_pass
+from keyauth import KeyAuth, KrishuKeyAuthEngine, _hash_pass, OWNER_ID
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger('KrishuXCheats')
