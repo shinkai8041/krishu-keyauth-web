@@ -1946,7 +1946,8 @@
             statusBox,
             appName,
             appSecret,
-            appVersion
+            appVersion,
+            apiUrl: window.location.origin + '/api/v1'
           })
         });
         const data = await res.json();

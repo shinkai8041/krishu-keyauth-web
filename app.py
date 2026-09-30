@@ -1451,7 +1451,7 @@ def keyauth_api_client_init():
     data = request.json or {}
 
 
-    app_id = request.headers.get('x-api-key') or data.get('apiKey') or data.get('appId') or 'app_krishu_main'
+    app_id = data.get('name') or request.headers.get('x-app-name') or data.get('appId') or data.get('apiKey') or request.headers.get('x-api-key') or data.get('secret') or 'app_krishu_main'
 
 
     version = data.get('version', '1.0.0')
@@ -1481,7 +1481,7 @@ def keyauth_api_client_license():
     data = request.json or {}
 
 
-    app_id = request.headers.get('x-api-key') or data.get('apiKey') or data.get('appId') or 'app_krishu_main'
+    app_id = data.get('name') or request.headers.get('x-app-name') or data.get('appId') or data.get('apiKey') or request.headers.get('x-api-key') or data.get('secret') or 'app_krishu_main'
 
 
     key = data.get('key', '').strip()
@@ -1529,7 +1529,7 @@ def keyauth_api_client_login():
     data = request.json or {}
 
 
-    app_id = request.headers.get('x-api-key') or data.get('apiKey') or data.get('appId') or 'app_krishu_main'
+    app_id = data.get('name') or request.headers.get('x-app-name') or data.get('appId') or data.get('apiKey') or request.headers.get('x-api-key') or data.get('secret') or 'app_krishu_main'
 
 
     username = data.get('username', '').strip()
@@ -1571,7 +1571,7 @@ def keyauth_api_client_register():
     data = request.json or {}
 
 
-    app_id = request.headers.get('x-api-key') or data.get('apiKey') or data.get('appId') or 'app_krishu_main'
+    app_id = data.get('name') or request.headers.get('x-app-name') or data.get('appId') or data.get('apiKey') or request.headers.get('x-api-key') or data.get('secret') or 'app_krishu_main'
 
 
     username = data.get('username', '').strip()
@@ -3438,13 +3438,16 @@ def api_patcher_generate():
 
 
 
-    host = request.headers.get('X-Forwarded-Host', request.host)
-
-
-    proto = request.headers.get('X-Forwarded-Proto', request.scheme)
-
-
-    api_url = f"{proto}://{host}/api/v1"
+        api_url = data.get('apiUrl')
+    if not api_url:
+        host = request.headers.get('X-Forwarded-Host', request.host)
+        proto = request.headers.get('X-Forwarded-Proto', request.scheme)
+        if 'onrender.com' in host:
+            api_url = f"https://krishu-keyauth-web.onrender.com/api/v1"
+        elif '127.0.0.1' in host or 'localhost' in host:
+            api_url = f"{proto}://{host}/api/v1"
+        else:
+            api_url = f"{proto}://{host}/api/v1"
 
 
 

@@ -986,7 +986,7 @@
       const res = await fetch('/api/patcher/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ language: lang, sourceCode, userBox, passBox, loginBtn, statusBox })
+        body: JSON.stringify({ language: lang, sourceCode, userBox, passBox, loginBtn, statusBox, apiUrl: window.location.origin + '/api/v1' })
       });
       const data = await res.json();
       if (data.success) {

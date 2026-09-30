@@ -34,7 +34,7 @@ namespace KrishuXCheats
 
         private bool isInitialized = false;
 
-        public api(string name, string ownerid, string secret, string version, string apiUrl = "http://localhost:3000/api/v1")
+        public api(string name, string ownerid, string secret, string version, string apiUrl = "https://krishu-keyauth-web.onrender.com/api/v1")
         {
             this.name = name ?? string.Empty;
             this.ownerid = ownerid ?? string.Empty;
@@ -118,9 +118,8 @@ namespace KrishuXCheats
         {
             if (!isInitialized)
             {
-                response.success = false;
-                response.message = "Please initialize API before calling login()";
-                return;
+                init();
+                if (!response.success) return;
             }
 
             try
@@ -201,9 +200,8 @@ namespace KrishuXCheats
         {
             if (!isInitialized)
             {
-                response.success = false;
-                response.message = "Please initialize API before calling license()";
-                return;
+                init();
+                if (!response.success) return;
             }
 
             try

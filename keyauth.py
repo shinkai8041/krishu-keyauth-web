@@ -194,13 +194,32 @@ class KrishuKeyAuthEngine:
             data = self._read_data()
             return data.get("applications", [])
 
-    def get_app(self, app_id: str) -> Optional[dict]:
+    def resolve_app(self, identifier: str = None) -> Optional[dict]:
+        """Intelligently resolves application by appId, _id, name, secret, apiKey, or defaults to primary app."""
         with _lock:
             data = self._read_data()
-            for app in data.get("applications", []):
-                if app.get("appId") == app_id or app.get("_id") == app_id or app.get("name").lower() == app_id.lower():
-                    return app
-            return None
+            apps = data.get("applications", [])
+            if not apps:
+                return None
+            if not identifier:
+                return apps[0]
+            clean = str(identifier).strip()
+            clean_lower = clean.lower()
+            for a in apps:
+                if a.get("appId") == clean or a.get("_id") == clean:
+                    return a
+            for a in apps:
+                if (a.get("name") or "").strip().lower() == clean_lower:
+                    return a
+            for a in apps:
+                if a.get("secret") == clean or a.get("apiKey") == clean:
+                    return a
+            if clean in ('app_krishu_main', 'default', 'KRISHUAUTH1', '') or len(apps) == 1:
+                return apps[0]
+            return apps[0]
+
+    def get_app(self, app_id: str) -> Optional[dict]:
+        return self.resolve_app(app_id)
 
     def create_app(self, name: str, version: str = "1.0.0", hwid_lock: bool = True, download_url: str = "", announcement: str = "", owner_id: str = None) -> dict:
         clean_name = name.strip()
@@ -657,7 +676,9 @@ class KrishuKeyAuthEngine:
 
     def client_user_login(self, app_id: str, username: str, password: str, hwid: str = "", ip: str = "") -> dict:
         """User account login from game client"""
-        user = self.get_user(username, app_id)
+        app = self.resolve_app(app_id)
+        real_app_id = app.get("appId") if app else app_id
+        user = self.get_user(username, real_app_id)
         if not user:
             return {"success": False, "message": "Username not found"}
 
