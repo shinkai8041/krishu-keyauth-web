@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Krishu X Auth — Red Cherry Blossom Edition. Enterprise licensing & KeyAuth platform with SHA-256 HWID locking and KeyAuth v1.2 REST APIs.">
+  <title>Krishu X Auth | Cherry Blossom Edition</title>
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Cherry Blossom Neon Loading Bar -->
+  <div id="cyberTopLoader"></div>
+
+  <!-- Background Layers -->
+  <div class="bg-layer"></div>
+  <div class="bg-overlay"></div>
+  <div class="aurora">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <div class="grid-overlay"></div>
+  <canvas id="particles"></canvas>
+
+  <!-- PUBLIC HEADER (shown on non-app pages) -->
+  {% if not sidebarLayout %}
+  <header class="site-header">
+    <div class="nav-container">
+      <a href="/keyauth/portal" class="brand-logo" id="headerBrandLogo">
+        <img src="/img/logo.png" alt="Krishu X Auth" class="brand-img-icon" onerror="this.src='/img/circle_logopng.png'">
+        <div class="brand-text">
+          <span class="brand-title">KRISHU X</span>
+          <span class="brand-accent" style="background: linear-gradient(135deg, #ff2a5f, #ff7597); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">AUTH</span>
+          <span style="font-size: 0.65rem; padding: 2px 7px; border-radius: 9999px; background: rgba(255,42,95,0.15); border: 1px solid rgba(255,42,95,0.35); color: #ff7597; font-weight: 700; margin-left: 6px; letter-spacing: 0.5px;">🌸 SAKURA</span>
+        </div>
+      </a>
+      <div class="nav-actions" id="navAuthSection">
+        <a href="/keyauth/portal" class="nav-link"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="/keyauth/login" class="nav-link" id="navLoginLink"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+        <a href="/keyauth/register" class="nav-link" id="navRegisterLink"><i class="fa-solid fa-user-plus"></i> Register</a>
+        <a href="/keyauth/admin" class="nav-admin" id="navAdminLink" style="background: rgba(255,42,95,0.12); border-color: rgba(255,42,95,0.35); color: #ff7597;"><i class="fa-solid fa-terminal"></i> Admin</a>
+      </div>
+    </div>
+  </header>
+  <main class="page-container">
+
+  <script>
+    // Seamless Dynamic Navbar state
+    (function() {
+      try {
+        const token = localStorage.getItem('token');
+        const adminToken = localStorage.getItem('adminToken');
+        const nav = document.getElementById('navAuthSection');
+        if (!nav) return;
+        if (token) {
+          const userStr = localStorage.getItem('user');
+          let username = 'User';
+          try { username = JSON.parse(userStr).username || 'User'; } catch(e){}
+          nav.innerHTML = `
+            <a href="/keyauth/portal" class="nav-link"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="/keyauth/dashboard" class="btn btn-primary btn-sm"><i class="fa-solid fa-gauge-high"></i> Dashboard (${username})</a>
+            <a href="/keyauth/admin" class="nav-admin"><i class="fa-solid fa-terminal"></i> Admin</a>
+          `;
+        } else if (adminToken) {
+          nav.innerHTML = `
+            <a href="/keyauth/portal" class="nav-link"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="/admin/dashboard" class="btn btn-purple btn-sm"><i class="fa-solid fa-shield-halved"></i> Admin Console</a>
+          `;
+        }
+      } catch(e) {}
+    })();
+  </script>
+  {% endif %}

@@ -1,0 +1,3691 @@
+{% set sidebarLayout = true %}
+{% include 'keyauth_header.html' %}
+
+<div class="app-layout">
+
+  <!-- ADMIN SIDEBAR -->
+  <nav class="sidebar" id="appSidebar">
+    <a href="/keyauth/portal" class="sidebar-brand">
+      <img src="/img/logo.png" alt="Krishu X Auth" onerror="this.src='/img/circle_logopng.png'">
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-name">Krishu X Auth</span>
+        <span class="sidebar-brand-sub" style="background: linear-gradient(135deg, #ff2a5f, #ff7597); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">🌸 SAKURA ADMIN</span>
+      </div>
+    </a>
+
+    <div class="sidebar-nav">
+      <div class="sidebar-section-label">Management</div>
+      <button class="sidebar-item sidebar-item-admin active" onclick="switchAdminTab('tab-overview', this)" id="navOverview">
+        <i class="fa-solid fa-chart-pie"></i> <span>Overview</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-apps', this)" id="navApps">
+        <i class="fa-solid fa-cubes"></i> <span>Applications</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-licenses', this)" id="navLicenses">
+        <i class="fa-solid fa-key"></i> <span>License Keys</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-resellers', this)" id="navResellers">
+        <i class="fa-solid fa-crown" style="color: #ffb703;"></i> <span>Reseller Keys</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-users', this)" id="navUsers">
+        <i class="fa-solid fa-user-shield"></i> <span>User Accounts</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-patcher', this)" id="navPatcher">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color: #ff7597;"></i> <span>Auto-Patcher</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-sdk', this)" id="navSdk">
+        <i class="fa-solid fa-download"></i> <span>SDK & Downloads</span>
+      </button>
+
+      <div class="sidebar-section-label" style="margin-top: 0.5rem;">Security &amp; Dev</div>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-webhook', this)" id="navWebhook">
+        <i class="fa-brands fa-discord" style="color: #5865F2;"></i> <span>Discord Webhook</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-variables', this)" id="navVariables">
+        <i class="fa-solid fa-sliders"></i> <span>Remote Variables</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-logs', this)" id="navLogs">
+        <i class="fa-solid fa-list-check"></i> <span>Audit Logs</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-tester', this)" id="navTester">
+        <i class="fa-solid fa-vial-circle-check"></i> <span>API Tester</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-profile', this)" id="navProfile">
+        <i class="fa-solid fa-circle-user" style="color: #ff2a5f;"></i> <span>Admin Profile</span>
+      </button>
+      <button class="sidebar-item sidebar-item-admin" onclick="switchAdminTab('tab-help', this)" id="navHelp">
+        <i class="fa-solid fa-circle-question" style="color: #00ff88;"></i> <span>Help &amp; Docs</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user-pill glow-border" style="border-color: rgba(255,42,95,0.35);">
+        <div class="sidebar-avatar" style="background: linear-gradient(135deg, #ff2a5f, #e11d48); color: #fff;">
+          <i class="fa-solid fa-shield-halved" style="font-size: 0.8rem;"></i>
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-username" id="adminNameDisplay">Admin</div>
+          <div class="sidebar-role" style="color: #ff7597;">Sakura Master</div>
+        </div>
+      </div>
+      <button onclick="logoutAdmin()" class="btn btn-danger btn-sm btn-full" style="margin-top: 8px;">
+        <i class="fa-solid fa-power-off"></i> <span>Exit Console</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <div class="main-topbar">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="hamburger-btn" onclick="toggleSidebar()">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleSidebarCollapse()" title="Toggle Sidebar Width" style="display: none; @media(min-width: 900px){display:inline-flex;}">
+          <i class="fa-solid fa-arrows-left-right-to-line"></i>
+        </button>
+        <span class="topbar-title" id="topbarTabTitle">Admin <span>Overview</span></span>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div style="flex: 1; max-width: 320px; margin: 0 1rem; position: relative;">
+        <div class="input-wrap" style="margin: 0;">
+          <i class="fa-solid fa-magnifying-glass input-icon" style="font-size: 0.8rem; color: rgba(255,42,95,0.6);"></i>
+          <input 
+            id="globalAdminSearch" 
+            class="form-input" 
+            placeholder="Quick search keys, users, apps..." 
+            oninput="handleGlobalAdminSearch(this.value)"
+            style="padding-top: 0.45rem; padding-bottom: 0.45rem; font-size: 0.82rem; background: rgba(0,0,0,0.4); border-color: rgba(255,42,95,0.25);">
+        </div>
+      </div>
+
+      <div class="topbar-actions" style="display: flex; align-items: center; gap: 0.65rem;">
+        <!-- BUY OWN WEBSITE HIGH PRIORITY CTA -->
+        <button onclick="openBuyWebsiteModal()" class="btn btn-primary btn-sm neon-pulse-border" style="background: linear-gradient(135deg, #ff2a5f, #9f1239); font-weight: 800; font-size: 0.82rem;">
+          <i class="fa-solid fa-crown" style="color: #ffd700;"></i> BUY OWN WEBSITE 
+          <span class="badge" style="background: rgba(0,0,0,0.35); color: #fff; margin-left: 5px; font-size: 0.72rem;" id="topbarPriceTag">₹499 / $6.99</span>
+        </button>
+
+        <!-- LANGUAGE MODE TOGGLE -->
+        <button onclick="toggleGlobalLang()" id="globalLangBtn" class="btn btn-ghost btn-sm" style="font-size: 0.78rem;" title="Switch Hinglish / English Guide Mode">
+          <i class="fa-solid fa-language" style="color: #ff7597;"></i> <span id="globalLangText">Hinglish</span>
+        </button>
+
+        <span id="topbarDbBadge" class="user-pill" style="cursor: pointer; font-size: 0.78rem; transition: all 0.2s;" onclick="openDbStatusModal()">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Checking DB...
+        </span>
+        <span class="user-pill neon-pulse-border" style="border-color: rgba(255,42,95,0.35); color: #ff7597; cursor: pointer;" onclick="switchAdminTab('tab-profile')">
+          <i class="fa-solid fa-shield-cat" style="color: #ff2a5f;"></i>
+          <span id="topbarAdminName">Admin</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="main-body">
+
+      <!-- TAB 1: OVERVIEW -->
+      <div id="tab-overview" class="tab-pane active">
+        <div class="dash-header">
+          <div class="dash-title">Overview <span>Real-time platform metrics and quick navigation.</span></div>
+          <button onclick="loadAdminOverview()" class="btn btn-ghost btn-sm">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
+        </div>
+
+        <!-- CLOUD DB STATUS NOTIFICATION BANNER -->
+        <div id="dbWarningBanner" style="display: none; margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(244,63,94,0.15), rgba(255,140,0,0.15)); border: 1px solid rgba(244,63,94,0.4); border-radius: var(--r-md); padding: 1.15rem 1.4rem;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;">
+            <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+              <i class="fa-solid fa-triangle-exclamation" style="color: #ff4d4d; font-size: 1.4rem; margin-top: 2px;"></i>
+              <div>
+                <div style="font-weight: 700; color: #ff6b6b; font-size: 0.95rem; margin-bottom: 4px;">
+                  ⚠️ Cloud Database (MongoDB Atlas) Not Connected — Local Storage Mode
+                </div>
+                <div style="font-size: 0.83rem; color: #cbd5e1; line-height: 1.5;">
+                  On cloud hosts like <strong>Render</strong>, local file storage resets when the server restarts or sleeps.
+                  To ensure applications and users are <strong>permanent & never reset</strong>:
+                </div>
+                <div style="margin-top: 8px; font-size: 0.82rem; color: #fde047; display: flex; flex-direction: column; gap: 3px;">
+                  <div>1. In <strong>MongoDB Atlas</strong> &rarr; <strong>Network Access</strong> &rarr; Add IP: <code>0.0.0.0/0</code> (Allow Access From Anywhere).</div>
+                  <div>2. In <strong>Render Dashboard</strong> &rarr; Environment &rarr; Ensure <code>MONGODB_URI</code> is added.</div>
+                </div>
+              </div>
+            </div>
+            <button onclick="openDbStatusModal()" class="btn btn-sm btn-ghost" style="white-space: nowrap; border-color: rgba(255,255,255,0.2);">
+              <i class="fa-solid fa-circle-info"></i> Status
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card glow-border">
+            <div class="stat-header">
+              <div class="stat-icon"><i class="fa-solid fa-cubes"></i></div>
+              <span class="stat-badge">Apps</span>
+            </div>
+            <div class="stat-value" id="statApps">0</div>
+            <div class="stat-label">Active Applications</div>
+          </div>
+          <div class="stat-card glow-border">
+            <div class="stat-header">
+              <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+              <span class="stat-badge">Total</span>
+            </div>
+            <div class="stat-value" id="statUsers">0</div>
+            <div class="stat-label">Total Users</div>
+          </div>
+          <div class="stat-card glow-border">
+            <div class="stat-header">
+              <div class="stat-icon"><i class="fa-solid fa-shield-check"></i></div>
+              <span class="stat-badge" id="statActiveLicBadge">Active</span>
+            </div>
+            <div class="stat-value" id="statLicenses">0</div>
+            <div class="stat-label">Licenses & Subscriptions</div>
+          </div>
+          <div class="stat-card glow-border">
+            <div class="stat-header">
+              <div class="stat-icon" style="background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.2); color: var(--danger);"><i class="fa-solid fa-user-slash"></i></div>
+              <span class="stat-badge badge-banned" id="statBannedBadge">Banned</span>
+            </div>
+            <div class="stat-value" id="statBanned">0</div>
+            <div class="stat-label">Suspended / Banned</div>
+          </div>
+        </div>
+
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-bolt"></i> Quick Controls</div>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button onclick="switchAdminTab('tab-licenses', document.getElementById('navLicenses'))" class="btn btn-primary">
+              <i class="fa-solid fa-key"></i> Generate License Keys
+            </button>
+            <button onclick="switchAdminTab('tab-users', document.getElementById('navUsers'))" class="btn btn-ghost">
+              <i class="fa-solid fa-user-plus"></i> Create Custom User
+            </button>
+            <button onclick="switchAdminTab('tab-apps', document.getElementById('navApps'))" class="btn btn-purple">
+              <i class="fa-solid fa-plus"></i> New Application
+            </button>
+            <button onclick="switchAdminTab('tab-sdk', document.getElementById('navSdk'))" class="btn btn-ghost">
+              <i class="fa-solid fa-download"></i> Download SDKs
+            </button>
+            <button onclick="switchAdminTab('tab-logs', document.getElementById('navLogs'))" class="btn btn-ghost">
+              <i class="fa-solid fa-fingerprint"></i> Security Logs
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: APPLICATIONS -->
+      <div id="tab-apps" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">Applications <span>Create and configure your KeyAuth-protected tools.</span></div>
+        </div>
+
+        <div class="content-panel glow-border">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-square-plus"></i> Create Application</div>
+          </div>
+          <form onsubmit="handleCreateApp(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div>
+              <label class="form-label">Application Name *</label>
+              <input id="newAppName" class="form-input" placeholder="e.g. ApexVIP, AimBot" required>
+            </div>
+            <div>
+              <label class="form-label">Version *</label>
+              <input id="newAppVersion" class="form-input" value="1.0.0" placeholder="1.0.0" required>
+            </div>
+            <div>
+              <label class="form-label">Download URL (optional)</label>
+              <input id="newAppDownload" class="form-input" placeholder="https://example.com/loader.exe">
+            </div>
+            <div>
+              <label class="form-label">Announcement / MOTD</label>
+              <input id="newAppMotd" class="form-input" value="Welcome to our tool!" placeholder="Announcement message">
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-top: 1.5rem;">
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.88rem;">
+                <input type="checkbox" id="newAppHwidLock" checked style="width: 17px; height: 17px; accent-color: var(--cyan);">
+                Global HWID Lock
+              </label>
+            </div>
+            <div style="padding-top: 1.3rem;">
+              <button type="submit" id="createAppBtn" class="btn btn-primary btn-full">
+                <i class="fa-solid fa-plus"></i> Create Application
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-layer-group"></i> Active Applications</div>
+            <button onclick="loadApps()" class="btn btn-sm btn-ghost"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+          </div>
+          <div class="table-responsive">
+            <table class="cyber-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Version</th>
+                  <th>Reseller Key</th>
+                  <th>Owner ID</th>
+                  <th>Secret (API Key)</th>
+                  <th>HWID Lock</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="appsTableBody">
+                <tr><td colspan="8" class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: LICENSE KEYS (KEY GENERATOR & ACTIVE LICENSES) -->
+      <div id="tab-licenses" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">License Keys <span>Generate license keys with HWID locking and manage subscriptions.</span></div>
+        </div>
+
+        <!-- GENERATE LICENSE KEYS PANEL -->
+        <div class="content-panel glow-border">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-key"></i> Generate License Keys</div>
+          </div>
+          <form onsubmit="handleCreateLicense(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+            <div>
+              <label class="form-label">Application *</label>
+              <select id="licAppSelect" class="form-input" required>
+                <option value="">Select App...</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Key Quantity (1 - 100)</label>
+              <input id="licCountInput" type="number" class="form-input" min="1" max="100" value="1" required>
+            </div>
+            <div>
+              <label class="form-label">Validity (Days, 0 = Lifetime) *</label>
+              <input id="licDurationInput" type="number" class="form-input" min="0" value="30" required>
+            </div>
+            <div>
+              <label class="form-label">Level / Tier</label>
+              <input id="licLevelInput" class="form-input" value="1" placeholder="e.g. 1">
+            </div>
+            <div>
+              <label class="form-label">Key Prefix</label>
+              <input id="licPrefixInput" class="form-input" value="KRISHU" placeholder="e.g. KRISHU">
+            </div>
+            <div>
+              <label class="form-label">Note / Customer Tag</label>
+              <input id="licNoteInput" class="form-input" placeholder="e.g. Discord Store Customer">
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-top: 1.5rem;">
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.88rem; color: var(--cyan);">
+                <input type="checkbox" id="newLicHwidCheck" checked style="width: 18px; height: 18px; accent-color: var(--cyan);">
+                HWID Checkbox (Lock key to PC on activation)
+              </label>
+            </div>
+            <div style="padding-top: 1.3rem;">
+              <button type="submit" id="createLicBtn" class="btn btn-primary btn-full">
+                <i class="fa-solid fa-key"></i> Generate Keys
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- GENERATED KEYS OUTPUT MODAL / DISPLAY -->
+        <div id="newKeysOutputBox" style="display: none; margin-bottom: 1.5rem; background: rgba(4,6,12,0.95); border: 1px solid rgba(var(--cyan-rgb),0.3); border-radius: var(--r-md); padding: 1.2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <div style="font-weight: 700; color: #86efac; font-size: 0.95rem;"><i class="fa-solid fa-circle-check"></i> Keys Generated Successfully</div>
+            <button onclick="document.getElementById('newKeysOutputBox').style.display='none'" class="btn btn-xs btn-ghost"><i class="fa-solid fa-xmark"></i> Close</button>
+          </div>
+          <textarea id="newKeysOutputText" class="form-input" readonly rows="4" style="font-family: monospace; font-size: 0.85rem; color: #a5f3fc;"></textarea>
+          <button onclick="copyText(document.getElementById('newKeysOutputText').value, 'Generated Keys')" class="btn btn-sm btn-ghost" style="margin-top: 6px;"><i class="fa-solid fa-copy"></i> Copy All Keys</button>
+        </div>
+
+        <!-- LICENSES LIST -->
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-list-ol"></i> Active Licenses (<span id="licCountDisplay">0</span>)</div>
+            <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+              <select id="filterLicAppSelect" class="form-input" style="width: 170px; padding: 0.45rem 0.8rem;" onchange="filterLicensesByApp(this.value)">
+                <option value="">All Applications</option>
+              </select>
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="licSearchInput" class="form-input" placeholder="Search key, note..." oninput="handleLicSearch(this.value)">
+              </div>
+              <button onclick="loadLicenses()" class="btn btn-sm btn-ghost"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="cyber-table">
+              <thead>
+                <tr>
+                  <th>License Key</th>
+                  <th>Application</th>
+                  <th>Duration</th>
+                  <th>HWID Check</th>
+                  <th>Bound HWID</th>
+                  <th>Status</th>
+                  <th>Note</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="licensesTableBody">
+                <tr><td colspan="8" class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading licenses...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: USER ACCOUNTS (CUSTOM USER CREATOR & EXPANDABLE LIST) -->
+      <div id="tab-users" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">User Accounts <span>Create custom user credentials and manage device bindings.</span></div>
+        </div>
+
+        <!-- CREATE CUSTOM USER PANEL -->
+        <div class="content-panel glow-border">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-user-plus"></i> Create User</div>
+          </div>
+          <form onsubmit="handleCreateUser(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+            <div>
+              <label class="form-label">Application *</label>
+              <select id="userAppSelect" class="form-input" required>
+                <option value="">Select App...</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Username *</label>
+              <input id="newUsername" class="form-input" placeholder="e.g. player123" required autocomplete="off">
+            </div>
+            <div>
+              <label class="form-label">Password *</label>
+              <input id="newUserPassword" class="form-input" type="text" placeholder="Secret password" required autocomplete="off">
+            </div>
+            <div>
+              <label class="form-label">Expiration *</label>
+              <select id="newUserDurationSelect" class="form-input" onchange="toggleCustomDuration(this.value)">
+                <option value="1">1 Day (Trial)</option>
+                <option value="7">7 Days (Weekly)</option>
+                <option value="30" selected>30 Days (Monthly)</option>
+                <option value="90">90 Days (Quarterly)</option>
+                <option value="365">365 Days (Yearly)</option>
+                <option value="-1">Lifetime</option>
+                <option value="custom">Custom Days...</option>
+              </select>
+              <input id="newUserCustomDuration" type="number" class="form-input" style="display:none; margin-top: 6px;" placeholder="Number of days">
+            </div>
+            <div>
+              <label class="form-label">Level / Tier</label>
+              <input id="newUserLevel" class="form-input" value="VIP" placeholder="Default, VIP, Gold">
+            </div>
+            <div>
+              <label class="form-label">Note (optional)</label>
+              <input id="newUserNote" class="form-input" placeholder="e.g. Discord Customer">
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-top: 1.5rem;">
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.88rem; color: var(--cyan);">
+                <input type="checkbox" id="newUserHwidAffected" checked style="width: 18px; height: 18px; accent-color: var(--cyan);">
+                HWID Affected (Locked to PC)
+              </label>
+            </div>
+            <div style="padding-top: 1.3rem;">
+              <button type="submit" id="createUserBtn" class="btn btn-primary btn-full">
+                <i class="fa-solid fa-check"></i> Create User
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- USERS LIST WITH ACCORDION EXPAND & DELETE ALL -->
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-users-gear"></i> User List (<span id="userCountDisplay">0</span>)</div>
+            <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+              <select id="filterAppSelect" class="form-input" style="width: 170px; padding: 0.45rem 0.8rem;" onchange="filterUsersByApp(this.value)">
+                <option value="">All Applications</option>
+              </select>
+              <input id="searchUsersInput" class="form-input" placeholder="Search user, note, email..." style="width: 200px; padding: 0.45rem 0.9rem;" onkeyup="filterUsers(this.value)">
+              <button onclick="loadUsers()" class="btn btn-sm btn-ghost" title="Refresh List"><i class="fa-solid fa-rotate-right"></i></button>
+              <button onclick="confirmDeleteAllUsers()" class="btn btn-sm btn-danger" title="Delete All Users">
+                <i class="fa-solid fa-trash-can"></i> Delete All Users
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="cyber-table">
+              <thead>
+                <tr>
+                  <th style="width: 32px;"></th>
+                  <th>Username</th>
+                  <th>Application</th>
+                  <th>Tier</th>
+                  <th>Expiration</th>
+                  <th>HWID Lock</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="8" class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: SDK & DOWNLOADS -->
+      <div id="tab-sdk" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">SDK & Client Downloads <span>1-file drop-in integration modules for any programming language.</span></div>
+        </div>
+
+        <div class="content-panel glow-border">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-file-arrow-down"></i> Download KrishuXCheats Wrapper Files</div>
+          </div>
+          <p class="text-muted" style="font-size: 0.88rem; margin-bottom: 1rem;">
+            Add just <strong>ONE file</strong> to your project and call <code style="color:var(--cyan); font-family:'JetBrains Mono',monospace;">api.init()</code> and <code style="color:var(--cyan); font-family:'JetBrains Mono',monospace;">api.login(username, password)</code>.
+          </p>
+
+          <div class="sdk-grid">
+            <!-- C# SDK -->
+            <div class="sdk-card">
+              <div>
+                <div class="sdk-icon"><i class="fa-brands fa-microsoft"></i></div>
+                <div class="sdk-title" style="margin-top: 0.8rem;">C# (.NET)</div>
+                <div class="sdk-desc">Single-file wrapper with automated registry MachineGuid HWID and async HttpClient calls.</div>
+              </div>
+              <a href="/download/krishuxcheats.cs" download class="btn btn-primary btn-sm btn-full">
+                <i class="fa-solid fa-download"></i> krishuxcheats.cs
+              </a>
+            </div>
+
+            <!-- Python SDK -->
+            <div class="sdk-card">
+              <div>
+                <div class="sdk-icon" style="color: #ffd43b; background: rgba(255, 212, 59, 0.1); border-color: rgba(255, 212, 59, 0.25);"><i class="fa-brands fa-python"></i></div>
+                <div class="sdk-title" style="margin-top: 0.8rem;">Python</div>
+                <div class="sdk-desc">Native standard library drop-in module. Automatic Windows WMIC CSPRODUCT UUID detection.</div>
+              </div>
+              <a href="/download/krishuxcheats.py" download class="btn btn-primary btn-sm btn-full">
+                <i class="fa-solid fa-download"></i> krishuxcheats.py
+              </a>
+            </div>
+
+            <!-- C++ Header -->
+            <div class="sdk-card">
+              <div>
+                <div class="sdk-icon" style="color: #659ad2; background: rgba(101, 154, 210, 0.1); border-color: rgba(101, 154, 210, 0.25);"><i class="fa-solid fa-c"></i></div>
+                <div class="sdk-title" style="margin-top: 0.8rem;">C++ Header</div>
+                <div class="sdk-desc">Header file containing class definitions, structures, and function declarations.</div>
+              </div>
+              <a href="/download/krishuxcheats.h" download class="btn btn-primary btn-sm btn-full">
+                <i class="fa-solid fa-download"></i> krishuxcheats.h
+              </a>
+            </div>
+
+            <!-- C++ Implementation -->
+            <div class="sdk-card">
+              <div>
+                <div class="sdk-icon" style="color: #4b8bbe; background: rgba(75, 139, 190, 0.1); border-color: rgba(75, 139, 190, 0.25);"><i class="fa-solid fa-code"></i></div>
+                <div class="sdk-title" style="margin-top: 0.8rem;">C++ Source</div>
+                <div class="sdk-desc">Pure WinINet native HTTP and GetCurrentHwProfile implementation without external DLLs.</div>
+              </div>
+              <a href="/download/krishuxcheats.cpp" download class="btn btn-primary btn-sm btn-full">
+                <i class="fa-solid fa-download"></i> krishuxcheats.cpp
+              </a>
+            </div>
+
+            <!-- Java SDK -->
+            <div class="sdk-card">
+              <div>
+                <div class="sdk-icon" style="color: #e76f00; background: rgba(231, 111, 0, 0.1); border-color: rgba(231, 111, 0, 0.25);"><i class="fa-brands fa-java"></i></div>
+                <div class="sdk-title" style="margin-top: 0.8rem;">Java SDK</div>
+                <div class="sdk-desc">Pure HttpURLConnection wrapper class with SHA-256 system fingerprinting.</div>
+              </div>
+              <a href="/download/krishuxcheats.java" download class="btn btn-primary btn-sm btn-full">
+                <i class="fa-solid fa-download"></i> krishuxcheats.java
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE CODE GENERATOR -->
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-code"></i> Code Snippet Generator</div>
+            <div style="display: flex; gap: 0.6rem; align-items: center;">
+              <label class="form-label" style="margin: 0;">Select App:</label>
+              <select id="codeGenAppSelect" class="form-input" style="width: 220px;" onchange="updateCodeSnippets()">
+                <option value="">Choose Application...</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <button class="btn btn-sm btn-primary" onclick="showCodeTab('code-cs', this)">C# (.NET)</button>
+            <button class="btn btn-sm btn-ghost" onclick="showCodeTab('code-py', this)">Python</button>
+            <button class="btn btn-sm btn-ghost" onclick="showCodeTab('code-cpp', this)">C++</button>
+            <button class="btn btn-sm btn-ghost" onclick="showCodeTab('code-java', this)">Java</button>
+          </div>
+
+          <div id="codeSnippetsContainer">
+            <div id="code-cs" class="code-tab-pane">
+              <pre id="snippetCs" style="background: rgba(4,6,12,0.9); border: 1px solid rgba(var(--cyan-rgb),0.2); border-radius: var(--r-md); padding: 1.2rem; color: #7efcdf; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.83rem; line-height: 1.6;"></pre>
+              <button onclick="copySnippet('snippetCs')" class="btn btn-sm btn-ghost" style="margin-top: 8px;"><i class="fa-solid fa-copy"></i> Copy C# Code</button>
+            </div>
+            <div id="code-py" class="code-tab-pane" style="display: none;">
+              <pre id="snippetPy" style="background: rgba(4,6,12,0.9); border: 1px solid rgba(var(--cyan-rgb),0.2); border-radius: var(--r-md); padding: 1.2rem; color: #7efcdf; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.83rem; line-height: 1.6;"></pre>
+              <button onclick="copySnippet('snippetPy')" class="btn btn-sm btn-ghost" style="margin-top: 8px;"><i class="fa-solid fa-copy"></i> Copy Python Code</button>
+            </div>
+            <div id="code-cpp" class="code-tab-pane" style="display: none;">
+              <pre id="snippetCpp" style="background: rgba(4,6,12,0.9); border: 1px solid rgba(var(--cyan-rgb),0.2); border-radius: var(--r-md); padding: 1.2rem; color: #7efcdf; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.83rem; line-height: 1.6;"></pre>
+              <button onclick="copySnippet('snippetCpp')" class="btn btn-sm btn-ghost" style="margin-top: 8px;"><i class="fa-solid fa-copy"></i> Copy C++ Code</button>
+            </div>
+            <div id="code-java" class="code-tab-pane" style="display: none;">
+              <pre id="snippetJava" style="background: rgba(4,6,12,0.9); border: 1px solid rgba(var(--cyan-rgb),0.2); border-radius: var(--r-md); padding: 1.2rem; color: #7efcdf; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.83rem; line-height: 1.6;"></pre>
+              <button onclick="copySnippet('snippetJava')" class="btn btn-sm btn-ghost" style="margin-top: 8px;"><i class="fa-solid fa-copy"></i> Copy Java Code</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: REMOTE VARIABLES -->
+      <div id="tab-variables" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">Remote Variables <span>Dynamic values fetched by your tools at runtime.</span></div>
+        </div>
+        <div class="content-panel glow-border">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-sliders"></i> Add Variable</div>
+          </div>
+          <form onsubmit="handleAddVariable(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+            <div>
+              <label class="form-label">Application</label>
+              <select id="varAppSelect" class="form-input" required>
+                <option value="">Select App...</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Variable Name</label>
+              <input id="varNameInput" class="form-input" placeholder="e.g. dwLocalPlayer" required>
+            </div>
+            <div>
+              <label class="form-label">Value</label>
+              <input id="varValueInput" class="form-input" placeholder="e.g. 0x180AA40" required>
+            </div>
+            <div style="padding-top: 1.3rem;">
+              <button type="submit" id="addVarBtn" class="btn btn-primary btn-full">
+                <i class="fa-solid fa-plus"></i> Save Variable
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-list"></i> Configured Variables</div>
+          </div>
+          <div class="table-responsive">
+            <table class="cyber-table">
+              <thead>
+                <tr>
+                  <th>Application</th>
+                  <th>Variable Name</th>
+                  <th>Value</th>
+                  <th>API Endpoint</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="variablesTableBody">
+                <tr><td colspan="5" class="table-empty">No variables yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: AUDIT LOGS -->
+      <div id="tab-logs" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">Audit Logs <span>Live security and event trail.</span></div>
+          <div class="dash-actions">
+            <button onclick="clearAuditLogs()" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash-can"></i> Clear Logs</button>
+            <button onclick="loadLogs()" class="btn btn-ghost btn-sm"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="content-panel">
+          <div class="table-responsive">
+            <table class="cyber-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Application</th>
+                  <th>Subject</th>
+                  <th>Action</th>
+                  <th>Outcome</th>
+                  <th>IP</th>
+                  <th>HWID</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="logsTableBody">
+                <tr><td colspan="8" class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 7: API TESTER -->
+      <div id="tab-tester" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">API Tester <span>Test endpoints live in-browser & get instant client integration code in all programming languages.</span></div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="populateTesterFields()" class="btn btn-ghost btn-sm">
+              <i class="fa-solid fa-rotate"></i> Reset Defaults
+            </button>
+          </div>
+        </div>
+
+        <div class="content-panel" style="margin-bottom: 1.5rem;">
+          <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 1.5rem;">
+            <!-- LEFT: REQUEST CONFIGURATION -->
+            <div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label"><i class="fa-solid fa-cube"></i> Target Application</label>
+                  <select id="testerAppSelect" class="form-input" onchange="onTesterAppSelected(this.value)">
+                    <option value="">Select App...</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label"><i class="fa-solid fa-link"></i> Live API Server URL</label>
+                  <input id="testerBaseUrl" class="form-input" readonly style="font-family: monospace; color: #86efac; font-size: 0.82rem;">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-route"></i> API Endpoint to Test</label>
+                <select id="testerEndpoint" class="form-input" onchange="onTesterEndpointChange()">
+                  <option value="POST /api/v1/login" selected>POST /api/v1/login (Username + Password Auth)</option>
+                  <option value="POST /auth/key-login">POST /auth/key-login (Single License Key User Login)</option>
+                  <option value="POST /api/v1/license">POST /api/v1/license (Tool 1-Click License Key Auth)</option>
+                  <option value="POST /api/v1/register">POST /api/v1/register (User Registration + License Key)</option>
+                  <option value="POST /api/v1/init">POST /api/v1/init (App Handshake / Version Check)</option>
+                  <option value="GET /api/v1/health">GET /api/v1/health (Server Health Check)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-key"></i> App API Key (Secret / x-api-key)</label>
+                <div style="display: flex; gap: 6px;">
+                  <input id="testerApiKey" class="form-input" placeholder="Paste App API Key / Secret" oninput="syncTesterInputsToCode()">
+                  <button type="button" onclick="copyText(document.getElementById('testerApiKey').value)" class="btn btn-sm btn-ghost"><i class="fa-solid fa-copy"></i></button>
+                </div>
+              </div>
+
+              <!-- DYNAMIC INTERACTIVE FORM INPUTS -->
+              <div id="testerFormFields" style="background: rgba(4,6,14,0.6); border: 1px solid rgba(var(--cyan-rgb),0.15); border-radius: var(--r-md); padding: 1rem; margin-bottom: 1rem;">
+                <!-- USER + PASS FIELDS -->
+                <div id="fieldGroupUserPass">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.75rem;">
+                    <div>
+                      <label class="form-label" style="color: var(--cyan);"><i class="fa-solid fa-user"></i> Username</label>
+                      <input id="testerUsername" class="form-input" value="testuser" placeholder="Enter username" oninput="syncTesterInputsToCode()">
+                    </div>
+                    <div>
+                      <label class="form-label" style="color: var(--cyan);"><i class="fa-solid fa-lock"></i> Password</label>
+                      <input id="testerPassword" class="form-input" type="text" value="password123" placeholder="Enter password" oninput="syncTesterInputsToCode()">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="form-label"><i class="fa-solid fa-microchip"></i> Hardware ID (HWID)</label>
+                    <input id="testerHwid" class="form-input" value="DEMO-HWID-12345" placeholder="HWID string" oninput="syncTesterInputsToCode()">
+                  </div>
+                </div>
+
+                <!-- SINGLE KEY FIELDS -->
+                <div id="fieldGroupKey" style="display: none;">
+                  <div style="margin-bottom: 0.75rem;">
+                    <label class="form-label" style="color: #ffd700;"><i class="fa-solid fa-ticket"></i> Single Login Key (e.g. KEYAUTH-xxx)</label>
+                    <input id="testerKey" class="form-input" placeholder="KEYAUTH-xxxx" oninput="syncTesterInputsToCode()">
+                  </div>
+                  <div>
+                    <label class="form-label"><i class="fa-solid fa-microchip"></i> Hardware ID (HWID)</label>
+                    <input id="testerKeyHwid" class="form-input" value="DEMO-HWID-12345" placeholder="HWID string" oninput="syncTesterInputsToCode()">
+                  </div>
+                </div>
+
+                <!-- REGISTER FIELDS -->
+                <div id="fieldGroupRegister" style="display: none;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.75rem;">
+                    <div>
+                      <label class="form-label"><i class="fa-solid fa-user-plus"></i> Desired Username</label>
+                      <input id="testerRegUser" class="form-input" value="newuser1" oninput="syncTesterInputsToCode()">
+                    </div>
+                    <div>
+                      <label class="form-label"><i class="fa-solid fa-lock"></i> Password</label>
+                      <input id="testerRegPass" class="form-input" value="pass1234" oninput="syncTesterInputsToCode()">
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+                    <div>
+                      <label class="form-label"><i class="fa-solid fa-key"></i> License Key</label>
+                      <input id="testerRegLic" class="form-input" placeholder="OAX-XXXX-XXXX" oninput="syncTesterInputsToCode()">
+                    </div>
+                    <div>
+                      <label class="form-label"><i class="fa-solid fa-microchip"></i> HWID</label>
+                      <input id="testerRegHwid" class="form-input" value="DEMO-HWID-12345" oninput="syncTesterInputsToCode()">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- INIT FIELDS -->
+                <div id="fieldGroupInit" style="display: none;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+                    <div>
+                      <label class="form-label"><i class="fa-solid fa-code-branch"></i> Tool Version</label>
+                      <input id="testerVersion" class="form-input" value="1.0.0" oninput="syncTesterInputsToCode()">
+                    </div>
+                    <div>
+                      <label class="form-label"><i class="fa-solid fa-id-badge"></i> Owner ID</label>
+                      <input id="testerOwnerId" class="form-input" readonly placeholder="Auto from app" style="font-family: monospace;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RAW JSON VIEW ACCORDION -->
+              <details style="margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--r-sm); padding: 6px 10px; background: rgba(0,0,0,0.2);">
+                <summary style="cursor: pointer; font-size: 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-code"></i> View / Edit Raw Request JSON</summary>
+                <div style="margin-top: 8px;">
+                  <textarea id="testerBody" class="form-input" style="height: 110px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;"></textarea>
+                </div>
+              </details>
+
+              <button onclick="runApiTest()" id="testerRunBtn" class="btn btn-primary btn-full" style="height: 44px; font-size: 0.95rem;">
+                <i class="fa-solid fa-paper-plane"></i> Send Test Request
+              </button>
+            </div>
+
+            <!-- RIGHT: LIVE RESPONSE CONSOLE -->
+            <div style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label class="form-label" style="margin-bottom: 0;"><i class="fa-solid fa-terminal"></i> Live Server Response</label>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span id="testerStatusPill" class="badge badge-info" style="font-size: 0.72rem;">Idle</span>
+                  <span id="testerTimePill" class="badge" style="background: rgba(255,255,255,0.06); font-size: 0.72rem; color: var(--text-muted);">-- ms</span>
+                  <button type="button" onclick="copySnippet('testerResponse')" class="btn btn-xs btn-ghost"><i class="fa-solid fa-copy"></i></button>
+                </div>
+              </div>
+              <pre id="testerResponse" style="flex: 1; min-height: 400px; margin-top: 0; background: rgba(4,6,12,0.95); border: 1px solid rgba(var(--cyan-rgb),0.2); border-radius: var(--r-md); padding: 1.1rem; color: #7efcdf; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.6;">// Fill inputs and click 'Send Test Request' to test live API...</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- MULTI-LANGUAGE CLIENT INTEGRATION CODES -->
+        <div class="content-panel">
+          <div class="panel-header" style="flex-wrap: wrap; gap: 10px;">
+            <div>
+              <div class="panel-title" style="color: var(--cyan);"><i class="fa-solid fa-laptop-code"></i> Ready-to-use Client Implementation Codes ("sab kuch language me")</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">Fully working copy-paste code with live server URL, app credentials, and your test username & password.</div>
+            </div>
+            <button onclick="copyActiveLangCode()" class="btn btn-sm btn-primary">
+              <i class="fa-solid fa-copy"></i> Copy <span id="copyLangLabel">C++</span> Code
+            </button>
+          </div>
+
+          <!-- Language Selector Tabs -->
+          <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <button class="btn btn-sm lang-tab-btn active" onclick="switchLangTab('cpp', this)" style="border-radius: var(--r-sm); font-size: 0.82rem;"><i class="fa-solid fa-file-code"></i> C++ (libcurl)</button>
+            <button class="btn btn-sm lang-tab-btn" onclick="switchLangTab('cs', this)" style="border-radius: var(--r-sm); font-size: 0.82rem;"><i class="fa-solid fa-hashtag"></i> C# (.NET)</button>
+            <button class="btn btn-sm lang-tab-btn" onclick="switchLangTab('py', this)" style="border-radius: var(--r-sm); font-size: 0.82rem;"><i class="fa-brands fa-python"></i> Python</button>
+            <button class="btn btn-sm lang-tab-btn" onclick="switchLangTab('js', this)" style="border-radius: var(--r-sm); font-size: 0.82rem;"><i class="fa-brands fa-node-js"></i> Node.js / JS</button>
+            <button class="btn btn-sm lang-tab-btn" onclick="switchLangTab('curl', this)" style="border-radius: var(--r-sm); font-size: 0.82rem;"><i class="fa-solid fa-terminal"></i> cURL</button>
+            <button class="btn btn-sm lang-tab-btn" onclick="switchLangTab('go', this)" style="border-radius: var(--r-sm); font-size: 0.82rem;"><i class="fa-solid fa-code"></i> Go</button>
+            <button class="btn btn-sm lang-tab-btn" onclick="switchLangTab('php', this)" style="border-radius: var(--r-sm); font-size: 0.82rem;"><i class="fa-brands fa-php"></i> PHP</button>
+            <button class="btn btn-sm lang-tab-btn" onclick="switchLangTab('java', this)" style="border-radius: var(--r-sm); font-size: 0.82rem;"><i class="fa-brands fa-java"></i> Java / Android</button>
+          </div>
+
+          <pre id="langCodeDisplay" style="background: rgba(3,5,10,0.95); border: 1px solid rgba(var(--cyan-rgb),0.25); border-radius: var(--r-md); padding: 1.1rem; color: #a5f3fc; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.55; max-height: 480px;"></pre>
+        </div>
+      </div>
+
+      <!-- TAB: RESELLER KEYS -->
+      <div id="tab-resellers" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span style="color:#ffb703; font-weight:800; font-size:1.5rem;"><i class="fa-solid fa-crown"></i> Reseller Keys Management</span>
+            <span>Generate and audit multi-level reseller keys with custom duration, expiration date, and HWID locks.</span>
+          </div>
+          <div class="dash-actions">
+            <button onclick="loadResellers()" class="btn btn-ghost btn-sm">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- GENERATE RESELLER KEY CARD -->
+        <div class="content-panel glow-border" style="margin-bottom: 1.5rem; border-color: rgba(255, 183, 3, 0.35);">
+          <div class="panel-header">
+            <div class="panel-title" style="color: #ffb703;">
+              <i class="fa-solid fa-key"></i> Generate New Reseller Key
+            </div>
+            <span class="badge" style="background: rgba(255,183,3,0.15); color: #ffb703; border: 1px solid rgba(255,183,3,0.3);">
+              UNLIMITED ADMIN RESELLERS
+            </span>
+          </div>
+
+          <form id="resellerGenForm" onsubmit="handleGenerateReseller(event)">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Target Application</label>
+                <select id="resellerTargetApp" class="form-input" required>
+                  <option value="">Loading applications...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Reseller Name / Label</label>
+                <input id="resellerName" class="form-input" placeholder="e.g. VIP_Reseller_01" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Duration (Days)</label>
+                <input id="resellerDuration" type="number" class="form-input" value="30" min="0" placeholder="0 = Lifetime" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Hardware Lock (HWID)</label>
+                <select id="resellerHwidLock" class="form-input">
+                  <option value="yes">Yes — Lock to 1 Machine (Recommended)</option>
+                  <option value="no">No — Allow Machine Bypass</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label">Notes / Tag (Optional)</label>
+                <input id="resellerNote" class="form-input" placeholder="e.g. Discord: Levi#0001 • VIP Dealer Key">
+              </div>
+            </div>
+
+            <div style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+              <button type="submit" id="btnGenReseller" class="btn btn-primary" style="background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-weight: 800;">
+                <i class="fa-solid fa-plus-circle"></i> Generate Reseller Key
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- RESELLER KEYS TABLE -->
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-table-list"></i> Active Reseller Keys List
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input id="resellerFilterInput" oninput="filterResellerTable(this.value)" placeholder="Filter by name or key..." class="form-input" style="width: 220px; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table" id="resellerTable">
+              <thead>
+                <tr>
+                  <th>Reseller Key</th>
+                  <th>App</th>
+                  <th>Reseller Name</th>
+                  <th>Duration</th>
+                  <th>HWID Lock</th>
+                  <th>Status</th>
+                  <th>Created Date &amp; Time</th>
+                  <th>Expiry Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="resellerTableBody">
+                <tr><td colspan="9" class="table-empty">Loading reseller records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: CODE AUTO-PATCHER / INJECTOR -->
+      <div id="tab-patcher" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span style="color:#ff7597; font-weight:800; font-size:1.5rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> Automatic Code Patcher &amp; Injector</span>
+            <span>Upload or paste your login source code to automatically inject 100% working KeyAuth API login routines.</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <!-- INPUT CONFIGURATION -->
+          <div class="content-panel glow-border" style="border-color: rgba(255,42,95,0.35);">
+            <div class="panel-header">
+              <div class="panel-title" style="color: #ff2a5f;">
+                <i class="fa-solid fa-sliders"></i> Injection Configuration
+              </div>
+              <span class="badge badge-active"><i class="fa-solid fa-bolt"></i> Live AST Analyzer</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Programming Language</label>
+              <select id="patcherLangSelect" class="form-input" onchange="updatePatcherTemplate()">
+                <option value="csharp">C# (.NET / WinForms / WPF / Unity)</option>
+                <option value="cpp">C++ (MSVC / ImGui / Direct3D)</option>
+                <option value="python">Python (Tkinter / PyQt / CLI)</option>
+                <option value="java">Java / Android (Android Studio / Native)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Target KeyAuth Application</label>
+              <select id="patcherAppSelect" class="form-input"></select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">Username Textbox Name</label>
+                <input id="patcherUsernameBox" class="form-input" value="txtUsername" placeholder="e.g. txtUsername">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Password Textbox Name</label>
+                <input id="patcherPasswordBox" class="form-input" value="txtPassword" placeholder="e.g. txtPassword">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Login Button Name</label>
+                <input id="patcherLoginBtn" class="form-input" value="btnLogin" placeholder="e.g. btnLogin">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status Label / Notify Name</label>
+                <input id="patcherStatusText" class="form-input" value="lblStatus" placeholder="e.g. lblStatus">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin: 0;">Upload or Paste Source File (e.g. Login.cs)</label>
+                <label class="btn btn-ghost btn-xs" style="cursor: pointer; margin: 0;">
+                  <i class="fa-solid fa-upload"></i> Upload File
+                  <input type="file" id="patcherFileInput" onchange="handlePatcherFileUpload(event)" style="display: none;">
+                </label>
+              </div>
+              <textarea id="patcherSourceCode" class="form-input" style="min-height: 200px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; background: rgba(0,0,0,0.5);" placeholder="// Paste your Login.cs or source code here..."></textarea>
+            </div>
+
+            <button type="button" onclick="executeAutoPatcher()" id="btnRunPatcher" class="btn btn-primary btn-full" style="margin-top: 0.5rem;">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate &amp; Auto-Inject KeyAuth System
+            </button>
+          </div>
+
+          <!-- OUTPUT PREVIEW -->
+          <div class="content-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="fa-solid fa-code"></i> Live Preview &amp; Output
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button onclick="copyPatcherCode()" class="btn btn-ghost btn-sm" id="btnCopyPatcher">
+                  <i class="fa-solid fa-copy"></i> Copy Code
+                </button>
+                <button onclick="downloadPatcherCode()" class="btn btn-primary btn-sm">
+                  <i class="fa-solid fa-download"></i> Download File
+                </button>
+              </div>
+            </div>
+
+            <div id="patcherStatusBadge" style="margin-bottom: 0.75rem; padding: 0.5rem 0.85rem; border-radius: var(--r-sm); background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); font-size: 0.82rem; color: #00ff88; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-circle-check"></i> <span>Ready to patch. Select options and click generate.</span>
+            </div>
+
+            <pre id="patcherOutputCode" style="min-height: 440px; max-height: 520px; overflow: auto; background: rgba(2,4,8,0.95); border: 1px solid rgba(255,42,95,0.25); border-radius: var(--r-md); padding: 1.1rem; color: #f1f5f9; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.55;">/* Auto-patched code will appear here after clicking Generate */</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: DISCORD WEBHOOK -->
+      <div id="tab-webhook" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span style="color:#5865F2; font-weight:800; font-size:1.5rem;"><i class="fa-brands fa-discord"></i> Discord Webhook Sentinel</span>
+            <span>Stream live authentication events, failed logins, key activations, and HWID resets directly to your Discord server.</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="content-panel glow-border" style="border-color: rgba(88, 101, 242, 0.4);">
+            <div class="panel-header">
+              <div class="panel-title" style="color: #5865F2;">
+                <i class="fa-solid fa-satellite-dish"></i> Webhook Settings
+              </div>
+              <span class="badge" style="background: rgba(88,101,242,0.15); color: #5865F2; border: 1px solid rgba(88,101,242,0.3);">
+                REAL-TIME STREAM
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Discord Webhook URL</label>
+              <div class="input-wrap">
+                <i class="fa-brands fa-discord input-icon" style="color: #5865F2;"></i>
+                <input id="adminWebhookUrlInput" class="form-input" placeholder="https://discord.com/api/webhooks/..." style="border-color: rgba(88,101,242,0.35);">
+              </div>
+              <div class="text-muted" style="font-size: 0.78rem; margin-top: 4px;">
+                Create a webhook in your Discord Server &rarr; Channel Settings &rarr; Integrations &rarr; Webhooks &rarr; Copy Webhook URL.
+              </div>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 0.75rem 1rem; border-radius: var(--r-sm);">
+              <div>
+                <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Enable Real-Time Dispatch</div>
+                <div class="text-muted" style="font-size: 0.78rem;">Sends alerts immediately on user logins, failed attempts, and key redeems.</div>
+              </div>
+              <input type="checkbox" id="adminWebhookEnableToggle" checked style="width: 18px; height: 18px; accent-color: #ff2a5f; cursor: pointer;">
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+              <button onclick="saveAdminWebhookConfig()" class="btn btn-primary" style="flex: 1;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Webhook Settings
+              </button>
+              <button onclick="testAdminWebhookAction()" id="btnAdminTestWebhook" class="btn btn-ghost" style="border-color: rgba(88,101,242,0.5); color: #a5b4fc;">
+                <i class="fa-solid fa-paper-plane"></i> Test Webhook
+              </button>
+            </div>
+          </div>
+
+          <div class="content-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="fa-solid fa-bell"></i> Live Notification Structure
+              </div>
+            </div>
+
+            <div style="background: rgba(10,12,18,0.9); border: 1px solid rgba(255,42,95,0.3); border-radius: var(--r-md); padding: 1.15rem; font-size: 0.84rem;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <img src="/img/logo.png" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.src='/img/circle_logopng.png'">
+                <div>
+                  <div style="font-weight: 800; color: #ff2a5f;">KRISHU X KEYAUTH <span class="badge badge-purple" style="font-size: 0.65rem;">BOT</span></div>
+                  <div style="font-size: 0.72rem; color: var(--text-muted);">Today at Just Now</div>
+                </div>
+              </div>
+              <div style="border-left: 4px solid #ff2a5f; padding-left: 12px; margin-left: 4px;">
+                <div style="font-weight: 700; color: #fff; margin-bottom: 4px;">🌸 User Login Failed — Security Alert</div>
+                <div style="color: #cbd5e1; font-size: 0.8rem; line-height: 1.5;">Failed login attempt for account <strong>`target_user`</strong></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; font-size: 0.78rem;">
+                  <div><span style="color: var(--text-muted);">Target User:</span><br><code>target_user</code></div>
+                  <div><span style="color: var(--text-muted);">Client IP:</span><br><code>127.0.0.1</code></div>
+                  <div><span style="color: var(--text-muted);">Status:</span><br><code style="color: #ff4d4d;">Invalid Passphrase</code></div>
+                  <div><span style="color: var(--text-muted);">Engine:</span><br><code>Sakura Sentinel Core</code></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ADMIN PROFILE -->
+      <div id="tab-profile" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span style="color:#ff2a5f; font-weight:800; font-size:1.5rem;"><i class="fa-solid fa-circle-user"></i> Master Administrator Profile</span>
+            <span>Manage your administrator profile, Gmail address, avatar logo, and master credentials.</span>
+          </div>
+        </div>
+
+        <div style="max-width: 750px;">
+          <div class="content-panel glow-border" style="border-color: rgba(255,42,95,0.35);">
+            <form onsubmit="handleSaveAdminProfile(event)">
+              <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <img id="adminProfileAvatarPreview" src="/img/logo.png" style="width: 78px; height: 78px; border-radius: 50%; object-fit: cover; border: 2px solid #ff2a5f; box-shadow: 0 0 16px rgba(255,42,95,0.5);" onerror="this.src='/img/circle_logopng.png'">
+                <div style="flex: 1;">
+                  <label class="form-label">Avatar / Logo Image URL</label>
+                  <input id="adminProfileAvatarInput" class="form-input" placeholder="/img/logo.png or https://..." oninput="document.getElementById('adminProfileAvatarPreview').src = this.value">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label">Administrator Name</label>
+                  <input id="adminProfileNameInput" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Gmail / Contact Email</label>
+                  <input id="adminProfileEmailInput" type="email" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Date of Birth</label>
+                  <input id="adminProfileDobInput" type="date" class="form-input">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Gender</label>
+                  <select id="adminProfileGenderInput" class="form-input">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other / Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                <button type="submit" id="btnSaveAdminProfile" class="btn btn-primary">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Profile Details
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: HELP & DOCUMENTATION -->
+      <div id="tab-help" class="tab-pane">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span style="color:#00ff88; font-weight:800; font-size:1.5rem;"><i class="fa-solid fa-circle-question"></i> Help, Guides &amp; Architecture Matrix</span>
+            <span>Comprehensive guides in both Hinglish and English modes for seamless deployment and operation.</span>
+          </div>
+          <div class="dash-actions">
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-sm btn-primary" onclick="setHelpLang('hinglish')" id="btnHelpModeHinglish">🌸 Hinglish Mode</button>
+              <button class="btn btn-sm btn-ghost" onclick="setHelpLang('english')" id="btnHelpModeEnglish">🌐 English Mode</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="helpContentContainer">
+          <!-- Rendered dynamically by renderHelpContent() -->
+        </div>
+      </div>
+
+    </div><!-- /main-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- MODAL: BUY OWN WEBSITE (HIGH PRIORITY) -->
+<div id="buyWebsiteModal" class="cyber-modal-overlay">
+  <div class="cyber-modal animated-border" style="max-width: 680px; --spin-color: #ff2a5f;">
+    <div class="cyber-modal-title" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 9px; color: #fff;">
+        <i class="fa-solid fa-crown" style="color: #ffd700;"></i>
+        <span>OWN YOUR OWN KEYAUTH PLATFORM</span>
+      </div>
+      <button onclick="closeBuyWebsiteModal()" class="btn btn-xs btn-ghost" style="padding: 4px 8px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="cyber-modal-body" style="padding-top: 0.5rem;">
+      <!-- Hero Banner -->
+      <div style="background: linear-gradient(135deg, rgba(255,42,95,0.2), rgba(225,29,72,0.1)); border: 1px solid rgba(255,42,95,0.4); border-radius: var(--r-md); padding: 1.25rem; text-align: center; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #ff7597; font-weight: 800; margin-bottom: 6px;">
+          PREMIUM WHITE-LABEL LICENSING SYSTEM
+        </div>
+        <div style="font-size: 1.55rem; font-weight: 900; color: #fff; margin-bottom: 8px;">
+          Deploy Your Own KeyAuth Website In 5 Minutes
+        </div>
+        <div style="font-size: 0.86rem; color: #cbd5e1; max-width: 520px; margin: 0 auto; line-height: 1.5;">
+          Get the complete, world-class standalone KeyAuth website with zero restrictions, full source code, unlimited apps, and direct Discord integration.
+        </div>
+
+        <!-- Currency & Price Display -->
+        <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 1rem;">
+          <div style="background: rgba(0,0,0,0.5); padding: 6px 14px; border-radius: var(--r-full); border: 1px solid rgba(255,42,95,0.3); display: flex; gap: 8px;">
+            <button type="button" onclick="setBuyModalCurrency('INR')" id="buyModalInrBtn" class="btn btn-xs btn-primary" style="padding: 3px 10px; font-size: 0.76rem;">🇮🇳 INR</button>
+            <button type="button" onclick="setBuyModalCurrency('USD')" id="buyModalUsdBtn" class="btn btn-xs btn-ghost" style="padding: 3px 10px; font-size: 0.76rem;">🇺🇸 USD</button>
+          </div>
+          <div style="font-size: 1.85rem; font-weight: 900; color: #00ff88; text-shadow: 0 0 16px rgba(0,255,136,0.5);" id="buyModalPriceTag">
+            ₹499 <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ Lifetime One-Time</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features Checklist -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.83rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">UNLIMITED Applications:</strong> No limits on apps or keys for admins.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Dedicated Reseller System:</strong> Generate custom reseller keys with HWID locks.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Auto Code Patcher:</strong> Auto-inject C#, C++, Python, and Android code.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Discord Webhook Sentinel:</strong> Live login, fail, redeem, and reset alerts.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Dual Persistent Storage:</strong> MongoDB Atlas + Local JSON safety.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Sakura Crimson Theme:</strong> Animated 3D falling petals & glass UI.</div>
+        </div>
+      </div>
+
+      <!-- Direct Contact CTA -->
+      <div style="background: rgba(0,0,0,0.4); border-radius: var(--r-md); padding: 1rem; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+        <div style="font-size: 0.85rem; color: #f1f5f9; text-align: center;">
+          To purchase your full website package instantly, DM developer on Discord:
+        </div>
+        <div style="display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;">
+          <a href="https://discord.com/users/krishu.x.cheats" target="_blank" class="btn btn-primary" style="flex: 1; min-width: 240px; background: linear-gradient(135deg, #5865F2, #404EED); box-shadow: 0 4px 20px rgba(88,101,242,0.4);">
+            <i class="fa-brands fa-discord"></i> DM on Discord: <strong>krishu.x.cheats</strong>
+          </a>
+          <button type="button" onclick="copyText('krishu.x.cheats', 'Discord Username')" class="btn btn-ghost">
+            <i class="fa-solid fa-copy"></i> Copy Username
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cyber-modal-actions" style="margin-top: 1rem;">
+      <button onclick="closeBuyWebsiteModal()" class="btn btn-ghost">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM DELETE ALL USERS -->
+<div id="deleteAllModal" class="cyber-modal-overlay">
+  <div class="cyber-modal">
+    <div class="cyber-modal-title">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      Confirm Mass Deletion
+    </div>
+    <div class="cyber-modal-body">
+      Are you sure you want to delete all registered users?
+      <div style="margin-top: 8px; color: var(--danger); font-weight: 600;">
+        This action is permanent and cannot be undone.
+      </div>
+      <div style="margin-top: 10px;">
+        <label class="form-label">Scope:</label>
+        <select id="deleteAllAppScope" class="form-input">
+          <option value="">All Users (Across All Applications)</option>
+        </select>
+      </div>
+    </div>
+    <div class="cyber-modal-actions">
+      <button onclick="closeDeleteAllModal()" class="btn btn-ghost">Cancel</button>
+      <button onclick="executeDeleteAllUsers()" id="confirmDeleteAllBtn" class="btn btn-danger">
+        <i class="fa-solid fa-trash"></i> Delete All Users
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT USER -->
+<div id="editUserModal" class="cyber-modal-overlay">
+  <div class="cyber-modal">
+    <div class="cyber-modal-title" style="color:var(--cyan);">
+      <i class="fa-solid fa-pen"></i> Edit User — <span id="editUsernamePlaceholder" style="color:#fff;font-size:0.9rem;"></span>
+    </div>
+    <div class="cyber-modal-body" style="display:flex;flex-direction:column;gap:0.85rem;">
+      <input type="hidden" id="editUserId">
+      <div>
+        <label class="form-label">Duration (days, -1 = Lifetime)</label>
+        <input id="editDuration" class="form-input" type="number" min="-1" placeholder="30">
+      </div>
+      <div>
+        <label class="form-label">Level</label>
+        <input id="editLevel" class="form-input" placeholder="Default, VIP, etc.">
+      </div>
+      <div>
+        <label class="form-label">Note / Tag</label>
+        <input id="editNote" class="form-input" placeholder="Customer info...">
+      </div>
+    </div>
+    <div class="cyber-modal-actions">
+      <button onclick="closeEditUserModal()" class="btn btn-ghost">Cancel</button>
+      <button onclick="submitEditUser()" id="submitEditUserBtn" class="btn btn-primary">
+        <i class="fa-solid fa-check"></i> Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EXTEND USER -->
+<div id="extendUserModal" class="cyber-modal-overlay">
+  <div class="cyber-modal">
+    <div class="cyber-modal-title" style="color:#ffd700;">
+      <i class="fa-solid fa-calendar-plus"></i> Extend User — <span id="extendUsernamePlaceholder" style="color:#fff;font-size:0.9rem;"></span>
+    </div>
+    <div class="cyber-modal-body">
+      <input type="hidden" id="extendUserId">
+      <label class="form-label">Days to Add</label>
+      <input id="extendDays" class="form-input" type="number" min="1" value="30" placeholder="e.g. 30">
+      <div class="text-muted" style="font-size:0.8rem;margin-top:8px;">Added on top of current expiry date.</div>
+    </div>
+    <div class="cyber-modal-actions">
+      <button onclick="closeExtendUserModal()" class="btn btn-ghost">Cancel</button>
+      <button onclick="submitExtendUser()" id="submitExtendUserBtn" class="btn" style="background:linear-gradient(135deg,#ffd700,#ff8800);color:#000;font-weight:bold;">
+        <i class="fa-solid fa-calendar-plus"></i> Extend
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: APPLICATION CREDENTIALS & READY-TO-USE CODE -->
+<div id="appDetailsModal" class="cyber-modal-overlay">
+  <div class="cyber-modal" style="max-width: 650px;">
+    <div class="cyber-modal-title" style="color: var(--cyan);">
+      <i class="fa-solid fa-cube"></i>
+      Application Credentials & Setup
+    </div>
+    <div class="cyber-modal-body" style="display: flex; flex-direction: column; gap: 0.85rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div>
+          <label class="form-label">Application Name</label>
+          <div style="display: flex; gap: 6px;">
+            <input id="modalAppName" class="form-input" readonly>
+            <button type="button" onclick="copyModalField('modalAppName', 'App Name')" class="btn btn-sm btn-ghost"><i class="fa-solid fa-copy"></i></button>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Version</label>
+          <div style="display: flex; gap: 6px;">
+            <input id="modalAppVersion" class="form-input" readonly>
+            <button type="button" onclick="copyModalField('modalAppVersion', 'Version')" class="btn btn-sm btn-ghost"><i class="fa-solid fa-copy"></i></button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Owner ID</label>
+        <div style="display: flex; gap: 6px;">
+          <input id="modalAppOwnerId" class="form-input" readonly style="font-family: monospace; color: #a5f3fc;">
+          <button type="button" onclick="copyModalField('modalAppOwnerId', 'Owner ID')" class="btn btn-sm btn-ghost"><i class="fa-solid fa-copy"></i></button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Reseller Key (Provide to User to grant Reseller access)</label>
+        <div style="display: flex; gap: 6px;">
+          <input id="modalAppResellerKey" class="form-input" readonly style="font-family: monospace; color: #ffd700; font-weight: bold; background: rgba(255, 215, 0, 0.08);">
+          <button type="button" onclick="copyModalField('modalAppResellerKey', 'Reseller Key')" class="btn btn-sm btn-ghost"><i class="fa-solid fa-copy"></i></button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Secret (API Key)</label>
+        <div style="display: flex; gap: 6px;">
+          <input id="modalAppSecret" class="form-input" readonly style="font-family: monospace; color: #a5f3fc;">
+          <button type="button" onclick="copyModalField('modalAppSecret', 'Secret')" class="btn btn-sm btn-ghost"><i class="fa-solid fa-copy"></i></button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">API URL (Auto-Detected Live Domain)</label>
+        <div style="display: flex; gap: 6px;">
+          <input id="modalAppApiUrl" class="form-input" readonly style="font-family: monospace; color: #86efac;">
+          <button type="button" onclick="copyModalField('modalAppApiUrl', 'API URL')" class="btn btn-sm btn-ghost"><i class="fa-solid fa-copy"></i></button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Ready-to-use C# Loader Code:</label>
+        <pre id="modalAppCsCode" style="background: rgba(4,6,12,0.9); border: 1px solid rgba(var(--cyan-rgb),0.2); border-radius: var(--r-md); padding: 0.85rem; color: #7efcdf; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.5; max-height: 180px;"></pre>
+        <button type="button" onclick="copySnippet('modalAppCsCode')" class="btn btn-sm btn-primary" style="margin-top: 6px;"><i class="fa-solid fa-copy"></i> Copy C# Code</button>
+      </div>
+    </div>
+    <div class="cyber-modal-actions">
+      <button type="button" onclick="closeAppDetailsModal()" class="btn btn-ghost">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DATABASE PERSISTENCE STATUS -->
+<div id="dbStatusModal" class="cyber-modal-overlay">
+  <div class="cyber-modal" style="max-width: 620px;">
+    <div class="cyber-modal-title" style="color: var(--cyan);">
+      <i class="fa-solid fa-database"></i> Database Cloud Persistence Status
+    </div>
+    <div class="cyber-modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+      <div id="dbStatusContent">
+        <!-- Rendered by renderDbStatusModal() -->
+      </div>
+    </div>
+    <div class="cyber-modal-actions">
+      <button onclick="closeDbStatusModal()" class="btn btn-ghost">Close</button>
+      <button onclick="checkDbStatusLive(true)" class="btn btn-primary">
+        <i class="fa-solid fa-rotate"></i> Re-check Connection
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // STRICT ADMIN AUTH GUARD
+  (function() {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      window.location.replace('/keyauth/admin');
+      return;
+    }
+    const adminName = localStorage.getItem('adminUser') || 'Admin';
+    const nameEl = document.getElementById('adminNameDisplay');
+    const topEl = document.getElementById('topbarAdminName');
+    if (nameEl) nameEl.textContent = adminName;
+    if (topEl) topEl.textContent = adminName;
+
+    initDashboard();
+  })();
+
+  function initDashboard() {
+    const adminToken = localStorage.getItem('adminToken');
+    const adminHeaders = () => ({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${adminToken}`
+    });
+
+    let cachedApps = [], cachedUsers = [], cachedLicenses = [];
+
+    const tabTitles = {
+      'tab-overview':  'Admin <span>Overview</span>',
+      'tab-apps':      'Admin <span>Applications</span>',
+      'tab-licenses':  'Admin <span>License Keys</span>',
+      'tab-resellers': 'Admin <span>Reseller Keys</span>',
+      'tab-users':     'Admin <span>User Accounts</span>',
+      'tab-patcher':   'Admin <span>Auto-Patcher &amp; Injector</span>',
+      'tab-sdk':       'Admin <span>SDK &amp; Downloads</span>',
+      'tab-webhook':   'Admin <span>Discord Webhook Sentinel</span>',
+      'tab-variables': 'Admin <span>Remote Variables</span>',
+      'tab-logs':      'Admin <span>Audit Logs</span>',
+      'tab-tester':    'Admin <span>API Tester</span>',
+      'tab-profile':   'Admin <span>Master Profile</span>',
+      'tab-help':      'Admin <span>Help &amp; Guides</span>'
+    };
+
+    window.updateTesterPayload = function() {
+      if (typeof syncTesterInputsToCode === 'function') syncTesterInputsToCode();
+    };
+
+    window.switchAdminTab = function(tabId, navEl) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+      if (navEl) navEl.classList.add('active');
+      const titleEl = document.getElementById('topbarTabTitle');
+      if (titleEl && tabTitles[tabId]) titleEl.innerHTML = tabTitles[tabId];
+
+      try {
+        if (tabId === 'tab-overview')  loadAdminOverview();
+        if (tabId === 'tab-apps')      loadApps();
+        if (tabId === 'tab-licenses')  { loadApps(); loadLicenses(); }
+        if (tabId === 'tab-resellers') { loadApps(); loadResellers(); }
+        if (tabId === 'tab-users')     { loadApps(); loadUsers(); }
+        if (tabId === 'tab-patcher')   { loadApps(); populatePatcherApps(); }
+        if (tabId === 'tab-sdk')       { loadApps(); if (typeof updateCodeSnippets === 'function') updateCodeSnippets(); }
+        if (tabId === 'tab-webhook')   { loadWebhookConfig(); }
+        if (tabId === 'tab-variables') { loadApps(); if (typeof renderVariables === 'function') renderVariables(); }
+        if (tabId === 'tab-logs')      loadLogs();
+        if (tabId === 'tab-tester')    { if (typeof syncTesterInputsToCode === 'function') syncTesterInputsToCode(); }
+        if (tabId === 'tab-profile')   { loadAdminProfile(); }
+        if (tabId === 'tab-help')      { renderHelpContent(); }
+      } catch (err) {
+        console.warn('Tab load notice:', err);
+      }
+    };
+
+    window.logoutAdmin = function() {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      showToast('Admin session ended', 'info');
+      setTimeout(() => window.location.replace('/keyauth/admin'), 400);
+    };
+
+    // ── SIDEBAR COLLAPSE TOGGLE ──
+    window.toggleSidebarCollapse = function() {
+      const sb = document.getElementById('appSidebar');
+      if (sb) sb.classList.toggle('collapsed');
+    };
+
+    // ── BUY OWN WEBSITE MODAL ──
+    window.openBuyWebsiteModal = function() {
+      const m = document.getElementById('buyWebsiteModal');
+      if (m) m.classList.add('active');
+    };
+    window.closeBuyWebsiteModal = function() {
+      const m = document.getElementById('buyWebsiteModal');
+      if (m) m.classList.remove('active');
+    };
+    window.setBuyModalCurrency = function(curr) {
+      const tag = document.getElementById('buyModalPriceTag');
+      const inrBtn = document.getElementById('buyModalInrBtn');
+      const usdBtn = document.getElementById('buyModalUsdBtn');
+      if (curr === 'INR') {
+        if (tag) tag.innerHTML = '₹499 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+        if (inrBtn) { inrBtn.className = 'btn btn-xs btn-primary'; }
+        if (usdBtn) { usdBtn.className = 'btn btn-xs btn-ghost'; }
+      } else {
+        if (tag) tag.innerHTML = '$6.99 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+        if (inrBtn) { inrBtn.className = 'btn btn-xs btn-ghost'; }
+        if (usdBtn) { usdBtn.className = 'btn btn-xs btn-primary'; }
+      }
+    };
+
+    // ── GLOBAL SEARCH ──
+    window.handleGlobalAdminSearch = function(val) {
+      const q = (val || '').toLowerCase().trim();
+      if (!q) {
+        document.querySelectorAll('tbody tr').forEach(r => r.style.display = '');
+        return;
+      }
+      document.querySelectorAll('#licTableBody tr, #usersTableBody tr, #resellerTableBody tr, #appsTableBody tr').forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    };
+
+    // ── LANGUAGE MODE TOGGLE (HINGLISH / ENGLISH) ──
+    window.currentLangMode = 'hinglish';
+    window.toggleGlobalLang = function() {
+      window.currentLangMode = (window.currentLangMode === 'hinglish') ? 'english' : 'hinglish';
+      const txt = document.getElementById('globalLangText');
+      const topPrice = document.getElementById('topbarPriceTag');
+      if (txt) txt.textContent = window.currentLangMode === 'hinglish' ? 'Hinglish' : 'English';
+      if (topPrice) topPrice.textContent = window.currentLangMode === 'hinglish' ? '₹499 / $6.99' : '$6.99 / ₹499';
+      showToast('Documentation language changed to ' + (window.currentLangMode === 'hinglish' ? '🌸 Hinglish Mode' : '🌐 English Mode'), 'info');
+      setBuyModalCurrency(window.currentLangMode === 'hinglish' ? 'INR' : 'USD');
+      renderHelpContent();
+    };
+
+    window.setHelpLang = function(mode) {
+      window.currentLangMode = mode;
+      const bH = document.getElementById('btnHelpModeHinglish');
+      const bE = document.getElementById('btnHelpModeEnglish');
+      if (bH && bE) {
+        bH.className = mode === 'hinglish' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+        bE.className = mode === 'english' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+      }
+      renderHelpContent();
+    };
+
+    window.renderHelpContent = function() {
+      const container = document.getElementById('helpContentContainer');
+      if (!container) return;
+      if (window.currentLangMode === 'hinglish') {
+        container.innerHTML = `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem;">
+            <div class="content-panel glow-border" style="border-color: rgba(255,42,95,0.35);">
+              <div class="panel-title" style="color: #ff2a5f; margin-bottom: 0.75rem;">
+                <i class="fa-solid fa-rocket"></i> 1. Unlimited Applications &amp; Keys
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                Aap is admin panel par <strong>UNLIMITED Applications</strong> create kar sakte ho. Har software ya cheat ke lie alag App banayein (e.g. Free Fire, PUBG, PC Cheat). Har app ka apna Secret Key aur App ID hoga.
+              </p>
+            </div>
+
+            <div class="content-panel glow-border" style="border-color: rgba(255,183,3,0.35);">
+              <div class="panel-title" style="color: #ffb703; margin-bottom: 0.75rem;">
+                <i class="fa-solid fa-crown"></i> 2. Reseller Keys Section
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                <strong>Reseller Keys</strong> tab me jakar aap jitne chahe utne Reseller accounts generate kar sakte ho. Reseller ko expiry date aur 1-PC HWID lock set karke key de sakte ho. Reseller panel se wo aage keys generate kar payenge.
+              </p>
+            </div>
+
+            <div class="content-panel glow-border" style="border-color: rgba(0,255,136,0.35);">
+              <div class="panel-title" style="color: #00ff88; margin-bottom: 0.75rem;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 3. Auto Code Patcher &amp; Injector
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                Kisi bhi file (e.g. <code>Login.cs</code>) ko upload karein, Textbox aur Button ke naam enter karein aur <strong>Generate</strong> dabayein. System apne aap KeyAuth API integration, HWID check, error check aur login system code deliver karega.
+              </p>
+            </div>
+
+            <div class="content-panel glow-border" style="border-color: rgba(88,101,242,0.4);">
+              <div class="panel-title" style="color: #5865F2; margin-bottom: 0.75rem;">
+                <i class="fa-brands fa-discord"></i> 4. Discord Webhook Integration
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                Apne Discord server ka Webhook URL yaha daal kar <strong>Test Webhook</strong> dabayein. Jab bhi koi user login karega, fail hoga ya key activate hogi, turant stylish Red Sakura embed alert aapke Discord server par send hoga!
+              </p>
+            </div>
+
+            <div class="content-panel glow-border" style="border-color: rgba(255,215,0,0.35);">
+              <div class="panel-title" style="color: #ffd700; margin-bottom: 0.75rem;">
+                <i class="fa-solid fa-bag-shopping"></i> 5. Buy Own Website (White-Label)
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                Agar aapko aisi hi complete KeyAuth website kharidni hai ya kisi ko sell karni hai, toh Price sirf <strong>₹499 INR</strong> hai. Direct developer ko Discord par DM karein: <strong>krishu.x.cheats</strong>.
+              </p>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem;">
+            <div class="content-panel glow-border" style="border-color: rgba(255,42,95,0.35);">
+              <div class="panel-title" style="color: #ff2a5f; margin-bottom: 0.75rem;">
+                <i class="fa-solid fa-rocket"></i> 1. Unlimited Multi-Application Architecture
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                Deploy infinite isolated application profiles with zero licensing caps. Each application maintains its own dedicated secret keys, remote variables, active sessions, and versioning.
+              </p>
+            </div>
+
+            <div class="content-panel glow-border" style="border-color: rgba(255,183,3,0.35);">
+              <div class="panel-title" style="color: #ffb703; margin-bottom: 0.75rem;">
+                <i class="fa-solid fa-crown"></i> 2. Reseller Key Sub-Tier System
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                Generate customized reseller keys with strict hardware binding (HWID), granular expiration limits, and live ban/unban controls. Resellers authenticate securely to manage their assigned pool.
+              </p>
+            </div>
+
+            <div class="content-panel glow-border" style="border-color: rgba(0,255,136,0.35);">
+              <div class="panel-title" style="color: #00ff88; margin-bottom: 0.75rem;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 3. AST Automated Code Injection
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                Transform raw client UI files into fully protected KeyAuth binaries. Simply specify the username box, password box, and trigger button identifiers. Syntax verification is conducted automatically.
+              </p>
+            </div>
+
+            <div class="content-panel glow-border" style="border-color: rgba(88,101,242,0.4);">
+              <div class="panel-title" style="color: #5865F2; margin-bottom: 0.75rem;">
+                <i class="fa-brands fa-discord"></i> 4. Discord Sentinel Webhooks
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                High-throughput audit alerts delivered via Discord embeds. Failed credentials, banned access attempts, and license redemptions are transmitted in real-time with sub-15ms response latency.
+              </p>
+            </div>
+
+            <div class="content-panel glow-border" style="border-color: rgba(255,215,0,0.35);">
+              <div class="panel-title" style="color: #ffd700; margin-bottom: 0.75rem;">
+                <i class="fa-solid fa-bag-shopping"></i> 5. Commercial Source Package
+              </div>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+                Own and host this entire KeyAuth platform with zero monthly royalties. One-time license fee: <strong>$6.99 USD / ₹499 INR</strong>. Contact primary architect on Discord: <strong>krishu.x.cheats</strong>.
+              </p>
+            </div>
+          </div>
+        `;
+      }
+    };
+
+    // ── RESELLER KEYS BACKEND INTEGRATION ──
+    let cachedResellers = [];
+    window.loadResellers = async function() {
+      const tbody = document.getElementById('resellerTableBody');
+      const targetAppSelect = document.getElementById('resellerTargetApp');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading reseller keys...</td></tr>';
+      
+      if (targetAppSelect && cachedApps && cachedApps.length > 0) {
+        targetAppSelect.innerHTML = cachedApps.map(a => `<option value="${a.appId || a._id}">${a.name} (v${a.version})</option>`).join('');
+      }
+
+      try {
+        const res = await fetch('/admin/api/resellers', { headers: adminHeaders() });
+        const data = await res.json();
+        cachedResellers = data.resellers || [];
+        renderResellerTable(cachedResellers);
+      } catch (e) {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="table-empty text-danger">Failed to load reseller keys.</td></tr>';
+      }
+    };
+
+    function renderResellerTable(keys) {
+      const tbody = document.getElementById('resellerTableBody');
+      if (!tbody) return;
+      if (!keys || keys.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="table-empty">No reseller keys generated yet. Use the form above to create one.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = keys.map(k => {
+        const isBanned = k.banned;
+        const appObj = cachedApps.find(a => a._id === k.appId || a.appId === k.appId);
+        const appName = appObj ? appObj.name : (k.appId || 'General');
+        const durStr = (k.durationDays <= 0) ? 'Lifetime' : k.durationDays + 'd';
+        const createdDate = k.createdAt ? new Date(k.createdAt).toLocaleString() : '-';
+        const expiryDate = k.expiresAt && k.expiresAt !== 'Lifetime' ? new Date(k.expiresAt).toLocaleDateString() : 'Lifetime';
+        const hwidStatus = k.hwidLock ? '<span class="badge badge-purple"><i class="fa-solid fa-lock"></i> 1 PC Locked</span>' : '<span class="badge badge-expired"><i class="fa-solid fa-lock-open"></i> Bypass</span>';
+        const statusBadge = isBanned ? '<span class="badge badge-banned"><i class="fa-solid fa-ban"></i> Banned</span>' : '<span class="badge badge-active"><i class="fa-solid fa-circle-check"></i> Active</span>';
+
+        return `<tr>
+          <td><span class="key-code" onclick="copyText('${k.key}', 'Reseller Key')" style="color:#ffd700;" title="Click to copy">${k.key} <i class="fa-solid fa-copy" style="font-size:0.65rem;"></i></span></td>
+          <td><strong>${appName}</strong></td>
+          <td><span class="badge badge-cyan">${k.resellerName}</span></td>
+          <td>${durStr}</td>
+          <td>${hwidStatus}</td>
+          <td>${statusBadge}</td>
+          <td style="font-size:0.75rem; color:var(--text-muted);">${createdDate}</td>
+          <td style="font-size:0.75rem;">${expiryDate}</td>
+          <td>
+            <div style="display:flex; gap:4px;">
+              <button onclick="resetResellerHwidAction('${k.key}')" class="btn btn-xs btn-ghost" title="Reset HWID"><i class="fa-solid fa-rotate-left"></i> HWID</button>
+              <button onclick="banResellerAction('${k.key}', ${!isBanned})" class="btn btn-xs ${isBanned ? 'btn-success' : 'btn-danger'}" title="${isBanned ? 'Unban' : 'Ban'}"><i class="fa-solid ${isBanned ? 'fa-unlock' : 'fa-ban'}"></i></button>
+              <button onclick="deleteResellerAction('${k.key}')" class="btn btn-xs btn-danger" title="Delete Reseller Key"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    window.filterResellerTable = function(val) {
+      const q = (val || '').toLowerCase().trim();
+      const filtered = cachedResellers.filter(k => 
+        (k.key && k.key.toLowerCase().includes(q)) ||
+        (k.resellerName && k.resellerName.toLowerCase().includes(q)) ||
+        (k.appId && k.appId.toLowerCase().includes(q))
+      );
+      renderResellerTable(filtered);
+    };
+
+    window.handleGenerateReseller = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnGenReseller');
+      const orig = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...';
+
+      const appId = document.getElementById('resellerTargetApp').value;
+      const resellerName = document.getElementById('resellerName').value.trim();
+      const durationDays = parseInt(document.getElementById('resellerDuration').value) || 0;
+      const hwidLock = document.getElementById('resellerHwidLock').value === 'yes';
+      const note = document.getElementById('resellerNote').value.trim();
+
+      try {
+        const res = await fetch('/admin/api/resellers', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ appId, resellerName, durationDays, hwidLock, note })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || 'Reseller key generated!', 'success');
+          document.getElementById('resellerName').value = '';
+          document.getElementById('resellerNote').value = '';
+          loadResellers();
+        } else {
+          showToast(data.message || 'Failed to generate reseller key', 'error');
+        }
+      } catch {
+        showToast('Network error generating reseller key', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    };
+
+    window.banResellerAction = async function(key, banned) {
+      try {
+        const res = await fetch(`/admin/api/resellers/${encodeURIComponent(key)}/ban`, {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ banned })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Reseller key ${banned ? 'banned' : 'unbanned'}`, 'info');
+          loadResellers();
+        }
+      } catch {
+        showToast('Failed to update reseller ban status', 'error');
+      }
+    };
+
+    window.resetResellerHwidAction = async function(key) {
+      try {
+        const res = await fetch(`/admin/api/resellers/${encodeURIComponent(key)}/reset-hwid`, {
+          method: 'POST',
+          headers: adminHeaders()
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('HWID cleared for reseller key', 'success');
+          loadResellers();
+        }
+      } catch {
+        showToast('Failed to reset reseller HWID', 'error');
+      }
+    };
+
+    window.deleteResellerAction = async function(key) {
+      if (!confirm(`Delete reseller key: ${key}?`)) return;
+      try {
+        const res = await fetch(`/admin/api/resellers/${encodeURIComponent(key)}`, {
+          method: 'DELETE',
+          headers: adminHeaders()
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Reseller key deleted', 'info');
+          loadResellers();
+        }
+      } catch {
+        showToast('Failed to delete reseller key', 'error');
+      }
+    };
+
+    // ── AUTO-PATCHER / INJECTOR FUNCTIONS ──
+    window.populatePatcherApps = function() {
+      const sel = document.getElementById('patcherAppSelect');
+      const resSel = document.getElementById('resellerTargetApp');
+      if (sel && cachedApps && cachedApps.length > 0) {
+        sel.innerHTML = cachedApps.map(a => `<option value="${a.appId || a._id}">${a.name} (v${a.version})</option>`).join('');
+      }
+      if (resSel && cachedApps && cachedApps.length > 0) {
+        resSel.innerHTML = cachedApps.map(a => `<option value="${a.appId || a._id}">${a.name} (v${a.version})</option>`).join('');
+      }
+    };
+
+    window.updatePatcherTemplate = function() {
+      const lang = document.getElementById('patcherLangSelect').value;
+      const uBox = document.getElementById('patcherUsernameBox');
+      const pBox = document.getElementById('patcherPasswordBox');
+      const bBtn = document.getElementById('patcherLoginBtn');
+      const sBox = document.getElementById('patcherStatusText');
+      if (lang === 'csharp') {
+        uBox.value = 'txtUsername'; pBox.value = 'txtPassword'; bBtn.value = 'btnLogin'; sBox.value = 'lblStatus';
+      } else if (lang === 'cpp') {
+        uBox.value = 'user_input'; pBox.value = 'pass_input'; bBtn.value = 'LoginButton'; sBox.value = 'std::cout';
+      } else if (lang === 'python') {
+        uBox.value = 'username_entry'; pBox.value = 'password_entry'; bBtn.value = 'login_btn'; sBox.value = 'status_label';
+      } else {
+        uBox.value = 'etUsername'; pBox.value = 'etPassword'; bBtn.value = 'btnLogin'; sBox.value = 'tvStatus';
+      }
+    };
+
+    window.handlePatcherFileUpload = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('patcherSourceCode').value = evt.target.result;
+        showToast(`Loaded file '${file.name}' (${file.size} bytes)`, 'success');
+      };
+      reader.readAsText(file);
+    };
+
+    let lastPatchedCode = '';
+    window.executeAutoPatcher = async function() {
+      const btn = document.getElementById('btnRunPatcher');
+      const orig = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing & Injecting...';
+
+      const lang = document.getElementById('patcherLangSelect').value;
+      const sourceCode = document.getElementById('patcherSourceCode').value;
+      const userBox = document.getElementById('patcherUsernameBox').value.trim();
+      const passBox = document.getElementById('patcherPasswordBox').value.trim();
+      const loginBtn = document.getElementById('patcherLoginBtn').value.trim();
+      const statusBox = document.getElementById('patcherStatusText').value.trim();
+      const appId = document.getElementById('patcherAppSelect').value;
+
+      const appObj = cachedApps.find(a => a._id === appId || a.appId === appId) || {};
+      const appName = appObj.name || 'KRISHU X CHEATS';
+      const appSecret = appObj.secret || appObj.apiKey || 'krishu_master_secret_2026';
+      const appVersion = appObj.version || '1.0.0';
+
+      try {
+        const res = await fetch('/api/patcher/generate', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({
+            language: lang,
+            sourceCode,
+            userBox,
+            passBox,
+            loginBtn,
+            statusBox,
+            appName,
+            appSecret,
+            appVersion
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          lastPatchedCode = data.patchedCode;
+          document.getElementById('patcherOutputCode').textContent = data.patchedCode;
+          const badge = document.getElementById('patcherStatusBadge');
+          if (badge) {
+            badge.style.background = 'rgba(0,255,136,0.15)';
+            badge.style.borderColor = 'rgba(0,255,136,0.4)';
+            badge.style.color = '#00ff88';
+            badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${data.checkStatus} • All KeyAuth APIs &amp; Callbacks Successfully Injected</span>`;
+          }
+          showToast('Complete KeyAuth system successfully injected!', 'success');
+        } else {
+          showToast(data.message || 'Patcher generation error', 'error');
+        }
+      } catch (e) {
+        showToast('Network error during auto-patching', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    };
+
+    window.copyPatcherCode = function() {
+      if (!lastPatchedCode) {
+        showToast('No code generated yet. Click generate first.', 'warning');
+        return;
+      }
+      copyText(lastPatchedCode, 'Patched Code');
+    };
+
+    window.downloadPatcherCode = function() {
+      if (!lastPatchedCode) {
+        showToast('No code generated yet. Click generate first.', 'warning');
+        return;
+      }
+      const lang = document.getElementById('patcherLangSelect').value;
+      const extMap = { csharp: 'Login_Patched.cs', cpp: 'Login_Patched.cpp', python: 'Login_Patched.py', java: 'LoginActivity_Patched.java' };
+      const filename = extMap[lang] || 'Login_Patched.txt';
+      const blob = new Blob([lastPatchedCode], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      showToast(`Downloaded ${filename}`, 'success');
+    };
+
+    // ── DISCORD WEBHOOK SENTINEL ──
+    window.loadWebhookConfig = async function() {
+      try {
+        const res = await fetch('/api/webhook/config?scope=admin&identifier=master', { headers: adminHeaders() });
+        const data = await res.json();
+        if (data.success && data.config) {
+          const urlInput = document.getElementById('adminWebhookUrlInput');
+          const toggle = document.getElementById('adminWebhookEnableToggle');
+          if (urlInput) urlInput.value = data.config.url || '';
+          if (toggle) toggle.checked = data.config.enabled !== false;
+        }
+      } catch (e) {
+        console.warn('Webhook load notice:', e);
+      }
+    };
+
+    window.saveAdminWebhookConfig = async function() {
+      const url = document.getElementById('adminWebhookUrlInput').value.trim();
+      const enabled = document.getElementById('adminWebhookEnableToggle').checked;
+      try {
+        const res = await fetch('/api/webhook/config', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ url, enabled, scope: 'admin', identifier: 'master' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Discord Webhook configuration saved!', 'success');
+        }
+      } catch {
+        showToast('Failed to save webhook settings', 'error');
+      }
+    };
+
+    window.testAdminWebhookAction = async function() {
+      const btn = document.getElementById('btnAdminTestWebhook');
+      const orig = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending Test...';
+
+      const url = document.getElementById('adminWebhookUrlInput').value.trim();
+      try {
+        const res = await fetch('/api/webhook/test', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ url, scope: 'admin', identifier: 'master' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Discord Webhook Test Successful! Check your Discord channel.', 'success');
+        } else {
+          showToast(data.message || 'Webhook test failed. Verify Discord webhook URL.', 'error');
+        }
+      } catch {
+        showToast('Failed to reach Discord webhook server', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    };
+
+    // ── ADMIN PROFILE MANAGEMENT ──
+    window.loadAdminProfile = async function() {
+      try {
+        const res = await fetch('/admin/api/profile?username=krishu', { headers: adminHeaders() });
+        const data = await res.json();
+        if (data.success && data.profile) {
+          const p = data.profile;
+          const n = document.getElementById('adminProfileNameInput');
+          const em = document.getElementById('adminProfileEmailInput');
+          const av = document.getElementById('adminProfileAvatarInput');
+          const dob = document.getElementById('adminProfileDobInput');
+          const gen = document.getElementById('adminProfileGenderInput');
+          const prev = document.getElementById('adminProfileAvatarPreview');
+          if (n) n.value = p.name || 'Master Krishu';
+          if (em) em.value = p.email || 'krishu@krishuxkeyauth.internal';
+          if (av) av.value = p.avatar || '/img/logo.png';
+          if (prev) prev.src = p.avatar || '/img/logo.png';
+          if (dob) dob.value = p.dob || '2000-01-01';
+          if (gen) gen.value = p.gender || 'Male';
+        }
+      } catch (e) {
+        console.warn('Profile load notice:', e);
+      }
+    };
+
+    window.handleSaveAdminProfile = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSaveAdminProfile');
+      const orig = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
+
+      const name = document.getElementById('adminProfileNameInput').value.trim();
+      const email = document.getElementById('adminProfileEmailInput').value.trim();
+      const avatar = document.getElementById('adminProfileAvatarInput').value.trim();
+      const dob = document.getElementById('adminProfileDobInput').value;
+      const gender = document.getElementById('adminProfileGenderInput').value;
+
+      try {
+        const res = await fetch('/admin/api/profile', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ username: 'krishu', name, email, avatar, dob, gender })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Admin profile saved successfully!', 'success');
+          const nameEl = document.getElementById('adminNameDisplay');
+          const topEl = document.getElementById('topbarAdminName');
+          if (nameEl) nameEl.textContent = name;
+          if (topEl) topEl.textContent = name;
+        } else {
+          showToast(data.message || 'Failed to save profile', 'error');
+        }
+      } catch {
+        showToast('Error saving profile', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    };
+
+    // ── DATABASE PERSISTENCE STATUS ──
+    let lastDbStatus = null;
+
+    window.updateDbStatusUi = function(dbStatus) {
+      lastDbStatus = dbStatus;
+      const topBadge = document.getElementById('topbarDbBadge');
+      const warningBanner = document.getElementById('dbWarningBanner');
+
+      if (!dbStatus) return;
+
+      if (dbStatus.connected) {
+        if (topBadge) {
+          topBadge.innerHTML = '<i class="fa-solid fa-cloud-bolt" style="color:#00ff88;"></i> <span style="color:#00ff88;">Atlas DB (Persistent)</span>';
+          topBadge.style.borderColor = 'rgba(0,255,136,0.3)';
+          topBadge.style.background = 'rgba(0,255,136,0.08)';
+        }
+        if (warningBanner) warningBanner.style.display = 'none';
+      } else {
+        if (topBadge) {
+          topBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#ffaa00;"></i> <span style="color:#ffaa00;">Local Storage (Temporary)</span>';
+          topBadge.style.borderColor = 'rgba(255,170,0,0.4)';
+          topBadge.style.background = 'rgba(255,170,0,0.12)';
+        }
+        if (warningBanner) warningBanner.style.display = 'block';
+      }
+    };
+
+    window.openDbStatusModal = function() {
+      const modal = document.getElementById('dbStatusModal');
+      const content = document.getElementById('dbStatusContent');
+      if (!modal || !content) return;
+
+      const isConnected = lastDbStatus ? lastDbStatus.connected : false;
+      content.innerHTML = `
+        <div style="background: rgba(0,0,0,0.3); border-radius: var(--r-md); padding: 1.1rem; border: 1px solid ${isConnected ? 'rgba(0,255,136,0.25)' : 'rgba(255,70,70,0.3)'};">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Current Active Storage Engine:</span>
+            <span class="badge ${isConnected ? 'badge-active' : 'badge-banned'}" style="font-size: 0.82rem;">
+              <i class="fa-solid ${isConnected ? 'fa-cloud' : 'fa-hard-drive'}"></i> ${isConnected ? 'MongoDB Atlas (Cloud Safe)' : 'Local JSON File (Ephemeral)'}
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Render Auto-Reset Risk:</span>
+            <span style="font-size: 0.82rem; font-weight: 700; color: ${isConnected ? '#00ff88' : '#ff4d4d'};">
+              ${isConnected ? '✅ Zero Risk (Data is 100% saved on cloud)' : '⚠️ High (Local disk wipes on restart/sleep)'}
+            </span>
+          </div>
+        </div>
+
+        <div style="background: rgba(4,6,12,0.8); border: 1px solid rgba(var(--cyan-rgb),0.15); border-radius: var(--r-md); padding: 1.1rem;">
+          <div style="font-weight: 700; color: var(--cyan); margin-bottom: 8px;">
+            <i class="fa-solid fa-shield-halved"></i> How to keep data permanent on Render:
+          </div>
+          <ol style="margin: 0; padding-left: 1.3rem; font-size: 0.83rem; color: #cbd5e1; line-height: 1.6;">
+            <li>Log into your <strong style="color:#fff;">MongoDB Atlas</strong> account (<a href="https://cloud.mongodb.com" target="_blank" style="color:var(--cyan);">cloud.mongodb.com</a>).</li>
+            <li>In the left sidebar, click <strong style="color:#fff;">Network Access</strong> &rarr; Click <strong style="color:#fff;">Add IP Address</strong>.</li>
+            <li>Click <strong style="color:#fde047;">"Allow Access From Anywhere" (0.0.0.0/0)</strong> and click Confirm. (Render server IPs are dynamic, so this is mandatory).</li>
+            <li>In your <strong style="color:#fff;">Render Dashboard</strong> &rarr; Your Service &rarr; <strong style="color:#fff;">Environment</strong> &rarr; add variable:
+              <br><code style="color:#86efac;background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:4px;display:inline-block;margin-top:3px;">MONGODB_URI = mongodb+srv://...</code>
+            </li>
+          </ol>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+
+    window.closeDbStatusModal = function() {
+      const modal = document.getElementById('dbStatusModal');
+      if (modal) modal.classList.remove('active');
+    };
+
+    window.checkDbStatusLive = async function(showFeedback = false) {
+      try {
+        const res = await fetch('/admin/api/db-status', { headers: adminHeaders() });
+        const data = await res.json();
+        if (data.success && data.dbStatus) {
+          updateDbStatusUi(data.dbStatus);
+          if (showFeedback) {
+            showToast(data.dbStatus.connected ? 'MongoDB Atlas is Connected!' : 'Local storage active. Whitelist 0.0.0.0/0 in Atlas.', data.dbStatus.connected ? 'success' : 'warning');
+            openDbStatusModal();
+          }
+        }
+      } catch (e) {
+        if (showFeedback) showToast('Failed to check database status', 'error');
+      }
+    };
+
+    // ── OVERVIEW ──
+    window.loadAdminOverview = async function() {
+      try {
+        const res = await fetch('/admin/api/stats', { headers: adminHeaders() });
+        const data = await res.json();
+        if (!data.success) {
+          if (res.status === 401 || res.status === 403) logoutAdmin();
+          return;
+        }
+        if (data.dbStatus) {
+          updateDbStatusUi(data.dbStatus);
+        }
+        const s = data.stats;
+        document.getElementById('statApps').textContent     = s.totalApps || 0;
+        document.getElementById('statUsers').textContent    = s.totalUsers || 0;
+        document.getElementById('statLicenses').textContent = (s.totalUsers || 0) + (s.totalLicenses || 0);
+        document.getElementById('statActiveLicBadge').textContent = `${s.totalUsers || 0} Accounts`;
+        document.getElementById('statBanned').textContent   = s.bannedLicenses || 0;
+        document.getElementById('statBannedBadge').textContent = `${s.bannedLicenses || 0} Banned`;
+      } catch (e) { console.error(e); }
+    };
+
+    // ── APPLICATIONS ──
+    window.loadApps = async function() {
+      try {
+        const res = await fetch('/admin/api/apps', { headers: adminHeaders() });
+        const data = await res.json();
+        if (!data.success) return;
+        cachedApps = data.apps || [];
+
+        // Update application dropdown selects
+        const selects = [
+          document.getElementById('licAppSelect'),
+          document.getElementById('filterLicAppSelect'),
+          document.getElementById('userAppSelect'),
+          document.getElementById('filterAppSelect'),
+          document.getElementById('codeGenAppSelect'),
+          document.getElementById('varAppSelect'),
+          document.getElementById('deleteAllAppScope'),
+          document.getElementById('testerAppSelect')
+        ];
+
+        selects.forEach(sel => {
+          if (!sel) return;
+          const cur = sel.value;
+          const isFilter = sel.id === 'filterAppSelect' || sel.id === 'filterLicAppSelect' || sel.id === 'deleteAllAppScope';
+          sel.innerHTML = (isFilter ? '<option value="">All Applications</option>' : '<option value="">Select App...</option>') +
+            cachedApps.map(a => `<option value="${a._id}">${a.name} (v${a.version})</option>`).join('');
+          if (cur && cachedApps.some(a => a._id === cur)) sel.value = cur;
+          else if (!isFilter && cachedApps.length > 0 && !sel.value) {
+            sel.value = cachedApps[0]._id;
+          }
+        });
+
+        // Sync API Tester with currently selected app
+        const testerAppSel = document.getElementById('testerAppSelect');
+        if (testerAppSel && testerAppSel.value) {
+          onTesterAppSelected(testerAppSel.value);
+        } else if (cachedApps.length > 0) {
+          onTesterAppSelected(cachedApps[0]._id);
+        } else {
+          populateTesterFields();
+        }
+
+        const tbody = document.getElementById('appsTableBody');
+        if (!cachedApps.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="table-empty">No applications configured yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = cachedApps.map(app => `
+          <tr>
+            <td><strong>${app.name}</strong></td>
+            <td><span class="badge badge-info">v${app.version}</span></td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span class="key-code" style="color: #ffd700; border-color: rgba(255, 215, 0, 0.3); background: rgba(255, 215, 0, 0.08);" onclick="copyText('${app.resellerKey || ''}', 'Reseller Key')" title="Click to copy Reseller Key">
+                  ${app.resellerKey || 'No Key'} <i class="fa-solid fa-copy" style="font-size:0.65rem;"></i>
+                </span>
+                <button onclick="resetAppResellerKey('${app._id}', '${app.resellerKey || ''}')" class="btn btn-xs btn-ghost" title="Reset Reseller Key (Purges this reseller's users!)" style="color: #ffaa00; padding: 2px 6px;">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+                <button onclick="deleteAppResellerKey('${app._id}', '${app.resellerKey || ''}')" class="btn btn-xs btn-ghost" title="Delete Reseller Key (Revokes access & purges users!)" style="color: #ff4757; padding: 2px 6px;">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <span class="key-code" onclick="copyText('${app.ownerId || ''}', 'Owner ID')" title="Click to copy Owner ID">
+                ${(app.ownerId || 'N/A').slice(0, 10)}... <i class="fa-solid fa-copy" style="font-size:0.65rem;"></i>
+              </span>
+            </td>
+            <td>
+              <span class="key-code" onclick="copyText('${app.apiKey}', 'Secret')" title="Click to copy Secret">
+                ${app.apiKey.slice(0, 12)}... <i class="fa-solid fa-copy" style="font-size:0.65rem;"></i>
+              </span>
+            </td>
+            <td>${app.hwidLock ? '<span class="badge badge-active"><i class="fa-solid fa-lock"></i> On</span>' : '<span class="badge badge-expired">Off</span>'}</td>
+            <td>
+              <button onclick="toggleAppActive('${app._id}', ${!app.active})" class="btn btn-xs ${app.active ? 'btn-success' : 'btn-danger'}">
+                <i class="fa-solid ${app.active ? 'fa-circle-check' : 'fa-power-off'}"></i>
+                ${app.active ? 'Online' : 'Killswitch'}
+              </button>
+            </td>
+            <td>
+              <div style="display: flex; gap: 4px;">
+                <button onclick="openAppDetailsModal('${app._id}')" class="btn btn-xs btn-primary" title="View Credentials & Setup Code">
+                  <i class="fa-solid fa-code"></i> Setup
+                </button>
+                <button onclick="deleteApp('${app._id}')" class="btn btn-xs btn-danger" title="Delete App">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        renderVariables();
+        updateCodeSnippets();
+      } catch (e) { console.error(e); }
+    };
+
+    window.copyText = function(text, label) {
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast((label || 'Value') + ' copied to clipboard!', 'success');
+      });
+    };
+
+    window.copyModalField = function(elementId, label) {
+      const el = document.getElementById(elementId);
+      if (el && el.value) {
+        navigator.clipboard.writeText(el.value).then(() => {
+          showToast((label || 'Value') + ' copied to clipboard!', 'success');
+        });
+      }
+    };
+
+    window.openAppDetailsModal = function(appId) {
+      const app = cachedApps.find(a => String(a._id) === String(appId));
+      if (!app) return;
+      const host = window.location.origin + '/api/v1';
+
+      document.getElementById('modalAppName').value = app.name;
+      document.getElementById('modalAppVersion').value = app.version;
+      document.getElementById('modalAppResellerKey').value = app.resellerKey || 'N/A';
+      document.getElementById('modalAppOwnerId').value = app.ownerId || 'N/A';
+      document.getElementById('modalAppSecret').value = app.apiKey;
+      document.getElementById('modalAppApiUrl').value = host;
+
+      document.getElementById('modalAppCsCode').textContent =
+`// 1. Add krishuxcheats.cs into your project
+using KrishuXCheats;
+
+// 2. Initialize connection
+api KeyAuthApp = new api(
+    name: "${app.name}",
+    ownerid: "${app.ownerId || 'N/A'}",
+    secret: "${app.apiKey}",
+    version: "${app.version}",
+    apiUrl: "${host}"
+);
+
+KeyAuthApp.init();
+
+// 3. Login user credentials from textbox
+KeyAuthApp.login(txtUsername.Text, txtPassword.Text);
+
+if (KeyAuthApp.response.success) {
+    MessageBox.Show("Welcome " + KeyAuthApp.user_data.username + "!");
+} else {
+    MessageBox.Show("Login Failed: " + KeyAuthApp.response.message);
+}`;
+
+      document.getElementById('appDetailsModal').classList.add('active');
+    };
+
+    window.closeAppDetailsModal = function() {
+      document.getElementById('appDetailsModal').classList.remove('active');
+    };
+
+    window.handleCreateApp = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('createAppBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/admin/api/apps', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({
+            name: document.getElementById('newAppName').value.trim(),
+            version: document.getElementById('newAppVersion').value.trim(),
+            downloadUrl: document.getElementById('newAppDownload').value.trim(),
+            announcement: document.getElementById('newAppMotd').value.trim(),
+            hwidLock: document.getElementById('newAppHwidLock').checked
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`App '${data.app.name}' created!`, 'success');
+          document.getElementById('newAppName').value = '';
+          await loadApps();
+          loadAdminOverview();
+          openAppDetailsModal(data.app._id);
+        } else showToast(data.message || 'Error creating app', 'error');
+      } catch { showToast('Network error', 'error'); }
+      finally { btn.disabled = false; }
+    };
+
+    window.toggleAppActive = async function(appId, active) {
+      try {
+        const res = await fetch(`/admin/api/apps/${appId}`, {
+          method: 'PUT', headers: adminHeaders(),
+          body: JSON.stringify({ active })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(active ? 'App online' : 'Killswitch engaged', 'info');
+          loadApps();
+        }
+      } catch { showToast('Error updating app', 'error'); }
+    };
+
+    window.deleteApp = async function(appId) {
+      if (!confirm('Permanently delete this application and associated users?')) return;
+      try {
+        const res = await fetch(`/admin/api/apps/${appId}`, { method: 'DELETE', headers: adminHeaders() });
+        const data = await res.json();
+        if (data.success) { showToast('Application deleted', 'success'); loadApps(); loadAdminOverview(); }
+      } catch { showToast('Error deleting app', 'error'); }
+    };
+
+    window.resetAppResellerKey = async function(appId, oldKey) {
+      if (!confirm('⚠️ WARNING: RESET RESELLER KEY?\n\nThis will generate a brand new Reseller Key for this app.\nThe current reseller will IMMEDIATELY LOSE ACCESS and ALL user accounts created under this key will be PERMANENTLY DELETED.\n\nProceed?')) return;
+      try {
+        const res = await fetch(`/admin/api/apps/${appId}/reseller-key/reset`, {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ oldKey })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Reseller Key reset! ${data.deletedUsersCount} users purged. New Key: ${data.newKey}`, 'success');
+          loadApps();
+          loadAdminOverview();
+        } else {
+          showToast(data.message || 'Failed to reset reseller key', 'error');
+        }
+      } catch {
+        showToast('Network error while resetting reseller key', 'error');
+      }
+    };
+
+    window.deleteAppResellerKey = async function(appId, key) {
+      if (!confirm('🚨 CRITICAL WARNING: DELETE RESELLER KEY?\n\nThis will PERMANENTLY REMOVE the Reseller Key for this app.\nThe reseller will LOSE ACCESS and ALL user accounts created by this key will be PERMANENTLY DELETED.\n\nProceed?')) return;
+      try {
+        const res = await fetch(`/admin/api/apps/${appId}/reseller-key/delete`, {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ key })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Reseller Key deleted! ${data.deletedUsersCount} user accounts purged.`, 'success');
+          loadApps();
+          loadAdminOverview();
+        } else {
+          showToast(data.message || 'Failed to delete reseller key', 'error');
+        }
+      } catch {
+        showToast('Network error while deleting reseller key', 'error');
+      }
+    };
+
+    // ── LICENSES MANAGEMENT ──
+    window.loadLicenses = async function() {
+      const tbody = document.getElementById('licensesTableBody');
+      const countEl = document.getElementById('licCountDisplay');
+      try {
+        const appId = document.getElementById('filterLicAppSelect')?.value || '';
+        const search = document.getElementById('licSearchInput')?.value || '';
+        let url = '/admin/api/licenses?';
+        if (appId) url += 'appId=' + encodeURIComponent(appId) + '&';
+        if (search) url += 'search=' + encodeURIComponent(search);
+
+        const res = await fetch(url, { headers: adminHeaders() });
+        const data = await res.json();
+        if (!data.success) return;
+        cachedLicenses = data.licenses || [];
+        if (countEl) countEl.textContent = cachedLicenses.length;
+
+        if (!cachedLicenses.length) {
+          tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No licenses found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = cachedLicenses.map(lic => {
+          const isBanned = !!lic.banned;
+          const isUsed = lic.status === 'used';
+          const appObj = cachedApps.find(a => a._id === lic.appId || a.appId === lic.appId);
+          const appName = appObj ? appObj.name : (lic.appId || 'Default App');
+          const durStr = (lic.duration <= 0) ? 'Lifetime' : lic.duration + 'd';
+          const hwidCheck = lic.hwidCheck !== false;
+
+          let statusBadge = '<span class="badge badge-info">Unused</span>';
+          if (isBanned) statusBadge = '<span class="badge badge-banned"><i class="fa-solid fa-ban"></i> Banned</span>';
+          else if (isUsed) statusBadge = '<span class="badge badge-active"><i class="fa-solid fa-circle-check"></i> Active</span>';
+
+          const hwidBadge = hwidCheck
+            ? '<span class="badge badge-purple" style="font-size:0.75rem;"><i class="fa-solid fa-lock"></i> Locked</span>'
+            : '<span class="badge badge-expired" style="font-size:0.75rem;"><i class="fa-solid fa-lock-open"></i> Bypass</span>';
+
+          const hwidVal = lic.hwid ? `<span class="key-code" style="font-size:0.72rem;" onclick="copyText('${lic.hwid}', 'HWID')">${lic.hwid.slice(0, 10)}...</span>` : '<span class="text-muted" style="font-size:0.75rem;">None</span>';
+
+          return `<tr>
+            <td><span class="key-code" onclick="copyText('${lic.key}', 'License Key')" title="Click to copy key">${lic.key} <i class="fa-solid fa-copy" style="font-size:0.65rem;"></i></span></td>
+            <td><strong>${appName}</strong></td>
+            <td><span class="badge badge-cyan">${durStr}</span></td>
+            <td>${hwidBadge}</td>
+            <td>${hwidVal}</td>
+            <td>${statusBadge}</td>
+            <td><span class="text-muted" style="font-size:0.8rem;">${lic.note || '-'}</span></td>
+            <td><div style="display:flex; gap:4px;">
+              <button onclick="resetLicenseHwid('${lic.key}')" class="btn btn-xs btn-ghost" title="Reset HWID"><i class="fa-solid fa-rotate-left"></i> HWID</button>
+              <button onclick="banLicense('${lic.key}', ${!isBanned})" class="btn btn-xs ${isBanned ? 'btn-success' : 'btn-danger'}" title="${isBanned ? 'Unban' : 'Ban'}"><i class="fa-solid ${isBanned ? 'fa-unlock' : 'fa-ban'}"></i></button>
+              <button onclick="deleteLicense('${lic.key}')" class="btn btn-xs btn-danger" title="Delete Key"><i class="fa-solid fa-trash"></i></button>
+            </div></td>
+          </tr>`;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="8" class="table-empty text-danger">Failed to load licenses.</td></tr>';
+      }
+    };
+
+    window.handleCreateLicense = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('createLicBtn');
+      btn.disabled = true;
+
+      const appId = document.getElementById('licAppSelect').value;
+      const count = parseInt(document.getElementById('licCountInput').value) || 1;
+      const duration = parseInt(document.getElementById('licDurationInput').value) || 30;
+      const level = document.getElementById('licLevelInput').value.trim() || '1';
+      const prefix = document.getElementById('licPrefixInput').value.trim() || 'KRISHU';
+      const note = document.getElementById('licNoteInput').value.trim();
+      const hwidCheck = document.getElementById('newLicHwidCheck').checked;
+
+      try {
+        const res = await fetch('/admin/api/licenses', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({
+            appId, count, duration, level, prefix, note, hwidCheck
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Generated ' + data.count + ' License Key(s)!', 'success');
+          const outBox = document.getElementById('newKeysOutputBox');
+          const outText = document.getElementById('newKeysOutputText');
+          if (outBox && outText) {
+            outText.value = (data.keys || []).join('\\n');
+            outBox.style.display = 'block';
+          }
+          loadLicenses();
+          loadAdminOverview();
+        } else {
+          showToast(data.message || 'Failed to generate licenses', 'error');
+        }
+      } catch {
+        showToast('Network error while generating licenses', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.resetLicenseHwid = async function(key) {
+      try {
+        const res = await fetch('/admin/api/licenses/reset-hwid', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ licenseId: key })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('HWID reset for ' + key, 'success');
+          loadLicenses();
+        } else {
+          showToast(data.message || 'Failed to reset HWID', 'error');
+        }
+      } catch {
+        showToast('Network error while resetting HWID', 'error');
+      }
+    };
+
+    window.banLicense = async function(key, banned) {
+      const reason = banned ? prompt('Enter ban reason:', 'Violation of TOS') : '';
+      if (banned && reason === null) return;
+      try {
+        const res = await fetch('/admin/api/licenses/ban', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ licenseId: key, banned, reason: reason || 'Banned by admin' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('License ' + (banned ? 'Banned' : 'Unbanned') + '!', 'success');
+          loadLicenses();
+          loadAdminOverview();
+        } else {
+          showToast(data.message || 'Action failed', 'error');
+        }
+      } catch {
+        showToast('Network error', 'error');
+      }
+    };
+
+    window.deleteLicense = async function(key) {
+      if (!confirm('Delete license key: ' + key + '? This cannot be undone.')) return;
+      try {
+        const res = await fetch('/admin/api/licenses/' + encodeURIComponent(key), {
+          method: 'DELETE',
+          headers: adminHeaders()
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('License deleted', 'success');
+          loadLicenses();
+          loadAdminOverview();
+        } else {
+          showToast(data.message || 'Delete failed', 'error');
+        }
+      } catch {
+        showToast('Network error', 'error');
+      }
+    };
+
+    window.filterLicensesByApp = function() {
+      loadLicenses();
+    };
+
+    let licSearchDebounce = null;
+    window.handleLicSearch = function() {
+      clearTimeout(licSearchDebounce);
+      licSearchDebounce = setTimeout(loadLicenses, 300);
+    };
+
+    // ── USERS MANAGEMENT ──
+    window.toggleCustomDuration = function(val) {
+      const el = document.getElementById('newUserCustomDuration');
+      el.style.display = val === 'custom' ? 'block' : 'none';
+      el.required = val === 'custom';
+    };
+
+    window.handleCreateUser = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('createUserBtn');
+      btn.disabled = true;
+
+      let duration = document.getElementById('newUserDurationSelect').value;
+      if (duration === 'custom') duration = document.getElementById('newUserCustomDuration').value;
+
+      try {
+        const res = await fetch('/admin/api/users/create', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({
+            appId: document.getElementById('userAppSelect').value,
+            username: document.getElementById('newUsername').value.trim(),
+            password: document.getElementById('newUserPassword').value.trim(),
+            duration: duration,
+            hwidLocked: document.getElementById('newUserHwidAffected').checked,
+            level: document.getElementById('newUserLevel').value.trim(),
+            note: document.getElementById('newUserNote').value.trim()
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          document.getElementById('newUsername').value = '';
+          document.getElementById('newUserPassword').value = '';
+          document.getElementById('newUserNote').value = '';
+          loadUsers();
+          loadAdminOverview();
+        } else {
+          showToast(data.message || 'Failed to create user', 'error');
+        }
+      } catch (err) {
+        showToast('Network error while creating user', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.loadUsers = async function() {
+      try {
+        const res = await fetch('/admin/api/users', { headers: adminHeaders() });
+        const data = await res.json();
+        if (!data.success) return;
+        cachedUsers = data.users || [];
+        document.getElementById('userCountDisplay').textContent = cachedUsers.length;
+        renderUsersTable(cachedUsers);
+      } catch (e) { console.error(e); }
+    };
+
+    window.filterUsersByApp = function(appId) {
+      if (!appId) return renderUsersTable(cachedUsers);
+      renderUsersTable(cachedUsers.filter(u => u.appId && u.appId._id === appId));
+    };
+
+    window.filterUsers = function(q) {
+      if (!q) return renderUsersTable(cachedUsers);
+      const ql = q.toLowerCase();
+      renderUsersTable(cachedUsers.filter(u =>
+        u.username.toLowerCase().includes(ql) ||
+        (u.email && u.email.toLowerCase().includes(ql)) ||
+        (u.note && u.note.toLowerCase().includes(ql)) ||
+        (u.appId && u.appId.name.toLowerCase().includes(ql))
+      ));
+    };
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('usersTableBody');
+      if (!users || !users.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No user accounts found. Create one above!</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map((u, idx) => {
+        const appName = u.appId ? u.appId.name : 'Global';
+        const isLifetime = u.duration <= 0 || (!u.expiresAt && u.duration === undefined);
+        const isExpired = u.expiresAt && new Date(u.expiresAt) < new Date();
+
+        let expBadge;
+        if (isLifetime) {
+          expBadge = '<span class="badge badge-vip">Lifetime</span>';
+        } else if (isExpired) {
+          expBadge = '<span class="badge badge-expired">Expired</span>';
+        } else {
+          const daysLeft = Math.ceil((new Date(u.expiresAt).getTime() - Date.now()) / 86400000);
+          expBadge = `<span class="badge badge-active">${daysLeft}d left</span>`;
+        }
+
+        const hwidLockBadge = u.hwidLocked !== false
+          ? '<span class="badge badge-active"><i class="fa-solid fa-lock"></i> Locked</span>'
+          : '<span class="badge badge-info"><i class="fa-solid fa-lock-open"></i> Free</span>';
+
+        return `
+          <tr class="user-row" id="userRow_${u._id}" onclick="toggleUserExpand('${u._id}')">
+            <td style="text-align: center;"><i class="fa-solid fa-chevron-right user-expand-icon" id="expandIcon_${u._id}"></i></td>
+            <td><strong>${u.username}</strong></td>
+            <td><span class="badge badge-info">${appName}</span></td>
+            <td><span class="badge badge-vip">${u.level || 'VIP'}</span></td>
+            <td>${expBadge}</td>
+            <td>${hwidLockBadge}</td>
+            <td>${u.banned ? '<span class="badge badge-banned">Banned</span>' : '<span class="badge badge-active">Active</span>'}</td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex; gap: 4px; flex-wrap:wrap;">
+                <button onclick="toggleUserExpand('${u._id}')" class="btn btn-xs btn-ghost" title="Expand Info">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button onclick="openEditUser('${u._id}','${(u.username||'').replace(/'/g,"\\'")}',${ u.duration||30 },'${u.level||'Default'}','${(u.note||'').replace(/'/g,"\\'").replace(/\n/g,' ')}')" class="btn btn-xs btn-ghost" title="Edit User" style="color:var(--cyan);">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="openExtendUser('${u._id}','${(u.username||'').replace(/'/g,"\\'")}'" )" class="btn btn-xs btn-ghost" title="Extend Expiry" style="color:#ffd700;">
+                  <i class="fa-solid fa-calendar-plus"></i>
+                </button>
+                <button onclick="toggleBanUser('${u._id}', ${!u.banned})" class="btn btn-xs ${u.banned ? 'btn-success' : 'btn-danger'}" title="${u.banned ? 'Unban' : 'Ban'}">
+                  <i class="fa-solid ${u.banned ? 'fa-user-check' : 'fa-user-slash'}"></i>
+                </button>
+                <button onclick="resetUserHwid('${u._id}')" class="btn btn-xs btn-ghost" title="Reset HWID">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+                <button onclick="deleteUser('${u._id}')" class="btn btn-xs btn-danger" title="Delete User">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- ACCORDION DRAWER -->
+          <tr class="user-drawer-row" id="userDrawer_${u._id}">
+            <td colspan="8">
+              <div class="user-drawer-content">
+                <div class="drawer-info-group">
+                  <span class="drawer-label">Bound HWID</span>
+                  <span class="drawer-value mono">
+                    ${u.hwid || 'No hardware bound yet'}
+                    ${u.hwid ? `<i class="fa-solid fa-copy" style="cursor:pointer;margin-left:6px;" onclick="copyText('${u.hwid}')" title="Copy HWID"></i>` : ''}
+                  </span>
+                </div>
+                <div class="drawer-info-group">
+                  <span class="drawer-label">Account Expiration</span>
+                  <span class="drawer-value">${u.expiresAt ? new Date(u.expiresAt).toLocaleString() : 'Lifetime Access'}</span>
+                </div>
+                <div class="drawer-info-group">
+                  <span class="drawer-label">Last Login & IP</span>
+                  <span class="drawer-value">${u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'} (${u.lastIp || 'No IP'})</span>
+                </div>
+                <div class="drawer-info-group">
+                  <span class="drawer-label">Note / Reference</span>
+                  <span class="drawer-value text-muted">${u.note || 'None recorded'}</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.toggleUserExpand = function(userId) {
+      const row = document.getElementById(`userRow_${userId}`);
+      const drawer = document.getElementById(`userDrawer_${userId}`);
+      if (!row || !drawer) return;
+      const isExpanded = row.classList.toggle('expanded');
+      drawer.classList.toggle('active', isExpanded);
+    };
+
+    window.toggleBanUser = async function(userId, banned) {
+      try {
+        const res = await fetch('/admin/api/users/ban', {
+          method: 'POST', headers: adminHeaders(),
+          body: JSON.stringify({ userId, banned })
+        });
+        const data = await res.json();
+        if (data.success) { showToast(`User ${banned ? 'banned' : 'unbanned'}`, 'info'); loadUsers(); loadAdminOverview(); }
+      } catch { showToast('Error updating user', 'error'); }
+    };
+
+    window.resetUserHwid = async function(userId) {
+      try {
+        const res = await fetch('/admin/api/users/reset-hwid', {
+          method: 'POST', headers: adminHeaders(),
+          body: JSON.stringify({ userId })
+        });
+        const data = await res.json();
+        if (data.success) { showToast('User HWID cleared successfully', 'success'); loadUsers(); }
+      } catch { showToast('Error resetting HWID', 'error'); }
+    };
+
+    window.deleteUser = async function(userId) {
+      if (!confirm('Permanently delete this user account?')) return;
+      try {
+        const res = await fetch('/admin/api/users/delete', {
+          method: 'POST', headers: adminHeaders(),
+          body: JSON.stringify({ userId })
+        });
+        const data = await res.json();
+        if (data.success) { showToast('User deleted', 'success'); loadUsers(); loadAdminOverview(); }
+      } catch { showToast('Error deleting user', 'error'); }
+    };
+
+    window.confirmDeleteAllUsers = function() {
+      document.getElementById('deleteAllModal').classList.add('active');
+    };
+
+    window.closeDeleteAllModal = function() {
+      document.getElementById('deleteAllModal').classList.remove('active');
+    };
+
+    window.executeDeleteAllUsers = async function() {
+      const btn = document.getElementById('confirmDeleteAllBtn');
+      btn.disabled = true;
+      const appId = document.getElementById('deleteAllAppScope').value;
+      try {
+        const res = await fetch('/admin/api/users/delete-all', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({ appId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          closeDeleteAllModal();
+          loadUsers();
+          loadAdminOverview();
+        } else {
+          showToast(data.message || 'Failed to delete users', 'error');
+        }
+      } catch {
+        showToast('Network error during mass deletion', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    // ── EDIT USER ──
+    window.openEditUser = function(userId, username, duration, level, note) {
+      document.getElementById('editUserId').value = userId;
+      document.getElementById('editUsernamePlaceholder').textContent = username;
+      document.getElementById('editDuration').value = duration;
+      document.getElementById('editLevel').value = level || 'Default';
+      document.getElementById('editNote').value = note || '';
+      document.getElementById('editUserModal').classList.add('active');
+    };
+
+    window.closeEditUserModal = function() {
+      document.getElementById('editUserModal').classList.remove('active');
+    };
+
+    window.submitEditUser = async function() {
+      const btn = document.getElementById('submitEditUserBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/admin/api/users/edit', {
+          method: 'PUT',
+          headers: adminHeaders(),
+          body: JSON.stringify({
+            userId: document.getElementById('editUserId').value,
+            duration: document.getElementById('editDuration').value,
+            level: document.getElementById('editLevel').value,
+            note: document.getElementById('editNote').value
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          closeEditUserModal();
+          loadUsers();
+        } else {
+          showToast(data.message || 'Update failed', 'error');
+        }
+      } catch { showToast('Network error', 'error'); }
+      finally { btn.disabled = false; }
+    };
+
+    // ── EXTEND USER ──
+    window.openExtendUser = function(userId, username) {
+      document.getElementById('extendUserId').value = userId;
+      document.getElementById('extendUsernamePlaceholder').textContent = username;
+      document.getElementById('extendDays').value = '30';
+      document.getElementById('extendUserModal').classList.add('active');
+    };
+
+    window.closeExtendUserModal = function() {
+      document.getElementById('extendUserModal').classList.remove('active');
+    };
+
+    window.submitExtendUser = async function() {
+      const btn = document.getElementById('submitExtendUserBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/admin/api/users/extend', {
+          method: 'POST',
+          headers: adminHeaders(),
+          body: JSON.stringify({
+            userId: document.getElementById('extendUserId').value,
+            days: parseInt(document.getElementById('extendDays').value)
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message, 'success');
+          closeExtendUserModal();
+          loadUsers();
+        } else {
+          showToast(data.message || 'Extend failed', 'error');
+        }
+      } catch { showToast('Network error', 'error'); }
+      finally { btn.disabled = false; }
+    };
+
+    // ── SDK CODE SNIPPET GENERATOR ──
+    window.showCodeTab = function(paneId, btnEl) {
+      document.querySelectorAll('.code-tab-pane').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('#tab-sdk .btn').forEach(b => {
+        if (b.innerText.includes('.NET') || b.innerText.includes('Python') || b.innerText.includes('C++') || b.innerText.includes('Java')) {
+          b.className = 'btn btn-sm btn-ghost';
+        }
+      });
+      document.getElementById(paneId).style.display = 'block';
+      if (btnEl) btnEl.className = 'btn btn-sm btn-primary';
+    };
+
+    window.updateCodeSnippets = function() {
+      const select = document.getElementById('codeGenAppSelect');
+      const selectedId = select ? select.value : '';
+      const app = cachedApps.find(a => a._id === selectedId) || cachedApps[0] || {
+        name: 'ApexVIP',
+        ownerId: 'admin_owner_id',
+        apiKey: 'app_xxxxxxxxxxxxxxxx',
+        version: '1.0.0'
+      };
+
+      const host = window.location.origin + '/api/v1';
+
+      // C# Snippet
+      document.getElementById('snippetCs').textContent = 
+`// 1. Download krishuxcheats.cs and put it in your project
+using KrishuXCheats;
+
+// 2. Initialize with your Application credentials
+public static api KeyAuthApp = new api(
+    name: "${app.name}",
+    ownerid: "${app.ownerId || 'admin_owner_id'}",
+    secret: "${app.apiKey}",
+    version: "${app.version}",
+    apiUrl: "${host}"
+);
+
+KeyAuthApp.init();
+if (!KeyAuthApp.response.success) {
+    Console.WriteLine("[-] Handshake Failed: " + KeyAuthApp.response.message);
+    return;
+}
+
+// 3. User Login
+KeyAuthApp.login(username, password);
+if (KeyAuthApp.response.success) {
+    Console.WriteLine("[+] Welcome " + KeyAuthApp.user_data.username);
+    Console.WriteLine("[+] Expires: " + KeyAuthApp.user_data.expires);
+}`;
+
+      // Python Snippet
+      document.getElementById('snippetPy').textContent = 
+`# 1. Download krishuxcheats.py and put it in your folder
+from krishuxcheats import api
+
+# 2. Configure credentials
+keyauthapp = api(
+    name = "${app.name}",
+    ownerid = "${app.ownerId || 'admin_owner_id'}",
+    secret = "${app.apiKey}",
+    version = "${app.version}",
+    api_url = "${host}"
+)
+
+keyauthapp.init()
+if not keyauthapp.response["success"]:
+    print("Init error:", keyauthapp.response["message"])
+    exit()
+
+# 3. Login
+keyauthapp.login(username, password)
+if keyauthapp.response["success"]:
+    print(f"Logged in! Welcome {keyauthapp.user_data['username']}")
+    print(f"Expiry: {keyauthapp.user_data['expires']}")`;
+
+      // C++ Snippet
+      document.getElementById('snippetCpp').textContent = 
+`// 1. Add krishuxcheats.h and krishuxcheats.cpp to your project
+#include "krishuxcheats.h"
+
+KrishuXCheats::api KeyAuthApp(
+    "${app.name}",
+    "${app.ownerId || 'admin_owner_id'}",
+    "${app.apiKey}",
+    "${app.version}",
+    "${host}"
+);
+
+KeyAuthApp.init();
+if (!KeyAuthApp.response.success) {
+    std::cout << KeyAuthApp.response.message << std::endl;
+    return 0;
+}
+
+KeyAuthApp.login(username, password);
+if (KeyAuthApp.response.success) {
+    std::cout << "Welcome " << KeyAuthApp.user_data.username << std::endl;
+}`;
+
+      // Java Snippet
+      document.getElementById('snippetJava').textContent = 
+`// 1. Add krishuxcheats.java to your project
+import com.krishuxcheats.KrishuXCheats.api;
+
+api KeyAuthApp = new api(
+    "${app.name}",
+    "${app.ownerId || 'admin_owner_id'}",
+    "${app.apiKey}",
+    "${app.version}",
+    "${host}"
+);
+
+KeyAuthApp.init();
+KeyAuthApp.login(username, password);
+
+if (KeyAuthApp.response.success) {
+    System.out.println("Welcome: " + KeyAuthApp.user_data.username);
+}`;
+    };
+
+    window.copySnippet = function(id) {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text).then(() => showToast('Code snippet copied!', 'success'));
+    };
+
+    // ── VARIABLES ──
+    function renderVariables() {
+      const tbody = document.getElementById('variablesTableBody');
+      if (!tbody) return;
+      const allVars = [];
+      cachedApps.forEach(app => {
+        (app.variables || []).forEach(v => allVars.push({ appId: app._id, appName: app.name, ...v }));
+      });
+      if (!allVars.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="table-empty">No remote variables stored yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = allVars.map(v => `
+        <tr>
+          <td><strong>${v.appName}</strong></td>
+          <td><code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:.82rem;">${v.name}</code></td>
+          <td><span class="key-code">${v.value}</span></td>
+          <td><span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:.78rem;">/api/v1/var/${v.name}</span></td>
+          <td><button onclick="deleteVariable('${v.appId}', '${v.name}')" class="btn btn-xs btn-danger"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`).join('');
+    }
+
+    window.handleAddVariable = async function(e) {
+      e.preventDefault();
+      const appId = document.getElementById('varAppSelect').value;
+      const name  = document.getElementById('varNameInput').value.trim();
+      const value = document.getElementById('varValueInput').value.trim();
+      try {
+        const res = await fetch(`/admin/api/apps/${appId}/variables`, {
+          method: 'POST', headers: adminHeaders(),
+          body: JSON.stringify({ name, value })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Variable '${name}' saved!`, 'success');
+          document.getElementById('varNameInput').value = '';
+          document.getElementById('varValueInput').value = '';
+          loadApps();
+        } else showToast(data.message || 'Error saving variable', 'error');
+      } catch { showToast('Error', 'error'); }
+    };
+
+    window.deleteVariable = async function(appId, varName) {
+      try {
+        const res = await fetch(`/admin/api/apps/${appId}/variables/${varName}`, {
+          method: 'DELETE', headers: adminHeaders()
+        });
+        const data = await res.json();
+        if (data.success) { showToast('Variable deleted', 'info'); loadApps(); }
+      } catch { showToast('Error deleting variable', 'error'); }
+    };
+
+    // ── LOGS ──
+    window.loadLogs = async function() {
+      try {
+        const res = await fetch('/admin/api/logs', { headers: adminHeaders() });
+        const data = await res.json();
+        if (!data.success) return;
+        const logs = data.logs || [];
+        const tbody = document.getElementById('logsTableBody');
+        if (!logs.length) {
+          tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No audit logs recorded yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = logs.map(log => `
+          <tr>
+            <td class="text-dim mono" style="font-size:.78rem;">${new Date(log.createdAt).toLocaleString()}</td>
+            <td>${log.appId ? log.appId.name : '—'}</td>
+            <td><strong>${log.username || '—'}</strong></td>
+            <td><span class="badge badge-vip">${log.action}</span></td>
+            <td>${log.success ? '<span class="badge badge-active">PASS</span>' : '<span class="badge badge-banned">FAIL</span>'}</td>
+            <td class="mono text-dim" style="font-size:.78rem;">${log.ip || '—'}</td>
+            <td class="mono text-dim" style="font-size:.78rem;">${log.hwid ? log.hwid.slice(0,8) + '...' : '—'}</td>
+            <td class="text-muted" style="font-size:.82rem;">${log.message || '—'}</td>
+          </tr>`).join('');
+      } catch (e) { console.error(e); }
+    };
+
+    window.clearAuditLogs = async function() {
+      if (!confirm('Clear all audit logs?')) return;
+      try {
+        const res = await fetch('/admin/api/logs/clear', { method: 'DELETE', headers: adminHeaders() });
+        const data = await res.json();
+        if (data.success) { showToast('Audit logs cleared', 'info'); loadLogs(); }
+      } catch { showToast('Error clearing logs', 'error'); }
+    };
+
+    // ── API TESTER & MULTI-LANGUAGE CODE GENERATOR ──
+    let activeTesterLang = 'cpp';
+
+    window.populateTesterFields = function() {
+      const baseUrlInput = document.getElementById('testerBaseUrl');
+      if (baseUrlInput) baseUrlInput.value = window.location.origin;
+
+      const appSel = document.getElementById('testerAppSelect');
+      if (appSel && cachedApps.length > 0) {
+        if (!appSel.value) appSel.value = cachedApps[0]._id;
+        onTesterAppSelected(appSel.value);
+      } else {
+        syncTesterInputsToCode();
+      }
+    };
+
+    window.onTesterAppSelected = function(appId) {
+      const app = cachedApps.find(a => a._id === appId) || (cachedApps.length > 0 ? cachedApps[0] : null);
+      const keyInput = document.getElementById('testerApiKey');
+      const ownerInput = document.getElementById('testerOwnerId');
+      const verInput = document.getElementById('testerVersion');
+
+      if (app) {
+        if (keyInput) keyInput.value = app.apiKey || '';
+        if (ownerInput) ownerInput.value = app.ownerId || '';
+        if (verInput && app.version) verInput.value = app.version;
+      }
+      syncTesterInputsToCode();
+    };
+
+    window.onTesterEndpointChange = function() {
+      const ep = document.getElementById('testerEndpoint').value;
+      const gUserPass = document.getElementById('fieldGroupUserPass');
+      const gKey      = document.getElementById('fieldGroupKey');
+      const gReg      = document.getElementById('fieldGroupRegister');
+      const gInit     = document.getElementById('fieldGroupInit');
+
+      if (gUserPass) gUserPass.style.display = 'none';
+      if (gKey)      gKey.style.display      = 'none';
+      if (gReg)      gReg.style.display      = 'none';
+      if (gInit)     gInit.style.display     = 'none';
+
+      if (ep.includes('/login')) {
+        if (gUserPass) gUserPass.style.display = 'block';
+      } else if (ep.includes('/key-login') || ep.includes('/license')) {
+        if (gKey) gKey.style.display = 'block';
+      } else if (ep.includes('/register')) {
+        if (gReg) gReg.style.display = 'block';
+      } else if (ep.includes('/init')) {
+        if (gInit) gInit.style.display = 'block';
+      }
+
+      syncTesterInputsToCode();
+    };
+
+    window.syncTesterInputsToCode = function() {
+      const ep = (document.getElementById('testerEndpoint')?.value || 'POST /api/v1/login').trim();
+      const [method, path] = ep.split(' ');
+      const bodyTextarea = document.getElementById('testerBody');
+      const host = window.location.origin;
+      const apiKey = (document.getElementById('testerApiKey')?.value || 'YOUR_APP_API_KEY').trim();
+      const username = (document.getElementById('testerUsername')?.value || 'testuser').trim();
+      const password = (document.getElementById('testerPassword')?.value || 'password123').trim();
+      const hwid = (document.getElementById('testerHwid')?.value || 'DEMO-HWID-12345').trim();
+      const singleKey = (document.getElementById('testerKey')?.value || 'KEYAUTH-demo-key').trim();
+      const version = (document.getElementById('testerVersion')?.value || '1.0.0').trim();
+
+      // Update Raw JSON textarea according to active endpoint
+      let activePayload = {};
+      if (ep.includes('/login')) {
+        activePayload = { username, password, hwid };
+      } else if (ep.includes('/key-login')) {
+        activePayload = { loginKey: singleKey, hwid };
+      } else if (ep.includes('/license')) {
+        activePayload = { key: singleKey, hwid };
+      } else if (ep.includes('/register')) {
+        const regUser = (document.getElementById('testerRegUser')?.value || 'newuser1').trim();
+        const regPass = (document.getElementById('testerRegPass')?.value || 'pass1234').trim();
+        const regLic  = (document.getElementById('testerRegLic')?.value || 'KRISHU-DEMO-2026').trim();
+        const regHwid = (document.getElementById('testerRegHwid')?.value || 'DEMO-HWID-12345').trim();
+        activePayload = { username: regUser, password: regPass, licenseKey: regLic, hwid: regHwid };
+      } else if (ep.includes('/init')) {
+        const ownerId = (document.getElementById('testerOwnerId')?.value || 'KRISHUAUTH1').trim();
+        activePayload = { name: 'KRISHU X CHEATS', ownerid: ownerId, secret: apiKey, version };
+      }
+
+      if (bodyTextarea && document.activeElement !== bodyTextarea) {
+        bodyTextarea.value = JSON.stringify(activePayload, null, 2);
+      }
+
+      renderMultiLanguageCode(host, path, apiKey, username, password, hwid, singleKey);
+    };
+
+    function renderMultiLanguageCode(host, path, apiKey, user, pass, hwid, singleKey) {
+      const codeBox = document.getElementById('langCodeDisplay');
+      if (!codeBox) return;
+
+      const isKeyEndpoint = path.includes('/key-login');
+      const targetUrl = isKeyEndpoint ? `${host}/auth/key-login` : `${host}${path}`;
+
+      const snippets = {
+        cpp: `// ========================================================
+// KRISHU X CHEATS — C++ (libcurl) Client Implementation
+// Tested with: MSVC C++17, GCC, Clang
+// Required library: libcurl (vcpkg install curl / native)
+// ========================================================
+#include <iostream>
+#include <string>
+#include <curl/curl.h>
+
+static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
+
+int main() {
+    curl_global_init(CURL_GLOBAL_ALL);
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        std::cerr << "[-] Failed to initialize curl!" << std::endl;
+        return 1;
+    }
+
+    std::string url = "${targetUrl}";
+    std::string apiKey = "${apiKey}";
+    std::string payload = "{\\"username\\":\\"${user}\\",\\"password\\":\\"${pass}\\",\\"hwid\\":\\"${hwid}\\"}";
+
+    struct curl_slist* headers = NULL;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    std::string authHeader = "x-api-key: " + apiKey;
+    headers = curl_slist_append(headers, authHeader.c_str());
+
+    std::string responseString;
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseString);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+
+    std::cout << "[*] Authenticating with Krishu X Cheats API..." << std::endl;
+    CURLcode res = curl_easy_perform(curl);
+
+    if (res == CURLE_OK) {
+        long response_code;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+        std::cout << "[+] HTTP Status: " << response_code << std::endl;
+        std::cout << "[+] Response: " << responseString << std::endl;
+    } else {
+        std::cerr << "[-] Request error: " << curl_easy_strerror(res) << std::endl;
+    }
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+    return 0;
+}`,
+
+        cs: `// ========================================================
+// KRISHU X CHEATS — C# (.NET 6 / 7 / 8 / Framework)
+// ========================================================
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class KeyAuthClient
+{
+    static async Task Main(string[] args)
+    {
+        string endpoint = "${targetUrl}";
+        string apiKey   = "${apiKey}";
+
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("x-api-key", apiKey);
+
+        var payload = "{\\"username\\":\\"" + user + "\\",\\"password\\":\\"" + pass + "\\",\\"hwid\\":\\"" + hwid + "\\"}";
+        var content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+        Console.WriteLine("[*] Authenticating with Krishu X Cheats...");
+        try 
+        {
+            var response = await client.PostAsync(endpoint, content);
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine($"[+] HTTP Status: {(int)response.StatusCode} ({response.StatusCode})");
+            Console.WriteLine($"[+] Server Response: {responseBody}");
+        } 
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[-] Connection error: {ex.Message}");
+        }
+    }
+}`,
+
+        py: `# ========================================================
+# KRISHU X CHEATS — Python 3 Client (requests)
+# pip install requests
+# ========================================================
+import requests
+import json
+
+URL = "${targetUrl}"
+API_KEY = "${apiKey}"
+
+payload = {
+    "username": "${user}",
+    "password": "${pass}",
+    "hwid": "${hwid}"
+}
+
+headers = {
+    "x-api-key": API_KEY,
+    "Content-Type": "application/json"
+}
+
+print(f"[*] Sending authentication request to {URL}...")
+try:
+    response = requests.post(URL, json=payload, headers=headers, timeout=10)
+    print(f"[+] HTTP Status: {response.status_code}")
+    print(f"[+] Response JSON:\\n{json.dumps(response.json(), indent=2)}")
+except requests.exceptions.RequestException as e:
+    print(f"[-] Request failed: {e}")`,
+
+        js: `// ========================================================
+// KRISHU X CHEATS — Node.js & Modern Browser (fetch API)
+// ========================================================
+const url = '${targetUrl}';
+const apiKey = '${apiKey}';
+
+async function authenticate() {
+  const payload = {
+    username: '${user}',
+    password: '${pass}',
+    hwid: '${hwid}'
+  };
+
+  console.log('[*] Authenticating with Krishu X Cheats...');
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    console.log(\`[+] HTTP Status: \${res.status} \${res.statusText}\`);
+    console.log('[+] Server Response:', data);
+
+    if (data.success) {
+      console.log('✅ Access Granted! Token:', data.token);
+    } else {
+      console.log('❌ Access Denied:', data.message);
+    }
+  } catch (err) {
+    console.error('[-] Connection error:', err.message);
+  }
+}
+
+authenticate();`,
+
+        curl: `# ========================================================
+# KRISHU X CHEATS — cURL (Linux / macOS / Windows Terminal)
+# ========================================================
+
+# Bash / Linux / macOS:
+curl -X POST "${targetUrl}" \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: ${apiKey}" \\
+  -d '{"username":"${user}","password":"${pass}","hwid":"${hwid}"}'
+
+# Windows PowerShell:
+$headers = @{ "x-api-key" = "${apiKey}" }
+$body = '{"username":"${user}","password":"${pass}","hwid":"${hwid}"}'
+Invoke-RestMethod -Uri "${targetUrl}" -Method POST -Headers $headers -ContentType "application/json" -Body $body`,
+
+        go: `// ========================================================
+// KRISHU X CHEATS — Golang (net/http)
+// ========================================================
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	url := "${targetUrl}"
+	apiKey := "${apiKey}"
+	payload := []byte(\`{"username":"${user}","password":"${pass}","hwid":"${hwid}"}\`)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-key", apiKey)
+
+	client := &http.Client{}
+	fmt.Println("[*] Sending auth request...")
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Printf("[+] Status: %s\\n", resp.Status)
+	fmt.Printf("[+] Response: %s\\n", string(body))
+}`,
+
+        php: `<?php
+// ========================================================
+// KRISHU X CHEATS — PHP (cURL)
+// ========================================================
+$url = "${targetUrl}";
+$apiKey = "${apiKey}";
+
+$payload = json_encode([
+    "username" => "${user}",
+    "password" => "${pass}",
+    "hwid"     => "${hwid}"
+]);
+
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Content-Type: application/json",
+    "x-api-key: $apiKey"
+]);
+
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+echo "[+] HTTP Status: $httpCode\\n";
+echo "[+] Response: $response\\n";
+?>`,
+
+        java: `// ========================================================
+// KRISHU X CHEATS — Java 11+ (java.net.http.HttpClient)
+// ========================================================
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class KeyAuthTest {
+    public static void main(String[] args) {
+        String url = "${targetUrl}";
+        String apiKey = "${apiKey}";
+        String jsonPayload = "{\\"username\\":\\"${user}\\",\\"password\\":\\"${pass}\\",\\"hwid\\":\\"${hwid}\\"}";
+
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .header("x-api-key", apiKey)
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .build();
+
+            System.out.println("[*] Sending request...");
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("[+] HTTP Status: " + response.statusCode());
+            System.out.println("[+] Response: " + response.body());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}`
+      };
+
+      codeBox.textContent = snippets[activeTesterLang] || snippets['cpp'];
+    }
+
+    window.switchLangTab = function(lang, btn) {
+      activeTesterLang = lang;
+      document.querySelectorAll('.lang-tab-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      const labels = {
+        cpp: 'C++',
+        cs: 'C#',
+        py: 'Python',
+        js: 'Node.js',
+        curl: 'cURL',
+        go: 'Go',
+        php: 'PHP',
+        java: 'Java'
+      };
+      const lbl = document.getElementById('copyLangLabel');
+      if (lbl) lbl.textContent = labels[lang] || lang.toUpperCase();
+
+      syncTesterInputsToCode();
+    };
+
+    window.copyActiveLangCode = function() {
+      const code = document.getElementById('langCodeDisplay')?.textContent || '';
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        showToast(`Copied ${activeTesterLang.toUpperCase()} code to clipboard!`, 'success');
+      });
+    };
+
+    window.runApiTest = async function() {
+      const ep = (document.getElementById('testerEndpoint')?.value || 'POST /api/v1/login').trim();
+      const [method, path] = ep.split(' ');
+      const apiKey = (document.getElementById('testerApiKey')?.value || '').trim();
+      const bodyRaw = document.getElementById('testerBody')?.value || '{}';
+      const out = document.getElementById('testerResponse');
+      const statusPill = document.getElementById('testerStatusPill');
+      const timePill = document.getElementById('testerTimePill');
+      const runBtn = document.getElementById('testerRunBtn');
+
+      if (!out) return;
+
+      if (!apiKey && !path.includes('/health')) {
+        showToast('Please select an application or provide an App API Key', 'warning');
+      }
+
+      const origBtnText = runBtn ? runBtn.innerHTML : '';
+      if (runBtn) {
+        runBtn.disabled = true;
+        runBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending Request...';
+      }
+
+      if (statusPill) {
+        statusPill.textContent = 'Sending...';
+        statusPill.className = 'badge badge-info';
+      }
+      out.textContent = `// Sending ${method} ${path}...\n// Time: ${new Date().toLocaleTimeString()}\n// Awaiting response from server...`;
+
+      const startTime = performance.now();
+      try {
+        const headers = { 'x-api-key': apiKey };
+        const opts = { method, headers };
+        if (method === 'POST') {
+          headers['Content-Type'] = 'application/json';
+          opts.body = bodyRaw;
+        }
+
+        const res = await fetch(path, opts);
+        const duration = Math.round(performance.now() - startTime);
+
+        let data = null;
+        const text = await res.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+
+        if (timePill) timePill.textContent = `${duration} ms`;
+
+        if (statusPill) {
+          if (res.ok) {
+            statusPill.textContent = `${res.status} OK`;
+            statusPill.className = 'badge badge-active';
+          } else {
+            statusPill.textContent = `${res.status} Error`;
+            statusPill.className = 'badge badge-banned';
+          }
+        }
+
+        const displayJson = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        out.textContent = `// HTTP ${res.status} ${res.statusText} (${duration} ms)\n// Response Body:\n${displayJson}`;
+      } catch (e) {
+        const duration = Math.round(performance.now() - startTime);
+        if (timePill) timePill.textContent = `${duration} ms`;
+        if (statusPill) {
+          statusPill.textContent = 'Network Error';
+          statusPill.className = 'badge badge-banned';
+        }
+        out.textContent = `// Network / Request Error (${duration} ms):\n// ${e.message}\n// Check if server is running on ${window.location.origin}`;
+      } finally {
+        if (runBtn) {
+          runBtn.disabled = false;
+          runBtn.innerHTML = origBtnText;
+        }
+      }
+    };
+
+    window.copyText = function(str, label = 'Copied') {
+      if (!str) return;
+      navigator.clipboard.writeText(str).then(() => showToast(`${label} copied to clipboard!`, 'success'));
+    };
+
+    // Boot
+    loadAdminOverview();
+    loadApps();
+    populateTesterFields();
+    checkDbStatusLive(false);
+  }
+</script>
+
+{% include 'keyauth_footer.html' %}

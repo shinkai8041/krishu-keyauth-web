@@ -1,0 +1,292 @@
+{% include 'keyauth_header.html' %}
+
+<div class="auth-wrapper">
+  <div class="auth-card animated-border" style="max-width: 460px;">
+
+    <div class="auth-header">
+      <img src="/img/logo.png" alt="Krishu X Auth" style="width: 58px; height: 58px; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 0 16px #ff2a5f);" onerror="this.src='/img/circle_logopng.png'">
+      <div class="auth-badge" style="background: rgba(255,42,95,0.12); color: #ff7597; border-color: rgba(255,42,95,0.3);"><i class="fa-solid fa-lock"></i> SECURE ACCESS</div>
+      <h1 class="auth-title">Krishu X Auth</h1>
+      <p class="auth-subtitle">Sign in to manage your licenses &amp; tool access</p>
+    </div>
+
+    <!-- Login Mode Tabs -->
+    <div style="display: flex; gap: 6px; margin-bottom: 1.25rem; background: rgba(255,42,95,0.06); padding: 4px; border-radius: var(--r-md); border: 1px solid rgba(255,42,95,0.15);">
+      <button type="button" id="tabUserBtn" onclick="switchMode('user')" class="btn btn-sm btn-full" style="background: linear-gradient(135deg, #ff2a5f, #e11d48); color: #fff; font-weight: 700; border-radius: var(--r-sm); box-shadow: 0 4px 15px rgba(255,42,95,0.35);">
+        <i class="fa-solid fa-user"></i> User Login
+      </button>
+      <button type="button" id="tabKeyBtn" onclick="switchMode('key')" class="btn btn-sm btn-ghost btn-full" style="font-weight: 700; border-radius: var(--r-sm); color: #ff7597;">
+        <i class="fa-solid fa-key"></i> Key Login
+      </button>
+      <button type="button" id="tabResellerBtn" onclick="switchMode('reseller')" class="btn btn-sm btn-ghost btn-full" style="font-weight: 700; border-radius: var(--r-sm); color: #ffd700;">
+        <i class="fa-solid fa-crown"></i> Reseller
+      </button>
+    </div>
+
+    <!-- 1. USER LOGIN FORM -->
+    <form id="formUser" onsubmit="handleUserLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user input-icon"></i>
+          <input id="ulUsername" class="form-input" placeholder="Your username" required autocomplete="username">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock input-icon"></i>
+          <input id="ulPassword" class="form-input" type="password" placeholder="Your password" required autocomplete="current-password">
+          <button type="button" class="input-eye" onclick="togglePass('ulPassword', this)"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem;">
+        <input type="checkbox" id="ulRememberMe" style="width:16px;height:16px;accent-color:var(--primary);">
+        <label for="ulRememberMe" style="font-size:0.88rem;cursor:pointer;color:var(--text-dim);">Remember me (30 days)</label>
+      </div>
+      <button type="submit" id="ulSubmitBtn" class="btn btn-primary btn-full">
+        <i class="fa-solid fa-right-to-bracket"></i> Sign In
+      </button>
+    </form>
+
+    <!-- 2. KEY LOGIN FORM (KEYAUTH- keys) -->
+    <form id="formKey" onsubmit="handleKeyLogin(event)" style="display:none;">
+      <div class="form-group">
+        <label class="form-label" style="color:var(--cyan);">
+          <i class="fa-solid fa-key"></i> Your License Key
+        </label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-fingerprint input-icon" style="color:var(--cyan);"></i>
+          <input id="klKey" class="form-input" placeholder="KEYAUTH-name-XXXX" required
+            style="font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; text-transform: uppercase;"
+            oninput="this.value = this.value.toUpperCase()">
+        </div>
+        <div class="text-muted" style="font-size:0.8rem;margin-top:6px;">
+          Enter the key given to you by your reseller. No password needed.
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem;">
+        <input type="checkbox" id="klRememberMe" style="width:16px;height:16px;accent-color:#ff2a5f;">
+        <label for="klRememberMe" style="font-size:0.88rem;cursor:pointer;color:var(--text-dim);">Remember me (30 days)</label>
+      </div>
+      <button type="submit" id="klSubmitBtn" class="btn btn-primary btn-full">
+        <i class="fa-solid fa-circle-check"></i> Activate Key &amp; Login
+      </button>
+    </form>
+
+    <!-- 3. RESELLER LOGIN FORM -->
+    <form id="formReseller" onsubmit="handleResellerLogin(event)" style="display:none;">
+      <div style="padding: 0.75rem 1rem; border-radius: var(--r-md); background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.2); margin-bottom: 1.25rem;">
+        <div style="font-size:0.78rem; color:#ffd700; font-weight:700; letter-spacing:1px;">RESELLER PORTAL ACCESS</div>
+        <div class="text-muted" style="font-size:0.8rem; margin-top:4px;">Enter your Reseller Key + create or use your reseller account credentials.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="color:#ffd700;">Reseller Key</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-crown input-icon" style="color:#ffd700;"></i>
+          <input id="rlKey" class="form-input" placeholder="RS-XXXX-XXXX-XXXX" required
+            style="font-family: monospace; letter-spacing: 2px; color:#ffd700; text-transform:uppercase;"
+            oninput="this.value = this.value.toUpperCase()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reseller Username</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user input-icon"></i>
+          <input id="rlUsername" class="form-input" placeholder="Choose a username" required autocomplete="username">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock input-icon"></i>
+          <input id="rlPassword" class="form-input" type="password" placeholder="Choose a password" required autocomplete="current-password">
+          <button type="button" class="input-eye" onclick="togglePass('rlPassword', this)"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem;">
+        <input type="checkbox" id="rlRememberMe" style="width:16px;height:16px;accent-color:#ffd700;">
+        <label for="rlRememberMe" style="font-size:0.88rem;cursor:pointer;color:var(--text-dim);">Remember me</label>
+      </div>
+      <button type="submit" id="rlSubmitBtn" class="btn btn-full" style="background: linear-gradient(135deg, #ffd700, #ff8800); color:#000; font-weight:bold;">
+        <i class="fa-solid fa-shield-halved"></i> Access Reseller Panel
+      </button>
+    </form>
+
+    <div class="form-footer" style="margin-top: 1.4rem; text-align: center; display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 0.86rem; color: var(--text-dim);">
+        Don't have an account? <a href="/keyauth/register" style="color: var(--cyan); font-weight: 700; text-decoration: none;">Register Now</a>
+      </div>
+      <div>
+        <a href="/keyauth/admin" class="text-muted" style="font-size: 0.82rem; text-decoration: none; opacity: 0.7;">
+          <i class="fa-solid fa-shield-cat"></i> Admin Console
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Redirect if already logged in
+  if (localStorage.getItem('token')) location.href = '/keyauth/dashboard';
+
+  // Show error from redirect if any
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get('error');
+    if (err) {
+      setTimeout(() => showToast(decodeURIComponent(err), 'error'), 400);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  })();
+
+  function switchMode(mode) {
+    document.getElementById('formUser').style.display = 'none';
+    document.getElementById('formKey').style.display = 'none';
+    document.getElementById('formReseller').style.display = 'none';
+
+    const tabUser = document.getElementById('tabUserBtn');
+    const tabKey = document.getElementById('tabKeyBtn');
+    const tabRes = document.getElementById('tabResellerBtn');
+
+    tabUser.className = 'btn btn-sm btn-ghost btn-full';
+    tabUser.style.background = '';
+    tabKey.className = 'btn btn-sm btn-ghost btn-full';
+    tabKey.style.background = '';
+    tabRes.className = 'btn btn-sm btn-ghost btn-full';
+    tabRes.style.background = '';
+
+    if (mode === 'user') {
+      document.getElementById('formUser').style.display = 'block';
+      tabUser.className = 'btn btn-sm btn-full';
+      tabUser.style.background = 'linear-gradient(135deg, #ff2a5f, #e11d48)';
+      tabUser.style.color = '#fff';
+    } else if (mode === 'key') {
+      document.getElementById('formKey').style.display = 'block';
+      tabKey.className = 'btn btn-sm btn-full';
+      tabKey.style.background = 'linear-gradient(135deg, #ff2a5f, #be123c)';
+      tabKey.style.color = '#fff';
+    } else {
+      document.getElementById('formReseller').style.display = 'block';
+      tabRes.className = 'btn btn-sm btn-full';
+      tabRes.style.background = 'linear-gradient(135deg, #ffd700, #ff8800)';
+      tabRes.style.color = '#000';
+    }
+  }
+
+  function togglePass(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.innerHTML = inp.type === 'password'
+      ? '<i class="fa-solid fa-eye"></i>'
+      : '<i class="fa-solid fa-eye-slash"></i>';
+  }
+
+  async function handleUserLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('ulSubmitBtn');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Signing in...';
+
+    try {
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('ulUsername').value.trim(),
+          password: document.getElementById('ulPassword').value,
+          rememberMe: document.getElementById('ulRememberMe').checked
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast('Login successful!', 'success');
+        setTimeout(() => location.href = '/keyauth/dashboard', 500);
+      } else {
+        showToast(data.message || 'Login failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    } catch {
+      showToast('Cannot reach server', 'error');
+      btn.disabled = false;
+      btn.innerHTML = orig;
+    }
+  }
+
+  async function handleKeyLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('klSubmitBtn');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verifying key...';
+
+    try {
+      const res = await fetch('/auth/key-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          loginKey: document.getElementById('klKey').value.trim(),
+          rememberMe: document.getElementById('klRememberMe').checked
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast('Key verified! Logging in...', 'success');
+        setTimeout(() => location.href = '/keyauth/dashboard', 500);
+      } else {
+        showToast(data.message || 'Invalid key', 'error');
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    } catch {
+      showToast('Cannot reach server', 'error');
+      btn.disabled = false;
+      btn.innerHTML = orig;
+    }
+  }
+
+  async function handleResellerLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('rlSubmitBtn');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
+
+    try {
+      const res = await fetch('/auth/reseller-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resellerKey: document.getElementById('rlKey').value.trim(),
+          username: document.getElementById('rlUsername').value.trim(),
+          password: document.getElementById('rlPassword').value,
+          rememberMe: document.getElementById('rlRememberMe').checked
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(data.message || 'Reseller access granted!', 'success');
+        setTimeout(() => location.href = '/keyauth/dashboard', 600);
+      } else {
+        showToast(data.message || 'Reseller authentication failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    } catch {
+      showToast('Cannot reach server', 'error');
+      btn.disabled = false;
+      btn.innerHTML = orig;
+    }
+  }
+</script>
+
+{% include 'keyauth_footer.html' %}

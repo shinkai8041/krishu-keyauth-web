@@ -1,0 +1,1385 @@
+{% set sidebarLayout = true %}
+{% include 'keyauth_header.html' %}
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="appSidebar">
+    <a href="/keyauth/portal" class="sidebar-brand">
+      <img src="/img/logo.png" alt="Krishu X Auth" onerror="this.src='/img/circle_logopng.png'">
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-name">Krishu X Auth</span>
+        <span class="sidebar-brand-sub" style="background: linear-gradient(135deg, #ff2a5f, #ff7597); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">🌸 SAKURA PORTAL</span>
+      </div>
+    </a>
+
+    <div class="sidebar-nav">
+      <div class="sidebar-section-label">Main Navigation</div>
+      <button class="sidebar-item active" onclick="showPane('paneOverview')" id="navOverview">
+        <i class="fa-solid fa-gauge-high"></i> <span>Overview</span>
+      </button>
+
+      <!-- HIGH PRIORITY CREATE APPLICATION CTA TRIGGER -->
+      <button class="sidebar-item neon-pulse-border" onclick="openBuyWebsiteModal()" style="border: 1px dashed #ff2a5f; background: rgba(255,42,95,0.08); margin: 6px 0; text-align: left; padding: 0.65rem 0.85rem;">
+        <i class="fa-solid fa-plus-circle" style="color: #ff2a5f; font-size: 1.1rem;"></i>
+        <div style="display: flex; flex-direction: column;">
+          <span style="font-weight: 800; color: #fff; font-size: 0.85rem;">Create Application</span>
+          <small style="font-size: 0.65rem; color: #ff7597; line-height: 1.2;">Create unlimited Applications Reseller keys</small>
+        </div>
+      </button>
+
+      <button class="sidebar-item" onclick="showPane('panePatcher')" id="navPatcher">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color: #ff7597;"></i> <span>Auto-Patcher</span>
+      </button>
+      <button class="sidebar-item" onclick="showPane('paneWebhook')" id="navWebhook">
+        <i class="fa-brands fa-discord" style="color: #5865F2;"></i> <span>Discord Webhook</span>
+      </button>
+
+      <div class="sidebar-section-label" style="margin-top: 0.5rem;">Licensing &amp; Account</div>
+      <button class="sidebar-item" onclick="showPane('paneReseller')" id="navReseller" style="display:none;">
+        <i class="fa-solid fa-crown" style="color:#ffd700;"></i> <span>Reseller Panel</span>
+      </button>
+      <button class="sidebar-item" onclick="showPane('paneLicenses')" id="navLicenses">
+        <i class="fa-solid fa-key"></i> <span>My Licenses</span>
+      </button>
+      <button class="sidebar-item" onclick="showPane('paneRedeem')" id="navRedeem">
+        <i class="fa-solid fa-ticket"></i> <span>Redeem Key</span>
+      </button>
+      <button class="sidebar-item" onclick="showPane('paneProfile')" id="navProfile">
+        <i class="fa-solid fa-user-circle"></i> <span>Profile &amp; HWID</span>
+      </button>
+      <button class="sidebar-item" onclick="showPane('paneDownloads')" id="navDownloads">
+        <i class="fa-solid fa-download"></i> <span>SDK Downloads</span>
+      </button>
+      <button class="sidebar-item" onclick="showPane('paneHelp')" id="navHelp">
+        <i class="fa-solid fa-circle-question" style="color: #00ff88;"></i> <span>Help Matrix</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user-pill glow-border" style="border-color: rgba(255,42,95,0.35);">
+        <div class="sidebar-avatar" id="sidebarAvatar" style="background: linear-gradient(135deg, #ff2a5f, #e11d48); color: #fff;">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-username" id="sidebarUsername">Loading...</div>
+          <div class="sidebar-role" id="sidebarRole" style="color: #ff7597;">—</div>
+        </div>
+      </div>
+      <button onclick="logoutUser()" class="btn btn-danger btn-sm btn-full" style="margin-top: 8px;">
+        <i class="fa-solid fa-power-off"></i> <span>Logout</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="main-topbar">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleSidebarCollapse()" title="Toggle Sidebar" style="display: none; @media(min-width: 900px){display:inline-flex;}">
+          <i class="fa-solid fa-arrows-left-right-to-line"></i>
+        </button>
+        <span class="topbar-title">User <span>Portal</span></span>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div style="flex: 1; max-width: 280px; margin: 0 1rem;">
+        <div class="input-wrap" style="margin: 0;">
+          <i class="fa-solid fa-magnifying-glass input-icon" style="font-size: 0.8rem; color: rgba(255,42,95,0.6);"></i>
+          <input 
+            id="globalUserSearch" 
+            class="form-input" 
+            placeholder="Search licenses, tools..." 
+            oninput="handleGlobalUserSearch(this.value)"
+            style="padding-top: 0.45rem; padding-bottom: 0.45rem; font-size: 0.82rem; background: rgba(0,0,0,0.4); border-color: rgba(255,42,95,0.25);">
+        </div>
+      </div>
+
+      <div class="topbar-actions" style="display: flex; align-items: center; gap: 0.65rem;">
+        <!-- BUY OWN WEBSITE BUTTON -->
+        <button onclick="openBuyWebsiteModal()" class="btn btn-primary btn-sm neon-pulse-border" style="background: linear-gradient(135deg, #ff2a5f, #9f1239); font-weight: 800; font-size: 0.82rem;">
+          <i class="fa-solid fa-crown" style="color: #ffd700;"></i> BUY OWN WEBSITE 
+          <span class="badge" style="background: rgba(0,0,0,0.35); color: #fff; margin-left: 5px; font-size: 0.72rem;" id="userTopbarPriceTag">₹499 / $6.99</span>
+        </button>
+
+        <!-- LANGUAGE TOGGLE -->
+        <button onclick="toggleUserGlobalLang()" id="userLangBtn" class="btn btn-ghost btn-sm" style="font-size: 0.78rem;">
+          <i class="fa-solid fa-language" style="color: #ff7597;"></i> <span id="userLangText">Hinglish</span>
+        </button>
+
+        <button onclick="loadUserProfile()" class="btn btn-ghost btn-sm" title="Refresh Profile">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="main-body">
+
+      <!-- ── PANE: OVERVIEW ── -->
+      <div id="paneOverview" class="dash-pane">
+        <div class="dash-header">
+          <div class="dash-title">Dashboard <span>Your account at a glance.</span></div>
+        </div>
+
+        <div id="announcementBanner" class="glow-border" style="display:none; align-items:center; gap:1rem; padding:1rem 1.25rem; background:rgba(var(--cyan-rgb),0.06); border-radius:var(--r-md); border-left:4px solid var(--cyan); margin-bottom:1.5rem;">
+          <div style="font-size:1.6rem; color:var(--cyan);"><i class="fa-solid fa-bullhorn"></i></div>
+          <div>
+            <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; letter-spacing:1px; color:var(--cyan);">Announcement</div>
+            <div id="announcementText" style="font-size:0.95rem; color:var(--text-primary); margin-top:2px;"></div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon"><i class="fa-solid fa-user-shield"></i></div>
+              <span class="stat-badge" id="accountRole">User</span>
+            </div>
+            <div class="stat-value" id="usernameDisplay">...</div>
+            <div class="stat-label">Logged In Account</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon"><i class="fa-solid fa-key"></i></div>
+              <span class="stat-badge" id="licCountBadge">0</span>
+            </div>
+            <div class="stat-value" id="totalLicensesCount">0</div>
+            <div class="stat-label">Active Licenses</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon"><i class="fa-solid fa-microchip"></i></div>
+              <span class="stat-badge" id="hwidStatusBadge">—</span>
+            </div>
+            <div class="stat-value" style="font-size:1.1rem; font-family:'JetBrains Mono',monospace;" id="hwidDisplay">...</div>
+            <div class="stat-label">Hardware Fingerprint</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+              <button onclick="requestHwidReset()" class="btn btn-sm btn-ghost"><i class="fa-solid fa-arrows-rotate"></i> Reset</button>
+            </div>
+            <div class="stat-value" style="font-size:1.1rem;" id="hwidResetCooldown">Ready</div>
+            <div class="stat-label">HWID Reset Cooldown</div>
+          </div>
+        </div>
+
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-layer-group"></i> Active Subscriptions</div>
+            <button onclick="showPane('paneLicenses')" class="btn btn-sm btn-ghost">View All &rarr;</button>
+          </div>
+          <div id="overviewLicTable"><div class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- ── PANE: RESELLER PANEL ── -->
+      <div id="paneReseller" class="dash-pane" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-title" style="color:#ffd700;">
+            <i class="fa-solid fa-crown"></i> Reseller Panel
+            <span>Create and manage user accounts for your assigned application.</span>
+          </div>
+        </div>
+
+        <!-- App Info -->
+        <div class="content-panel glow-border" style="margin-bottom:1.5rem; background:rgba(255,215,0,0.04); border-color:rgba(255,215,0,0.25);">
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem;">
+            <div>
+              <span class="badge" style="background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid rgba(255,215,0,0.3); margin-bottom:6px; display:inline-block;">
+                <i class="fa-solid fa-circle-check"></i> RESELLER ACTIVE
+              </span>
+              <h2 style="font-size:1.4rem; color:#fff; margin:0;" id="resellerAppName">App</h2>
+              <div style="font-size:0.85rem; color:var(--text-dim); margin-top:4px;">
+                Version: <strong id="resellerAppVersion" class="text-cyan">—</strong>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Your Reseller Key</div>
+              <span class="key-code" id="resellerKeyDisplay" onclick="copyText(this.dataset.key)" style="color:#ffd700; border-color:rgba(255,215,0,0.4); cursor:pointer;">
+                — <i class="fa-solid fa-copy"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CREATE USER: Two tabs -->
+        <div class="content-panel glow-border" style="margin-bottom:1.5rem;">
+          <div class="panel-header">
+            <div class="panel-title" style="color:#ffd700;"><i class="fa-solid fa-user-plus"></i> Create New User</div>
+            <div style="display:flex; gap:6px;">
+              <button onclick="switchCreateMode('userpass')" id="modeUserPassBtn" class="btn btn-sm" style="background:rgba(255,215,0,0.2); color:#ffd700; border:1px solid rgba(255,215,0,0.3);">
+                <i class="fa-solid fa-id-badge"></i> User + Pass
+              </button>
+              <button onclick="switchCreateMode('keyuser')" id="modeKeyBtn" class="btn btn-sm btn-ghost" style="color:var(--cyan);">
+                <i class="fa-solid fa-key"></i> KEYAUTH Key
+              </button>
+            </div>
+          </div>
+
+          <!-- User + Password Form -->
+          <form id="formCreateUserPass" onsubmit="handleCreateUserPass(event)">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem;">
+              <div>
+                <label class="form-label">Username *</label>
+                <input id="upUsername" class="form-input" placeholder="e.g. customer01" required autocomplete="off">
+              </div>
+              <div>
+                <label class="form-label">Password *</label>
+                <input id="upPassword" class="form-input" type="text" placeholder="Access password" required autocomplete="off">
+              </div>
+              <div>
+                <label class="form-label">Duration</label>
+                <select id="upDuration" class="form-input">
+                  <option value="1">1 Day (Trial)</option>
+                  <option value="7">7 Days</option>
+                  <option value="30" selected>30 Days</option>
+                  <option value="90">90 Days</option>
+                  <option value="365">1 Year</option>
+                  <option value="-1">Lifetime</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Note / Tag</label>
+                <input id="upNote" class="form-input" placeholder="e.g. Discord: user#1234">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; padding-top:1.5rem;">
+                <input type="checkbox" id="upHwidLocked" checked style="width:17px;height:17px;accent-color:#ffd700;">
+                <label for="upHwidLocked" style="cursor:pointer;font-size:0.88rem;font-weight:600;">Lock to Device (HWID)</label>
+              </div>
+              <div style="padding-top:1.3rem;">
+                <button type="submit" id="btnCreateUserPass" class="btn btn-full" style="background:linear-gradient(135deg,#ffd700,#ff8800);color:#000;font-weight:bold;">
+                  <i class="fa-solid fa-plus"></i> Create User
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- KEYAUTH Key Form -->
+          <form id="formCreateKeyUser" onsubmit="handleCreateKeyUser(event)" style="display:none;">
+            <div style="padding:0.75rem 1rem; border-radius:var(--r-md); background:rgba(var(--cyan-rgb),0.06); border:1px solid rgba(var(--cyan-rgb),0.2); margin-bottom:1rem; font-size:0.85rem; color:var(--text-dim);">
+              Enter a name/tag. System will generate a <strong style="color:var(--cyan); font-family:monospace;">KEYAUTH-{name}-XXXX</strong> key. Share this key with the user — they enter it directly on the login page.
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem;">
+              <div>
+                <label class="form-label" style="color:var(--cyan);">Name / Tag *</label>
+                <div class="input-wrap">
+                  <i class="fa-solid fa-tag input-icon" style="color:var(--cyan);"></i>
+                  <input id="kuName" class="form-input" placeholder="e.g. akash, customer1" required autocomplete="off"
+                    style="text-transform:lowercase;" oninput="updateKeyPreview(this.value)">
+                </div>
+                <div style="font-size:0.78rem; margin-top:6px; color:var(--cyan); font-family:monospace;">
+                  Preview: <span id="keyPreview">KEYAUTH-name-????</span>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Duration</label>
+                <select id="kuDuration" class="form-input">
+                  <option value="1">1 Day (Trial)</option>
+                  <option value="7">7 Days</option>
+                  <option value="30" selected>30 Days</option>
+                  <option value="90">90 Days</option>
+                  <option value="365">1 Year</option>
+                  <option value="-1">Lifetime</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Note / Tag</label>
+                <input id="kuNote" class="form-input" placeholder="Optional note">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; padding-top:1.5rem;">
+                <input type="checkbox" id="kuHwidLocked" checked style="width:17px;height:17px;accent-color:var(--cyan);">
+                <label for="kuHwidLocked" style="cursor:pointer;font-size:0.88rem;font-weight:600;">Lock to Device (HWID)</label>
+              </div>
+              <div style="padding-top:1.3rem;">
+                <button type="submit" id="btnCreateKeyUser" class="btn btn-full" style="background:linear-gradient(135deg,var(--cyan),#0070f3);color:#fff;font-weight:bold;">
+                  <i class="fa-solid fa-key"></i> Generate Key
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Generated Key Display -->
+          <div id="generatedKeyBox" style="display:none; margin-top:1.25rem; padding:1rem 1.25rem; border-radius:var(--r-md); background:rgba(var(--cyan-rgb),0.07); border:1px solid rgba(var(--cyan-rgb),0.3);">
+            <div style="font-size:0.75rem; color:var(--cyan); text-transform:uppercase; font-weight:700; margin-bottom:8px;">✅ Key Generated — Share with user</div>
+            <div id="generatedKeyValue" style="font-family:monospace; font-size:1.1rem; color:#fff; letter-spacing:2px; cursor:pointer;" onclick="copyText(document.getElementById('generatedKeyValue').textContent)">
+              KEYAUTH-...
+            </div>
+            <div style="font-size:0.78rem; color:var(--text-dim); margin-top:6px;">Click key to copy</div>
+          </div>
+        </div>
+
+        <!-- RESELLER USERS TABLE -->
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-users"></i> Users You Created</div>
+            <button onclick="loadResellerUsers()" class="btn btn-sm btn-ghost"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+          </div>
+          <div class="table-responsive">
+            <table class="cyber-table">
+              <thead>
+                <tr>
+                  <th>Username / Key</th>
+                  <th>Type</th>
+                  <th>Expires</th>
+                  <th>HWID</th>
+                  <th>Status</th>
+                  <th>Note</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="resellerUsersBody">
+                <tr><td colspan="7" class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANE: MY LICENSES ── -->
+      <div id="paneLicenses" class="dash-pane" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-title">My Licenses <span>Tool subscriptions bound to your account.</span></div>
+        </div>
+        <div class="content-panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-key"></i> Subscription List</div>
+          </div>
+          <div class="table-responsive">
+            <table class="cyber-table">
+              <thead>
+                <tr><th>Application</th><th>License Key</th><th>Tier</th><th>Status</th><th>HWID</th></tr>
+              </thead>
+              <tbody id="subscriptionsTableBody">
+                <tr><td colspan="5" class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANE: REDEEM KEY ── -->
+      <div id="paneRedeem" class="dash-pane" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-title">Redeem License <span>Activate a key from admin or reseller.</span></div>
+        </div>
+        <div class="content-panel" style="max-width:540px;">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-ticket"></i> Activate Key</div>
+          </div>
+          <form onsubmit="handleActivateKey(event)">
+            <div class="form-group">
+              <label class="form-label">License Key</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-key input-icon"></i>
+                <input id="redeemKeyInput" class="form-input" placeholder="OAX-XXXX-XXXX-XXXX" required style="font-family:'JetBrains Mono',monospace;">
+              </div>
+            </div>
+            <button type="submit" id="redeemBtn" class="btn btn-primary">
+              <i class="fa-solid fa-circle-check"></i> Activate License
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── PANE: PROFILE & CUSTOMIZATION ── -->
+      <div id="paneProfile" class="dash-pane" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-title">Profile &amp; Account Settings <span>Customize your identity, Gmail, avatar, gender, and manage HWID.</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px,1fr)); gap:1.25rem;">
+          <!-- Profile Customization Card -->
+          <div class="content-panel glow-border" style="border-color: rgba(255,42,95,0.35);">
+            <div class="panel-header"><div class="panel-title" style="color: #ff2a5f;"><i class="fa-solid fa-user-pen"></i> Edit Personal Details</div></div>
+            <form onsubmit="handleSaveUserProfile(event)">
+              <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem;">
+                <img id="userProfileAvatarPreview" src="/img/logo.png" style="width: 68px; height: 68px; border-radius: 50%; object-fit: cover; border: 2px solid #ff2a5f; box-shadow: 0 0 14px rgba(255,42,95,0.4);" onerror="this.src='/img/circle_logopng.png'">
+                <div style="flex: 1;">
+                  <label class="form-label">Avatar / Logo URL</label>
+                  <input id="userProfileAvatarInput" class="form-input" placeholder="/img/logo.png or https://..." oninput="document.getElementById('userProfileAvatarPreview').src = this.value">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Display Name</label>
+                <input id="userProfileNameInput" class="form-input" placeholder="Your name...">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Gmail / Contact Email</label>
+                <input id="userProfileEmailInput" type="email" class="form-input" placeholder="yourname@gmail.com">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                  <label class="form-label">Date of Birth</label>
+                  <input id="userProfileDobInput" type="date" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Gender</label>
+                  <select id="userProfileGenderInput" class="form-input">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" id="btnSaveUserProfile" class="btn btn-primary btn-full" style="margin-top: 0.5rem;">
+                <i class="fa-solid fa-floppy-disk"></i> Update Profile
+              </button>
+            </form>
+          </div>
+
+          <!-- Account Hardware Lock Card -->
+          <div class="content-panel">
+            <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-microchip"></i> Hardware Lock (HWID)</div></div>
+            <p class="text-muted" style="font-size:0.87rem; margin-bottom:1.25rem;">Your HWID locks automatically upon first client login. Reset once every 24 hours.</p>
+            <div id="profileHwid" style="font-family:'JetBrains Mono',monospace; font-size:0.82rem; color:var(--cyan); word-break:break-all; margin-bottom:1.25rem; padding:0.75rem; background:rgba(var(--cyan-rgb),0.05); border-radius:var(--r-md); border:1px solid rgba(var(--cyan-rgb),0.15);">Loading...</div>
+            <button onclick="requestHwidReset()" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrows-rotate"></i> Request HWID Reset</button>
+            <div class="text-muted" style="font-size:0.78rem; margin-top:0.6rem;">Cooldown: <span id="profileResetCooldown" class="text-cyan">Checking...</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANE: AUTO-PATCHER / INJECTOR ── -->
+      <div id="panePatcher" class="dash-pane" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span style="color:#ff7597; font-weight:800; font-size:1.5rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> Code Auto-Patcher &amp; Injector</span>
+            <span>Upload your Login.cs or source code to automatically bind KeyAuth authentication.</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="content-panel glow-border" style="border-color: rgba(255,42,95,0.35);">
+            <div class="panel-header">
+              <div class="panel-title" style="color: #ff2a5f;"><i class="fa-solid fa-sliders"></i> Injection Settings</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Programming Language</label>
+              <select id="userPatcherLang" class="form-input" onchange="updateUserPatcherFields()">
+                <option value="csharp">C# (.NET / WinForms / WPF / Unity)</option>
+                <option value="cpp">C++ (Direct3D / ImGui / Win32)</option>
+                <option value="python">Python (Tkinter / CLI)</option>
+                <option value="java">Android Java</option>
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">Username Box Name</label>
+                <input id="userPatcherUserBox" class="form-input" value="txtUsername">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Password Box Name</label>
+                <input id="userPatcherPassBox" class="form-input" value="txtPassword">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Login Button Name</label>
+                <input id="userPatcherLoginBtn" class="form-input" value="btnLogin">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status Label / Code</label>
+                <input id="userPatcherStatusBox" class="form-input" value="lblStatus">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin: 0;">Upload Login.cs or Source Code</label>
+                <label class="btn btn-ghost btn-xs" style="cursor: pointer; margin: 0;">
+                  <i class="fa-solid fa-upload"></i> Upload
+                  <input type="file" id="userPatcherFileInput" onchange="handleUserPatcherFileUpload(event)" style="display: none;">
+                </label>
+              </div>
+              <textarea id="userPatcherSourceCode" class="form-input" style="min-height: 180px; font-family: monospace; font-size: 0.8rem; background: rgba(0,0,0,0.5);" placeholder="// Paste or upload your file here..."></textarea>
+            </div>
+
+            <button type="button" onclick="executeUserPatcher()" id="btnUserRunPatcher" class="btn btn-primary btn-full">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate &amp; Auto-Inject KeyAuth System
+            </button>
+          </div>
+
+          <div class="content-panel">
+            <div class="panel-header">
+              <div class="panel-title"><i class="fa-solid fa-code"></i> Live Preview &amp; Download</div>
+              <div style="display: flex; gap: 6px;">
+                <button onclick="copyUserPatcherCode()" class="btn btn-ghost btn-sm"><i class="fa-solid fa-copy"></i> Copy</button>
+                <button onclick="downloadUserPatcherCode()" class="btn btn-primary btn-sm"><i class="fa-solid fa-download"></i> Download</button>
+              </div>
+            </div>
+            <div id="userPatcherBadge" style="margin-bottom: 0.75rem; padding: 0.5rem 0.85rem; border-radius: var(--r-sm); background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); font-size: 0.82rem; color: #00ff88;">
+              <i class="fa-solid fa-circle-check"></i> Live Compiler Syntax Verified
+            </div>
+            <pre id="userPatcherOutputCode" style="min-height: 420px; max-height: 500px; overflow: auto; background: rgba(2,4,8,0.95); border: 1px solid rgba(255,42,95,0.25); border-radius: var(--r-md); padding: 1rem; color: #f1f5f9; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.55;">/* Injected code will be rendered here */</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANE: DISCORD WEBHOOK ── -->
+      <div id="paneWebhook" class="dash-pane" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span style="color:#5865F2; font-weight:800; font-size:1.5rem;"><i class="fa-brands fa-discord"></i> Discord Webhook Integration</span>
+            <span>Receive live login alerts on your Discord channel whenever your account or tools are accessed.</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="content-panel glow-border" style="border-color: rgba(88,101,242,0.4);">
+            <div class="panel-header">
+              <div class="panel-title" style="color: #5865F2;"><i class="fa-solid fa-satellite-dish"></i> My Webhook URL</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Discord Channel Webhook URL</label>
+              <input id="userWebhookUrl" class="form-input" placeholder="https://discord.com/api/webhooks/...">
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 0.75rem 1rem; border-radius: var(--r-sm);">
+              <div>
+                <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Enable Notifications</div>
+                <div class="text-muted" style="font-size: 0.78rem;">Sends notifications on your login activities.</div>
+              </div>
+              <input type="checkbox" id="userWebhookActive" checked style="width: 18px; height: 18px; accent-color: #ff2a5f;">
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+              <button onclick="saveUserWebhook()" class="btn btn-primary" style="flex: 1;"><i class="fa-solid fa-floppy-disk"></i> Save Webhook</button>
+              <button onclick="testUserWebhook()" id="btnUserTestWebhook" class="btn btn-ghost" style="border-color: rgba(88,101,242,0.5); color: #a5b4fc;"><i class="fa-solid fa-paper-plane"></i> Test Webhook</button>
+            </div>
+          </div>
+
+          <div class="content-panel">
+            <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-info-circle"></i> Webhook Event Flow</div></div>
+            <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.8;">
+              <div>1. <strong>User Entry in Panel</strong> &rarr; Website validates session.</div>
+              <div>2. <strong>Website Response</strong> &rarr; Webhook Sentinel builds Sakura Red embed.</div>
+              <div>3. <strong>Webhook Dispatch</strong> &rarr; Discord server receives instant security alert.</div>
+              <div style="margin-top: 10px; color: #ff7597;">Bot Name: <strong>KRISHU X KEYAUTH</strong> • Avatar: <strong>logo.png</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANE: HELP MATRIX ── -->
+      <div id="paneHelp" class="dash-pane" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-title">Help &amp; Guides <span>Everything you need to know about using KeyAuth.</span></div>
+          <div class="dash-actions">
+            <button class="btn btn-sm btn-primary" onclick="setUserHelpLang('hinglish')" id="btnUserHelpHinglish">🌸 Hinglish Mode</button>
+            <button class="btn btn-sm btn-ghost" onclick="setUserHelpLang('english')" id="btnUserHelpEnglish">🌐 English Mode</button>
+          </div>
+        </div>
+        <div id="userHelpContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- ── PANE: SDK DOWNLOADS ── -->
+      <div id="paneDownloads" class="dash-pane" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-title">SDK Downloads <span>Single-file wrappers — drop into your project.</span></div>
+        </div>
+        <div class="content-panel glow-border">
+          <div class="sdk-grid">
+            <div class="sdk-card">
+              <div class="sdk-icon"><i class="fa-brands fa-microsoft"></i></div>
+              <div class="sdk-title">C# (.NET)</div>
+              <div class="sdk-desc">Zero dependencies. Auto HWID from registry.</div>
+              <a href="/download/krishuxcheats.cs" download class="btn btn-primary btn-sm btn-full"><i class="fa-solid fa-download"></i> krishuxcheats.cs</a>
+            </div>
+            <div class="sdk-card">
+              <div class="sdk-icon" style="color:#ffd43b;background:rgba(255,212,59,0.1);border-color:rgba(255,212,59,0.25);"><i class="fa-brands fa-python"></i></div>
+              <div class="sdk-title">Python</div>
+              <div class="sdk-desc">Pure stdlib. Auto Windows MachineGuid.</div>
+              <a href="/download/krishuxcheats.py" download class="btn btn-primary btn-sm btn-full"><i class="fa-solid fa-download"></i> krishuxcheats.py</a>
+            </div>
+            <div class="sdk-card">
+              <div class="sdk-icon" style="color:#659ad2;background:rgba(101,154,210,0.1);border-color:rgba(101,154,210,0.25);"><i class="fa-solid fa-c"></i></div>
+              <div class="sdk-title">C++ Header</div>
+              <div class="sdk-desc">Native WinINet, no external deps.</div>
+              <a href="/download/krishuxcheats.h" download class="btn btn-primary btn-sm btn-full"><i class="fa-solid fa-download"></i> krishuxcheats.h</a>
+            </div>
+            <div class="sdk-card">
+              <div class="sdk-icon" style="color:#4b8bbe;background:rgba(75,139,190,0.1);border-color:rgba(75,139,190,0.25);"><i class="fa-solid fa-code"></i></div>
+              <div class="sdk-title">C++ Source</div>
+              <div class="sdk-desc">Full implementation file.</div>
+              <a href="/download/krishuxcheats.cpp" download class="btn btn-primary btn-sm btn-full"><i class="fa-solid fa-download"></i> krishuxcheats.cpp</a>
+            </div>
+            <div class="sdk-card">
+              <div class="sdk-icon" style="color:#e76f00;background:rgba(231,111,0,0.1);border-color:rgba(231,111,0,0.25);"><i class="fa-brands fa-java"></i></div>
+              <div class="sdk-title">Java</div>
+              <div class="sdk-desc">HttpURLConnection, SHA-256 HWID.</div>
+              <a href="/download/krishuxcheats.java" download class="btn btn-primary btn-sm btn-full"><i class="fa-solid fa-download"></i> krishuxcheats.java</a>
+            </div>
+          </div>
+            <div class="sdk-card">
+              <div class="sdk-icon" style="color:#e76f00;background:rgba(231,111,0,0.1);border-color:rgba(231,111,0,0.25);"><i class="fa-brands fa-java"></i></div>
+              <div class="sdk-title">Java</div>
+              <div class="sdk-desc">HttpURLConnection, SHA-256 HWID.</div>
+              <a href="/download/krishuxcheats.java" download class="btn btn-primary btn-sm btn-full"><i class="fa-solid fa-download"></i> krishuxcheats.java</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- MODAL: BUY OWN WEBSITE (HIGH PRIORITY) -->
+<div id="buyWebsiteModal" class="cyber-modal-overlay">
+  <div class="cyber-modal animated-border" style="max-width: 680px; --spin-color: #ff2a5f;">
+    <div class="cyber-modal-title" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 9px; color: #fff;">
+        <i class="fa-solid fa-crown" style="color: #ffd700;"></i>
+        <span>OWN YOUR OWN KEYAUTH PLATFORM</span>
+      </div>
+      <button onclick="closeBuyWebsiteModal()" class="btn btn-xs btn-ghost" style="padding: 4px 8px;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="cyber-modal-body" style="padding-top: 0.5rem;">
+      <div style="background: linear-gradient(135deg, rgba(255,42,95,0.2), rgba(225,29,72,0.1)); border: 1px solid rgba(255,42,95,0.4); border-radius: var(--r-md); padding: 1.25rem; text-align: center; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #ff7597; font-weight: 800; margin-bottom: 6px;">
+          PREMIUM WHITE-LABEL LICENSING SYSTEM
+        </div>
+        <div style="font-size: 1.55rem; font-weight: 900; color: #fff; margin-bottom: 8px;">
+          Deploy Your Own KeyAuth Website In 5 Minutes
+        </div>
+        <div style="font-size: 0.86rem; color: #cbd5e1; max-width: 520px; margin: 0 auto; line-height: 1.5;">
+          Get the complete, world-class standalone KeyAuth website with zero restrictions, full source code, unlimited apps, and direct Discord integration.
+        </div>
+
+        <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 1rem;">
+          <div style="background: rgba(0,0,0,0.5); padding: 6px 14px; border-radius: var(--r-full); border: 1px solid rgba(255,42,95,0.3); display: flex; gap: 8px;">
+            <button type="button" onclick="setUserBuyModalCurrency('INR')" id="userBuyModalInrBtn" class="btn btn-xs btn-primary" style="padding: 3px 10px; font-size: 0.76rem;">🇮🇳 INR</button>
+            <button type="button" onclick="setUserBuyModalCurrency('USD')" id="userBuyModalUsdBtn" class="btn btn-xs btn-ghost" style="padding: 3px 10px; font-size: 0.76rem;">🇺🇸 USD</button>
+          </div>
+          <div style="font-size: 1.85rem; font-weight: 900; color: #00ff88; text-shadow: 0 0 16px rgba(0,255,136,0.5);" id="userBuyModalPriceTag">
+            ₹499 <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ Lifetime One-Time</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.83rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">UNLIMITED Applications:</strong> Create unlimited software targets.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Dedicated Reseller System:</strong> Set custom duration &amp; HWID locks.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Auto Code Patcher:</strong> Auto-inject C#, C++, Python, and Java.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Discord Webhook Sentinel:</strong> Live login, fail, and redeem alerts.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Dual Persistent Storage:</strong> MongoDB Atlas + Local JSON safety.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+          <div><strong style="color:#fff;">Sakura Crimson Theme:</strong> Animated 3D falling petals &amp; glass UI.</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.4); border-radius: var(--r-md); padding: 1rem; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+        <div style="font-size: 0.85rem; color: #f1f5f9; text-align: center;">
+          To purchase your full website package instantly, DM developer on Discord:
+        </div>
+        <div style="display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;">
+          <a href="https://discord.com/users/krishu.x.cheats" target="_blank" class="btn btn-primary" style="flex: 1; min-width: 240px; background: linear-gradient(135deg, #5865F2, #404EED); box-shadow: 0 4px 20px rgba(88,101,242,0.4);">
+            <i class="fa-brands fa-discord"></i> DM on Discord: <strong>krishu.x.cheats</strong>
+          </a>
+          <button type="button" onclick="copyText('krishu.x.cheats', 'Discord Username')" class="btn btn-ghost">
+            <i class="fa-solid fa-copy"></i> Copy Username
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cyber-modal-actions" style="margin-top: 1rem;">
+      <button onclick="closeBuyWebsiteModal()" class="btn btn-ghost">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Capture Google OAuth token from redirect if any
+  (function() {
+    const p = new URLSearchParams(window.location.search);
+    const gt = p.get('google_token'), gu = p.get('google_user');
+    if (gt) {
+      localStorage.setItem('token', gt);
+      if (gu) { try { localStorage.setItem('user', decodeURIComponent(gu)); } catch(e){} }
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  })();
+
+  const token = localStorage.getItem('token');
+  if (!token) location.href = '/keyauth/login';
+
+  let _user = null;
+  let _resellerUsers = [];
+
+  function showPane(id) {
+    document.querySelectorAll('.dash-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    const pane = document.getElementById(id);
+    if (pane) pane.style.display = 'block';
+    const navMap = { 
+      paneOverview:'navOverview', 
+      paneReseller:'navReseller', 
+      panePatcher:'navPatcher',
+      paneWebhook:'navWebhook',
+      paneLicenses:'navLicenses', 
+      paneRedeem:'navRedeem', 
+      paneProfile:'navProfile', 
+      paneDownloads:'navDownloads',
+      paneHelp:'navHelp'
+    };
+    const el = document.getElementById(navMap[id]);
+    if (el) el.classList.add('active');
+    if (id === 'paneReseller') loadResellerUsers();
+    if (id === 'paneProfile') loadUserExtendedProfile();
+    if (id === 'paneWebhook') loadUserWebhook();
+    if (id === 'paneHelp') renderUserHelpContent();
+  }
+
+  function toggleSidebarCollapse() {
+    const sb = document.getElementById('appSidebar');
+    if (sb) sb.classList.toggle('collapsed');
+  }
+
+  function openBuyWebsiteModal() {
+    const m = document.getElementById('buyWebsiteModal');
+    if (m) m.classList.add('active');
+  }
+  function closeBuyWebsiteModal() {
+    const m = document.getElementById('buyWebsiteModal');
+    if (m) m.classList.remove('active');
+  }
+  function setUserBuyModalCurrency(curr) {
+    const tag = document.getElementById('userBuyModalPriceTag');
+    const inrBtn = document.getElementById('userBuyModalInrBtn');
+    const usdBtn = document.getElementById('userBuyModalUsdBtn');
+    if (curr === 'INR') {
+      if (tag) tag.innerHTML = '₹499 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+      if (inrBtn) inrBtn.className = 'btn btn-xs btn-primary';
+      if (usdBtn) usdBtn.className = 'btn btn-xs btn-ghost';
+    } else {
+      if (tag) tag.innerHTML = '$6.99 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+      if (inrBtn) inrBtn.className = 'btn btn-xs btn-ghost';
+      if (usdBtn) usdBtn.className = 'btn btn-xs btn-primary';
+    }
+  }
+
+  function handleGlobalUserSearch(val) {
+    const q = (val || '').toLowerCase().trim();
+    if (!q) {
+      document.querySelectorAll('tbody tr').forEach(r => r.style.display = '');
+      return;
+    }
+    document.querySelectorAll('#subscriptionsTableBody tr, #resellerUsersBody tr').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  let currentUserLang = 'hinglish';
+  function toggleUserGlobalLang() {
+    currentUserLang = (currentUserLang === 'hinglish') ? 'english' : 'hinglish';
+    const txt = document.getElementById('userLangText');
+    const topPrice = document.getElementById('userTopbarPriceTag');
+    if (txt) txt.textContent = currentUserLang === 'hinglish' ? 'Hinglish' : 'English';
+    if (topPrice) topPrice.textContent = currentUserLang === 'hinglish' ? '₹499 / $6.99' : '$6.99 / ₹499';
+    showToast('Switched guide mode to ' + (currentUserLang === 'hinglish' ? '🌸 Hinglish Mode' : '🌐 English Mode'), 'info');
+    setUserBuyModalCurrency(currentUserLang === 'hinglish' ? 'INR' : 'USD');
+    renderUserHelpContent();
+  }
+
+  function setUserHelpLang(mode) {
+    currentUserLang = mode;
+    const bH = document.getElementById('btnUserHelpHinglish');
+    const bE = document.getElementById('btnUserHelpEnglish');
+    if (bH && bE) {
+      bH.className = mode === 'hinglish' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+      bE.className = mode === 'english' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-ghost';
+    }
+    renderUserHelpContent();
+  }
+
+  function renderUserHelpContent() {
+    const c = document.getElementById('userHelpContainer');
+    if (!c) return;
+    if (currentUserLang === 'hinglish') {
+      c.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
+          <div class="content-panel glow-border" style="border-color: rgba(255,42,95,0.35);">
+            <div class="panel-title" style="color: #ff2a5f; margin-bottom: 0.75rem;"><i class="fa-solid fa-key"></i> Key Redeem Karna</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              'Redeem Key' tab me jakar apna License Key enter karein aur Activate dabayein. License activate hote hi aapke tool subscriptions auto-enable ho jayenge.
+            </p>
+          </div>
+          <div class="content-panel glow-border" style="border-color: rgba(0,255,136,0.35);">
+            <div class="panel-title" style="color: #00ff88; margin-bottom: 0.75rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> Code Auto-Patcher</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              'Auto-Patcher' tab me Login.cs upload karein, Textbox names enter karein aur 1-click me KeyAuth auto-injected complete working code receive karein.
+            </p>
+          </div>
+          <div class="content-panel glow-border" style="border-color: rgba(88,101,242,0.4);">
+            <div class="panel-title" style="color: #5865F2; margin-bottom: 0.75rem;"><i class="fa-brands fa-discord"></i> Discord Webhook</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              Apne Discord server ka Webhook URL 'Discord Webhook' tab me paste karke Test karein. Har login event par stylish Discord notifications aayengi.
+            </p>
+          </div>
+        </div>
+      `;
+    } else {
+      c.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
+          <div class="content-panel glow-border" style="border-color: rgba(255,42,95,0.35);">
+            <div class="panel-title" style="color: #ff2a5f; margin-bottom: 0.75rem;"><i class="fa-solid fa-key"></i> License Key Redemption</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              Navigate to the 'Redeem Key' tab, input your license key, and activate. Your software access is instantly synchronized.
+            </p>
+          </div>
+          <div class="content-panel glow-border" style="border-color: rgba(0,255,136,0.35);">
+            <div class="panel-title" style="color: #00ff88; margin-bottom: 0.75rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> Automated Code Injection</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              Upload your raw UI form code to generate production-ready KeyAuth client binaries with verified AST error checking.
+            </p>
+          </div>
+          <div class="content-panel glow-border" style="border-color: rgba(88,101,242,0.4);">
+            <div class="panel-title" style="color: #5865F2; margin-bottom: 0.75rem;"><i class="fa-brands fa-discord"></i> Discord Webhook Sentinel</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              Configure your Discord server webhook to receive live security notifications for account access and key activations.
+            </p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // ── USER EXTENDED PROFILE ──
+  async function loadUserExtendedProfile() {
+    const username = _user ? _user.username : 'user';
+    try {
+      const res = await fetch(`/api/user/profile?username=${encodeURIComponent(username)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.profile) {
+        const p = data.profile;
+        const nameEl = document.getElementById('userProfileNameInput');
+        const emailEl = document.getElementById('userProfileEmailInput');
+        const avatarEl = document.getElementById('userProfileAvatarInput');
+        const dobEl = document.getElementById('userProfileDobInput');
+        const genderEl = document.getElementById('userProfileGenderInput');
+        const prev = document.getElementById('userProfileAvatarPreview');
+        if (nameEl) nameEl.value = p.name || username;
+        if (emailEl) emailEl.value = p.email || '';
+        if (avatarEl) avatarEl.value = p.avatar || '/img/logo.png';
+        if (prev) prev.src = p.avatar || '/img/logo.png';
+        if (dobEl) dobEl.value = p.dob || '';
+        if (genderEl) genderEl.value = p.gender || 'Male';
+      }
+    } catch (e) {
+      console.warn('User profile load notice:', e);
+    }
+  }
+
+  async function handleSaveUserProfile(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveUserProfile');
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
+
+    const username = _user ? _user.username : 'user';
+    const name = document.getElementById('userProfileNameInput').value.trim();
+    const email = document.getElementById('userProfileEmailInput').value.trim();
+    const avatar = document.getElementById('userProfileAvatarInput').value.trim();
+    const dob = document.getElementById('userProfileDobInput').value;
+    const gender = document.getElementById('userProfileGenderInput').value;
+
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ username, name, email, avatar, dob, gender })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Profile updated successfully!', 'success');
+        if (name) document.getElementById('sidebarUsername').textContent = name;
+      } else {
+        showToast(data.message || 'Failed to update profile', 'error');
+      }
+    } catch {
+      showToast('Error saving profile', 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = orig;
+    }
+  }
+
+  // ── USER AUTO-PATCHER ──
+  let _lastUserPatchedCode = '';
+  function updateUserPatcherFields() {
+    const lang = document.getElementById('userPatcherLang').value;
+    const u = document.getElementById('userPatcherUserBox');
+    const p = document.getElementById('userPatcherPassBox');
+    const b = document.getElementById('userPatcherLoginBtn');
+    const s = document.getElementById('userPatcherStatusBox');
+    if (lang === 'csharp') { u.value = 'txtUsername'; p.value = 'txtPassword'; b.value = 'btnLogin'; s.value = 'lblStatus'; }
+    else if (lang === 'cpp') { u.value = 'user_input'; p.value = 'pass_input'; b.value = 'LoginButton'; s.value = 'std::cout'; }
+    else if (lang === 'python') { u.value = 'username_entry'; p.value = 'password_entry'; b.value = 'login_btn'; s.value = 'status_label'; }
+    else { u.value = 'etUsername'; p.value = 'etPassword'; b.value = 'btnLogin'; s.value = 'tvStatus'; }
+  }
+
+  function handleUserPatcherFileUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      document.getElementById('userPatcherSourceCode').value = evt.target.result;
+      showToast(`Loaded ${file.name}`, 'success');
+    };
+    reader.readAsText(file);
+  }
+
+  async function executeUserPatcher() {
+    const btn = document.getElementById('btnUserRunPatcher');
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Injecting...';
+
+    const lang = document.getElementById('userPatcherLang').value;
+    const sourceCode = document.getElementById('userPatcherSourceCode').value;
+    const userBox = document.getElementById('userPatcherUserBox').value.trim();
+    const passBox = document.getElementById('userPatcherPassBox').value.trim();
+    const loginBtn = document.getElementById('userPatcherLoginBtn').value.trim();
+    const statusBox = document.getElementById('userPatcherStatusBox').value.trim();
+
+    try {
+      const res = await fetch('/api/patcher/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ language: lang, sourceCode, userBox, passBox, loginBtn, statusBox })
+      });
+      const data = await res.json();
+      if (data.success) {
+        _lastUserPatchedCode = data.patchedCode;
+        document.getElementById('userPatcherOutputCode').textContent = data.patchedCode;
+        showToast('Complete KeyAuth system successfully injected!', 'success');
+      } else {
+        showToast(data.message || 'Failed to patch code', 'error');
+      }
+    } catch {
+      showToast('Patcher network error', 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = orig;
+    }
+  }
+
+  function copyUserPatcherCode() {
+    if (!_lastUserPatchedCode) { showToast('Generate code first', 'warning'); return; }
+    copyText(_lastUserPatchedCode);
+  }
+
+  function downloadUserPatcherCode() {
+    if (!_lastUserPatchedCode) { showToast('Generate code first', 'warning'); return; }
+    const lang = document.getElementById('userPatcherLang').value;
+    const ext = { csharp: 'Login_Patched.cs', cpp: 'Login_Patched.cpp', python: 'Login_Patched.py', java: 'LoginActivity.java' }[lang] || 'Login_Patched.txt';
+    const blob = new Blob([_lastUserPatchedCode], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = ext; a.click();
+    showToast(`Downloaded ${ext}`, 'success');
+  }
+
+  // ── USER WEBHOOK ──
+  async function loadUserWebhook() {
+    const username = _user ? _user.username : 'user';
+    try {
+      const res = await fetch(`/api/webhook/config?scope=user&identifier=${encodeURIComponent(username)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.config) {
+        document.getElementById('userWebhookUrl').value = data.config.url || '';
+        document.getElementById('userWebhookActive').checked = data.config.enabled !== false;
+      }
+    } catch (e) {
+      console.warn('Webhook load notice:', e);
+    }
+  }
+
+  async function saveUserWebhook() {
+    const username = _user ? _user.username : 'user';
+    const url = document.getElementById('userWebhookUrl').value.trim();
+    const enabled = document.getElementById('userWebhookActive').checked;
+    try {
+      const res = await fetch('/api/webhook/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ url, enabled, scope: 'user', identifier: username })
+      });
+      const data = await res.json();
+      if (data.success) showToast('Webhook configuration saved!', 'success');
+    } catch {
+      showToast('Failed to save webhook', 'error');
+    }
+  }
+
+  async function testUserWebhook() {
+    const btn = document.getElementById('btnUserTestWebhook');
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
+    const username = _user ? _user.username : 'user';
+    const url = document.getElementById('userWebhookUrl').value.trim();
+    try {
+      const res = await fetch('/api/webhook/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ url, scope: 'user', identifier: username })
+      });
+      const data = await res.json();
+      if (data.success) showToast('Test notification sent to Discord!', 'success');
+      else showToast(data.message || 'Webhook test failed', 'error');
+    } catch {
+      showToast('Discord connection error', 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = orig;
+    }
+  }
+
+  function toggleSidebar() {
+    document.getElementById('appSidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('visible');
+  }
+
+  function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => showToast('Copied!', 'success'));
+  }
+
+  async function loadUserProfile() {
+    try {
+      const res = await fetch('/auth/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      if (!data.success) { if (res.status === 401) { logoutUser(); } return; }
+
+      const user = data.user;
+      _user = user;
+
+      // Sidebar
+      document.getElementById('sidebarUsername').textContent = user.username;
+      document.getElementById('sidebarAvatar').textContent = user.username.charAt(0).toUpperCase();
+
+      const isReseller = user.isReseller;
+      document.getElementById('sidebarRole').textContent = isReseller ? '⭐ Reseller' : (user.isKeyUser ? '🔑 Key User' : 'User');
+      document.getElementById('accountRole').textContent = isReseller ? 'Reseller' : (user.isKeyUser ? 'Key User' : 'User');
+      document.getElementById('usernameDisplay').textContent = user.username;
+
+      // Show/hide Reseller nav
+      const resellerNav = document.getElementById('navReseller');
+      if (isReseller) {
+        resellerNav.style.display = 'flex';
+        resellerNav.innerHTML = '<i class="fa-solid fa-crown" style="color:#ffd700;"></i> Reseller Panel <span class="badge" style="background:#ffd700;color:#000;font-size:0.6rem;padding:1px 5px;margin-left:auto;">ACTIVE</span>';
+        // Populate reseller info
+        if (user.resellerApp) {
+          document.getElementById('resellerAppName').textContent = user.resellerApp.name;
+          document.getElementById('resellerAppVersion').textContent = 'v' + (user.resellerApp.version || '1.0.0');
+          // Announcement
+          if (user.resellerApp.announcement) {
+            document.getElementById('announcementText').textContent = user.resellerApp.announcement;
+            document.getElementById('announcementBanner').style.display = 'flex';
+          }
+        }
+        const kd = document.getElementById('resellerKeyDisplay');
+        kd.dataset.key = user.resellerKey || '';
+        kd.innerHTML = (user.resellerKey || '—') + ' <i class="fa-solid fa-copy"></i>';
+      } else {
+        resellerNav.style.display = 'none';
+      }
+
+      // HWID
+      document.getElementById('hwidDisplay').textContent = user.hwid ? user.hwid.substring(0,20)+'...' : 'Not registered';
+      document.getElementById('hwidStatusBadge').textContent = user.hwid ? 'Locked' : 'Free';
+      document.getElementById('profileHwid').textContent = user.hwid || 'No HWID registered yet';
+
+      // HWID cooldown
+      const cooldownEl = document.getElementById('hwidResetCooldown');
+      const cooldownPEl = document.getElementById('profileResetCooldown');
+      if (user.hwidResetAt) {
+        const remaining = 86400000 - (Date.now() - new Date(user.hwidResetAt).getTime());
+        if (remaining > 0) {
+          const hoursLeft = Math.ceil(remaining / 3600000);
+          cooldownEl.textContent = `${hoursLeft}h remaining`;
+          if (cooldownPEl) cooldownPEl.textContent = `${hoursLeft}h remaining`;
+        } else {
+          cooldownEl.textContent = 'Available Now';
+          if (cooldownPEl) cooldownPEl.textContent = 'Available Now';
+        }
+      } else {
+        cooldownEl.textContent = 'Available Now';
+        if (cooldownPEl) cooldownPEl.textContent = 'Available Now';
+      }
+
+      // Profile details
+      const roleStr = isReseller ? 'Reseller' : (user.isKeyUser ? 'Key User' : 'User');
+      const pd = document.getElementById('profileDetails');
+      if (pd) pd.innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; font-size:0.88rem;">
+          <span class="text-muted">Username</span><span style="font-weight:700;">${user.username}</span>
+          <span class="text-muted">Role</span><span class="badge badge-info">${roleStr}</span>
+          <span class="text-muted">Email</span><span>${user.email || '<em style="color:var(--text-3)">Not set</em>'}</span>
+          <span class="text-muted">Member since</span><span>${new Date(user.createdAt || Date.now()).toLocaleDateString()}</span>
+          ${isReseller ? `<span class="text-muted">App</span><span style="color:#ffd700;font-weight:700;">${user.resellerApp ? user.resellerApp.name : 'Linked'}</span>` : ''}
+          ${user.loginKey ? `<span class="text-muted">Login Key</span><span style="font-family:monospace;font-size:0.8rem;color:var(--cyan);">${user.loginKey}</span>` : ''}
+        </div>`;
+
+      // Licenses
+      const lics = data.licenses || [];
+      document.getElementById('totalLicensesCount').textContent = lics.length;
+      document.getElementById('licCountBadge').textContent = lics.length + ' Active';
+      renderOverviewLicenses(lics);
+      renderLicensesTable(lics);
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderOverviewLicenses(lics) {
+    const el = document.getElementById('overviewLicTable');
+    if (!lics.length) { el.innerHTML = '<div class="table-empty"><i class="fa-solid fa-inbox"></i> No active subscriptions</div>'; return; }
+    el.innerHTML = `<div class="table-responsive"><table class="cyber-table"><thead><tr><th>App</th><th>Key</th><th>Level</th><th>Status</th></tr></thead><tbody>
+      ${lics.slice(0,5).map(l => `<tr>
+        <td>${l.appId && l.appId.name ? l.appId.name : 'Unknown'}</td>
+        <td><span class="key-code" style="font-size:0.75rem;">${l.key}</span></td>
+        <td><span class="badge badge-info">${l.level||'Default'}</span></td>
+        <td><span class="badge" style="background:rgba(var(--success-rgb),0.15);color:var(--success);">Active</span></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+  }
+
+  function renderLicensesTable(lics) {
+    const tb = document.getElementById('subscriptionsTableBody');
+    if (!lics.length) { tb.innerHTML = '<tr><td colspan="5" class="table-empty"><i class="fa-solid fa-inbox"></i> No licenses yet</td></tr>'; return; }
+    tb.innerHTML = lics.map(l => `<tr>
+      <td>${l.appId && l.appId.name ? l.appId.name : 'Unknown'}</td>
+      <td><span class="key-code" style="font-size:0.75rem;">${l.key}</span></td>
+      <td><span class="badge badge-info">${l.level||'Default'}</span></td>
+      <td><span class="badge" style="background:rgba(var(--success-rgb),0.15);color:var(--success);">Active</span></td>
+      <td style="font-size:0.78rem; color:var(--text-dim);">${l.hwid ? l.hwid.substring(0,12)+'...' : 'Not set'}</td>
+    </tr>`).join('');
+  }
+
+  // ── RESELLER ──
+
+  function switchCreateMode(mode) {
+    const upForm = document.getElementById('formCreateUserPass');
+    const kuForm = document.getElementById('formCreateKeyUser');
+    const upBtn = document.getElementById('modeUserPassBtn');
+    const kuBtn = document.getElementById('modeKeyBtn');
+    document.getElementById('generatedKeyBox').style.display = 'none';
+
+    if (mode === 'userpass') {
+      upForm.style.display = 'block'; kuForm.style.display = 'none';
+      upBtn.style.background = 'rgba(255,215,0,0.2)'; upBtn.style.color = '#ffd700';
+      kuBtn.style.background = ''; kuBtn.style.color = 'var(--cyan)';
+    } else {
+      upForm.style.display = 'none'; kuForm.style.display = 'block';
+      kuBtn.style.background = 'rgba(var(--cyan-rgb),0.15)'; kuBtn.style.color = 'var(--cyan)';
+      upBtn.style.background = ''; upBtn.style.color = '#ffd700';
+    }
+  }
+
+  function updateKeyPreview(val) {
+    const clean = val.replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+    document.getElementById('keyPreview').textContent = clean ? `KEYAUTH-${clean}-????` : 'KEYAUTH-name-????';
+  }
+
+  async function handleCreateUserPass(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnCreateUserPass');
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Creating...';
+
+    try {
+      const res = await fetch('/auth/reseller/create-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          username: document.getElementById('upUsername').value.trim(),
+          password: document.getElementById('upPassword').value,
+          duration: parseInt(document.getElementById('upDuration').value),
+          hwidLocked: document.getElementById('upHwidLocked').checked,
+          note: document.getElementById('upNote').value
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message, 'success');
+        document.getElementById('formCreateUserPass').reset();
+        loadResellerUsers();
+      } else {
+        showToast(data.message || 'Failed', 'error');
+        if (data.revoked) setTimeout(() => logoutUser(), 2000);
+      }
+    } catch { showToast('Network error', 'error'); }
+    finally { btn.disabled = false; btn.innerHTML = orig; }
+  }
+
+  async function handleCreateKeyUser(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnCreateKeyUser');
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...';
+
+    try {
+      const res = await fetch('/auth/reseller/create-key-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          name: document.getElementById('kuName').value.trim(),
+          duration: parseInt(document.getElementById('kuDuration').value),
+          hwidLocked: document.getElementById('kuHwidLocked').checked,
+          note: document.getElementById('kuNote').value
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Key created!', 'success');
+        document.getElementById('formCreateKeyUser').reset();
+        document.getElementById('keyPreview').textContent = 'KEYAUTH-name-????';
+        const box = document.getElementById('generatedKeyBox');
+        document.getElementById('generatedKeyValue').textContent = data.loginKey;
+        box.style.display = 'block';
+        loadResellerUsers();
+      } else {
+        showToast(data.message || 'Failed', 'error');
+        if (data.revoked) setTimeout(() => logoutUser(), 2000);
+      }
+    } catch { showToast('Network error', 'error'); }
+    finally { btn.disabled = false; btn.innerHTML = orig; }
+  }
+
+  async function loadResellerUsers() {
+    const tb = document.getElementById('resellerUsersBody');
+    if (!tb) return;
+    tb.innerHTML = '<tr><td colspan="7" class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading...</td></tr>';
+    try {
+      const res = await fetch('/auth/reseller/users', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      if (!data.success) { tb.innerHTML = `<tr><td colspan="7" class="table-empty">${data.message}</td></tr>`; return; }
+      const users = data.users || [];
+      if (!users.length) { tb.innerHTML = '<tr><td colspan="7" class="table-empty"><i class="fa-solid fa-users"></i> No users yet</td></tr>'; return; }
+      tb.innerHTML = users.map(u => {
+        const exp = u.expiresAt ? new Date(u.expiresAt).toLocaleDateString() : (u.duration === -1 ? 'Lifetime' : '—');
+        const hwidStatus = u.hwid ? `<span class="badge" style="background:rgba(0,240,255,0.1);color:var(--cyan);font-size:0.7rem;">Locked</span>` : `<span class="badge" style="font-size:0.7rem;">Free</span>`;
+        const status = u.banned
+          ? `<span class="badge badge-danger">Banned</span>`
+          : `<span class="badge" style="background:rgba(var(--success-rgb),0.15);color:var(--success);">Active</span>`;
+        const typeTag = u.isKeyUser
+          ? `<span class="badge" style="background:rgba(var(--cyan-rgb),0.15);color:var(--cyan);font-size:0.7rem;">🔑 Key</span>`
+          : `<span class="badge" style="background:rgba(255,215,0,0.1);color:#ffd700;font-size:0.7rem;">👤 User</span>`;
+        const displayName = u.isKeyUser ? `<span style="font-family:monospace;font-size:0.82rem;color:var(--cyan);">${u.loginKey || u.username}</span>` : `<strong>${u.username}</strong>`;
+        return `<tr>
+          <td>${displayName}</td>
+          <td>${typeTag}</td>
+          <td>${exp}</td>
+          <td>${hwidStatus}</td>
+          <td>${status}</td>
+          <td style="font-size:0.78rem;color:var(--text-dim);">${u.note || '—'}</td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              <button onclick="resellerBanUser('${u._id}', ${!u.banned})" class="btn btn-sm ${u.banned ? 'btn-success' : 'btn-warning'}" style="font-size:0.72rem;padding:2px 8px;">
+                ${u.banned ? 'Unban' : 'Ban'}
+              </button>
+              <button onclick="resellerResetHwid('${u._id}')" class="btn btn-sm btn-ghost" style="font-size:0.72rem;padding:2px 8px;">HWID</button>
+              <button onclick="resellerDeleteUser('${u._id}', '${(u.username||'').replace(/'/g,"\\'")}') " class="btn btn-sm btn-danger" style="font-size:0.72rem;padding:2px 8px;">Del</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    } catch { tb.innerHTML = '<tr><td colspan="7" class="table-empty">Error loading users</td></tr>'; }
+  }
+
+  async function resellerBanUser(userId, banned) {
+    try {
+      const res = await fetch('/auth/reseller/ban-user', { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({ userId, banned }) });
+      const data = await res.json();
+      if (data.success) { showToast(data.message, 'success'); loadResellerUsers(); }
+      else showToast(data.message||'Failed', 'error');
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  async function resellerResetHwid(userId) {
+    try {
+      const res = await fetch('/auth/reseller/reset-hwid', { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({ userId }) });
+      const data = await res.json();
+      if (data.success) { showToast(data.message, 'success'); loadResellerUsers(); }
+      else showToast(data.message||'Failed', 'error');
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  async function resellerDeleteUser(userId, username) {
+    if (!confirm(`Delete user '${username}'? This cannot be undone.`)) return;
+    try {
+      const res = await fetch('/auth/reseller/delete-user', { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body: JSON.stringify({ userId }) });
+      const data = await res.json();
+      if (data.success) { showToast(data.message, 'success'); loadResellerUsers(); }
+      else showToast(data.message||'Failed', 'error');
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  async function handleActivateKey(e) {
+    e.preventDefault();
+    const btn = document.getElementById('redeemBtn');
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Activating...';
+    try {
+      const res = await fetch('/auth/activate-key', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+        body: JSON.stringify({ key: document.getElementById('redeemKeyInput').value.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message, 'success');
+        document.getElementById('redeemKeyInput').value = '';
+        loadUserProfile();
+        setTimeout(() => showPane('paneLicenses'), 800);
+      } else {
+        showToast(data.message||'Failed', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+    finally { btn.disabled = false; btn.innerHTML = orig; }
+  }
+
+  async function requestHwidReset() {
+    if (!confirm('Reset HWID? 24-hour cooldown applies.')) return;
+    try {
+      const res = await fetch('/auth/reset-hwid', { method:'POST', headers:{'Authorization':`Bearer ${token}`} });
+      const data = await res.json();
+      if (data.success) { showToast(data.message, 'success'); loadUserProfile(); }
+      else showToast(data.message||'Failed', 'warning');
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  function logoutUser() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    location.href = '/keyauth/login';
+  }
+
+  loadUserProfile();
+</script>
+
+{% include 'keyauth_footer.html' %}

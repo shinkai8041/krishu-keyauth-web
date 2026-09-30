@@ -1,0 +1,151 @@
+{% include 'keyauth_header.html' %}
+
+<div class="auth-wrapper">
+  <div class="auth-card animated-border" style="--spin-color: #ff2a5f;">
+
+    <div class="auth-header">
+      <img src="/img/logo.png" alt="Krishu X Auth" style="width: 58px; height: 58px; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 0 16px #ff2a5f);" onerror="this.src='/img/circle_logopng.png'">
+      <div class="auth-badge" style="color: #ff7597; border-color: rgba(255,42,95,0.4); background: rgba(255,42,95,0.1);">
+        <i class="fa-solid fa-terminal" style="color: #ff2a5f;"></i> SAKURA ADMIN TERMINAL
+      </div>
+      <h1 class="auth-title" style="background: linear-gradient(135deg, #fff 0%, #ff2a5f 50%, #e11d48 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+        Admin Console
+      </h1>
+      <p class="auth-subtitle">Authorized administrator access only. All actions are audited.</p>
+    </div>
+
+    <!-- 
+      autocomplete="off" on form + fake hidden inputs 
+    -->
+    <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" autocomplete="off">
+      <!-- Fake hidden inputs to trick browser autofill -->
+      <input type="text" name="fakeusernameremembered" style="display:none" tabindex="-1" autocomplete="off">
+      <input type="password" name="fakepasswordremembered" style="display:none" tabindex="-1" autocomplete="off">
+
+      <div class="form-group">
+        <label class="form-label">Admin Identifier</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user-shield input-icon" style="color: rgba(255,42,95,0.65);"></i>
+          <input 
+            id="adminUsername" 
+            name="admin_user_x" 
+            class="form-input" 
+            placeholder="Admin username" 
+            required 
+            autocomplete="off" 
+            autocorrect="off" 
+            autocapitalize="off" 
+            spellcheck="false"
+            readonly
+            onfocus="this.removeAttribute('readonly');"
+            style="border-color: rgba(255,42,95,0.22);">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Master Passphrase</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-key input-icon" style="color: rgba(255,42,95,0.65);"></i>
+          <input 
+            id="adminPassword" 
+            name="admin_pass_x" 
+            type="password" 
+            class="form-input" 
+            placeholder="••••••••••••" 
+            required 
+            autocomplete="new-password" 
+            readonly
+            onfocus="this.removeAttribute('readonly');"
+            style="border-color: rgba(255,42,95,0.22);">
+        </div>
+      </div>
+
+      <button type="submit" id="adminSubmitBtn" class="btn btn-primary btn-full" style="margin-top: 0.8rem;">
+        <i class="fa-solid fa-lock-open"></i> Unlock Admin Console
+      </button>
+    </form>
+
+    <div class="form-footer" style="margin-top: 1.2rem;">
+      <span style="font-size: 0.78rem; color: var(--text-3);">
+        <i class="fa-solid fa-circle-exclamation" style="color: #ff2a5f;"></i> Protected by Zero-Trust Sakura Firewall
+      </span>
+      <div style="margin-top: 0.85rem; display: flex; justify-content: center; gap: 1rem;">
+        <a href="/keyauth/login" style="color: var(--text-2); font-size: 0.8rem; text-decoration: none;">
+          <i class="fa-solid fa-arrow-left"></i> User Login
+        </a>
+        <span style="color: var(--text-3);">|</span>
+        <a href="/keyauth/portal" style="color: var(--text-2); font-size: 0.8rem; text-decoration: none;">
+          <i class="fa-solid fa-house"></i> Home Portal
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .auth-card.animated-border::after {
+    background: conic-gradient(from var(--angle),
+      transparent 0%,
+      rgba(255,42,95,0.95) 20%,
+      rgba(225,29,72,0.9) 45%,
+      transparent 65%);
+  }
+  .form-input:focus { border-color: #ff2a5f; box-shadow: 0 0 0 3px rgba(255,42,95,0.15), 0 0 20px rgba(255,42,95,0.25); }
+</style>
+
+<script>
+  // Agar already logged in ho, toh dashboard par bhejo
+  (function() {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      window.location.replace('/admin/dashboard');
+    }
+  })();
+
+  // Page load hone ke baad inputs clear karo
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const u = document.getElementById('adminUsername');
+      const p = document.getElementById('adminPassword');
+      if (u) u.value = '';
+      if (p) p.value = '';
+    }, 100);
+  });
+
+  async function handleAdminLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('adminSubmitBtn');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verifying...';
+
+    const username = document.getElementById('adminUsername').value.trim();
+    const password = document.getElementById('adminPassword').value;
+
+    try {
+      const res = await fetch('/admin/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminUser', data.username);
+        showToast('Admin access verified. Redirecting...', 'success');
+        setTimeout(() => window.location.replace('/admin/dashboard'), 700);
+      } else {
+        showToast(data.message || 'Invalid credentials', 'error');
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    } catch {
+      showToast('Cannot connect to admin authority', 'error');
+      btn.disabled = false;
+      btn.innerHTML = orig;
+    }
+  }
+</script>
+
+{% include 'keyauth_footer.html' %}

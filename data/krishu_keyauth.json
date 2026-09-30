@@ -1,0 +1,63 @@
+{
+  "applications": [
+    {
+      "_id": "app_krishu_main",
+      "appId": "app_krishu_main",
+      "name": "KRISHU X CHEATS",
+      "version": "1.0.0",
+      "ownerId": "1011979795669721108",
+      "secret": "krishu_master_secret_2026",
+      "apiKey": "krishu_master_secret_2026",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to KRISHU X CHEATS Official KeyAuth Network!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-E53B-9F1B-7099",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        },
+        {
+          "name": "version",
+          "value": "1.0.0",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-09-29T10:34:09.079751+00:00"
+    }
+  ],
+  "licenses": [],
+  "users": [],
+  "logs": [
+    {
+      "_id": "92dbd6c13862",
+      "action": "LICENSE_DELETED",
+      "details": "License KRISHU-FG364-KJT8T-PCZQD deleted",
+      "ip": "127.0.0.1",
+      "appId": null,
+      "timestamp": "2026-09-29T11:33:55.262417+00:00"
+    },
+    {
+      "_id": "88d0a1cb2642",
+      "action": "LICENSES_CREATED",
+      "details": "Generated 1 license key(s) [app: app_krishu_main, duration: 30d, hwidCheck: True]",
+      "ip": "127.0.0.1",
+      "appId": null,
+      "timestamp": "2026-09-29T11:33:47.240009+00:00"
+    }
+  ],
+  "admin": {
+    "username": "darkmafia076",
+    "password_hash": "0405af98d0e5c30edd9870bedd6149f74853e5f8d0cf17d17900edec4c9edc06"
+  },
+  "webhooks": {
+    "admin_master": {
+      "url": "https://discord.com/api/webhooks/1554851534506827961/v7WYDAbetcnXUD9mARYfZtKQJfaUlvwvqglIpOgFJN-B42NdfcF5zE042u4AYZZqGy2r",
+      "enabled": false,
+      "scope": "admin",
+      "updatedAt": "2026-09-30T13:45:12.741192+00:00"
+    }
+  }
+}

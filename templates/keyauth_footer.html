@@ -1,0 +1,313 @@
+{% if not sidebarLayout %}
+  </main>
+  {% endif %}
+
+  <!-- Toast Notification System -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Footer (public pages only) -->
+  {% if not sidebarLayout %}
+  <footer class="site-footer-minimal">
+    <div class="footer-min-container">
+      <span>&copy; 2026 <strong>Krishu X Auth</strong> &mdash; Red Cherry Blossom Edition</span>
+      <div class="system-status">
+        <span class="status-dot" style="background: #ff2a5f; box-shadow: 0 0 10px #ff2a5f;"></span>
+        <span style="color: #ff7597;">Sakura Engine Online</span>
+      </div>
+    </div>
+  </footer>
+  {% endif %}
+
+<script>
+/* ============================================================
+   FALLING CHERRY BLOSSOM PETALS (SAKURA) 3D ENGINE
+============================================================ */
+(function() {
+  const canvas = document.getElementById('particles');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, petals = [];
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  // Mouse wind interaction
+  const mouse = { x: -1000, y: -1000, vx: 0, vy: 0, lastX: 0, lastY: 0 };
+  window.addEventListener('mousemove', function(e) {
+    mouse.vx = (e.clientX - mouse.lastX) * 0.15;
+    mouse.vy = (e.clientY - mouse.lastY) * 0.15;
+    mouse.x = e.clientX * dpr;
+    mouse.y = e.clientY * dpr;
+    mouse.lastX = e.clientX;
+    mouse.lastY = e.clientY;
+  });
+
+  const petalColors = [
+    { start: 'rgba(255, 42, 95, 0.85)',  end: 'rgba(255, 117, 151, 0.45)', glow: 'rgba(255, 42, 95, 0.4)' },
+    { start: 'rgba(255, 117, 151, 0.9)', end: 'rgba(255, 182, 199, 0.4)',  glow: 'rgba(255, 117, 151, 0.35)' },
+    { start: 'rgba(225, 29, 72, 0.8)',   end: 'rgba(255, 77, 121, 0.4)',   glow: 'rgba(225, 29, 72, 0.3)' },
+    { start: 'rgba(255, 168, 186, 0.85)',end: 'rgba(255, 42, 95, 0.35)',   glow: 'rgba(255, 168, 186, 0.25)' },
+    { start: 'rgba(255, 87, 127, 0.85)', end: 'rgba(190, 18, 60, 0.4)',    glow: 'rgba(255, 87, 127, 0.35)' }
+  ];
+
+  function resize() {
+    W = canvas.width = window.innerWidth * dpr;
+    H = canvas.height = window.innerHeight * dpr;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    initPetals();
+  }
+
+  function createPetal(randomY = true) {
+    const color = petalColors[Math.floor(Math.random() * petalColors.length)];
+    const size = (Math.random() * 10 + 9) * dpr;
+    return {
+      x: Math.random() * (W + 200) - 100,
+      y: randomY ? Math.random() * H : -20 * dpr,
+      size: size,
+      aspect: Math.random() * 0.4 + 0.65,
+      speedY: (Math.random() * 1.2 + 0.8) * dpr,
+      speedX: (Math.random() * 0.8 + 0.3) * dpr,
+      angle: Math.random() * Math.PI * 2,
+      angularSpeed: (Math.random() - 0.5) * 0.035,
+      flip: Math.random() * Math.PI,
+      flipSpeed: Math.random() * 0.04 + 0.015,
+      sway: Math.random() * Math.PI * 2,
+      swaySpeed: Math.random() * 0.02 + 0.01,
+      swayAmp: (Math.random() * 1.5 + 0.8) * dpr,
+      color: color,
+      opacity: Math.random() * 0.35 + 0.65
+    };
+  }
+
+  function initPetals() {
+    const count = Math.min(55, Math.floor((window.innerWidth * window.innerHeight) / 22000));
+    petals = [];
+    for (let i = 0; i < count; i++) {
+      petals.push(createPetal(true));
+    }
+  }
+
+  function drawPetalShape(ctx, size, aspect) {
+    const w = size * 0.55;
+    const h = size * aspect;
+    ctx.beginPath();
+    ctx.moveTo(0, -h * 0.6);
+    ctx.bezierCurveTo(w * 0.8, -h * 0.5, w * 0.9, h * 0.2, 0, h * 0.7);
+    ctx.bezierCurveTo(-w * 0.9, h * 0.2, -w * 0.8, -h * 0.5, 0, -h * 0.6);
+    ctx.closePath();
+  }
+
+  function drawPetals() {
+    ctx.clearRect(0, 0, W, H);
+
+    for (let i = 0; i < petals.length; i++) {
+      const p = petals[i];
+
+      // Physics updates
+      p.sway += p.swaySpeed;
+      p.angle += p.angularSpeed;
+      p.flip += p.flipSpeed;
+
+      let vx = p.speedX + Math.sin(p.sway) * p.swayAmp;
+      let vy = p.speedY + Math.cos(p.sway) * 0.3 * dpr;
+
+      // Mouse gust reaction
+      const dx = p.x - mouse.x;
+      const dy = p.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const maxGust = 180 * dpr;
+      if (dist < maxGust && dist > 0) {
+        const force = (1 - dist / maxGust) * 3.5 * dpr;
+        p.x += (dx / dist) * force + mouse.vx * 0.5;
+        p.y += (dy / dist) * force + mouse.vy * 0.5;
+      }
+
+      p.x += vx;
+      p.y += vy;
+
+      // Screen wrap
+      if (p.y > H + 40 * dpr || p.x > W + 40 * dpr || p.x < -60 * dpr) {
+        petals[i] = createPetal(false);
+        continue;
+      }
+
+      // 3D scale based on flip (perspective tilt)
+      const scaleY = Math.cos(p.flip);
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.scale(1, scaleY);
+      ctx.globalAlpha = p.opacity;
+
+      // Petal gradient
+      const grad = ctx.createLinearGradient(0, -p.size * 0.5, 0, p.size * 0.5);
+      grad.addColorStop(0, p.color.start);
+      grad.addColorStop(1, p.color.end);
+
+      ctx.fillStyle = grad;
+      ctx.shadowColor = p.color.glow;
+      ctx.shadowBlur = 6 * dpr;
+
+      drawPetalShape(ctx, p.size, p.aspect);
+      ctx.fill();
+
+      // Soft center vein
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 0.8 * dpr;
+      ctx.beginPath();
+      ctx.moveTo(0, -p.size * 0.45);
+      ctx.lineTo(0, p.size * 0.35);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Decay mouse velocity
+    mouse.vx *= 0.9;
+    mouse.vy *= 0.9;
+
+    requestAnimationFrame(drawPetals);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(drawPetals);
+})();
+
+/* ============================================================
+   GLOBAL TOP NEON LOADING BAR
+============================================================ */
+(function() {
+  const loader = document.getElementById('cyberTopLoader');
+  let activeRequests = 0;
+  let progressTimer = null;
+
+  window.startLoader = function() {
+    if (!loader) return;
+    activeRequests++;
+    loader.classList.add('active');
+    loader.style.width = '20%';
+    clearInterval(progressTimer);
+    progressTimer = setInterval(() => {
+      let cur = parseFloat(loader.style.width) || 20;
+      if (cur < 85) {
+        loader.style.width = (cur + (90 - cur) * 0.15) + '%';
+      }
+    }, 180);
+  };
+
+  window.finishLoader = function() {
+    if (!loader) return;
+    activeRequests = Math.max(0, activeRequests - 1);
+    if (activeRequests === 0) {
+      clearInterval(progressTimer);
+      loader.style.width = '100%';
+      setTimeout(() => {
+        loader.classList.remove('active');
+        setTimeout(() => { loader.style.width = '0%'; }, 350);
+      }, 200);
+    }
+  };
+
+  // Intercept all native fetch calls
+  const origFetch = window.fetch;
+  window.fetch = async function(...args) {
+    window.startLoader();
+    try {
+      const response = await origFetch(...args);
+      return response;
+    } finally {
+      window.finishLoader();
+    }
+  };
+})();
+
+/* ============================================================
+   GLOBAL CLICK RIPPLE & BURST EFFECT
+============================================================ */
+document.addEventListener('click', function(e) {
+  // Only trigger on interactive or body clicks
+  const ripple = document.createElement('div');
+  ripple.className = 'cyber-ripple';
+  const size = 60;
+  ripple.style.width = size + 'px';
+  ripple.style.height = size + 'px';
+  ripple.style.left = (e.clientX - size / 2) + 'px';
+  ripple.style.top = (e.clientY - size / 2) + 'px';
+  ripple.style.position = 'fixed';
+  document.body.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+});
+
+/* ============================================================
+   3D PARALLAX ON AUTH CARDS
+============================================================ */
+(function() {
+  const glassCard = document.querySelector('.auth-card');
+  if (!glassCard) return;
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 6;
+    const y = (e.clientY / window.innerHeight - 0.5) * 6;
+    glassCard.style.transform = `perspective(1200px) rotateY(${x}deg) rotateX(${-y}deg) translateZ(0)`;
+  });
+  document.addEventListener('mouseleave', () => {
+    glassCard.style.transform = 'perspective(1200px) rotateY(0deg) rotateX(0deg)';
+  });
+})();
+
+/* ============================================================
+   GLOBAL TOAST NOTIFICATION SYSTEM
+============================================================ */
+window.showToast = function(message, type = 'info', duration = 3500) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const icons = { success: 'fa-circle-check', error: 'fa-triangle-exclamation', warning: 'fa-circle-exclamation', info: 'fa-circle-info' };
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type} toast-enter`;
+  toast.innerHTML = `
+    <i class="fa-solid ${icons[type] || icons.info} toast-icon"></i>
+    <span class="toast-text">${message}</span>
+    <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+  `;
+
+  container.appendChild(toast);
+  requestAnimationFrame(() => { toast.classList.remove('toast-enter'); });
+  setTimeout(() => {
+    toast.classList.add('toast-exit');
+    setTimeout(() => toast.remove(), 320);
+  }, duration);
+};
+
+/* ============================================================
+   MOBILE SIDEBAR TOGGLE
+============================================================ */
+window.toggleSidebar = function() {
+  const sidebar = document.getElementById('appSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar) return;
+  sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('active');
+};
+
+/* ============================================================
+   LOGOUT HELPERS
+============================================================ */
+if (typeof window.logoutUser !== 'function') {
+  window.logoutUser = function() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.replace('/keyauth/login');
+  };
+}
+
+if (typeof window.logoutAdmin !== 'function') {
+  window.logoutAdmin = function() {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    window.location.replace('/keyauth/admin');
+  };
+}
+</script>
+</body>
+</html>

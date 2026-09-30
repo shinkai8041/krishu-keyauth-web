@@ -1,0 +1,497 @@
+{% include 'keyauth_header.html' %}
+
+<!-- ═══════════════════════════════════════════
+     HERO SECTION — RED CHERRY BLOSSOM THEME
+═══════════════════════════════════════════ -->
+<section class="hero-section">
+  <div class="hero-eyebrow" style="background: rgba(255,42,95,0.12); border-color: rgba(255,42,95,0.35); color: #ff7597;">
+    <i class="fa-solid fa-fan" style="color: #ff2a5f;"></i>
+    <span>桜 KRISHU X AUTH — RED CHERRY BLOSSOM v3.0</span>
+  </div>
+
+  <h1 class="hero-title">
+    The All-In-One Enterprise<br>
+    <span class="hero-gradient-text" style="background: linear-gradient(135deg, #ff2a5f 0%, #ff7597 40%, #e11d48 80%, #be123c 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">KeyAuth Licensing</span>
+    Platform
+  </h1>
+
+  <p class="hero-subtitle">
+    100% self-hosted, high-performance KeyAuth alternative with drop-in <strong style="color: #ff7597;">KeyAuth v1.2 protocol</strong> compatibility.
+    Protect your game cheats, Windows tools, Android APKs, and desktop loaders with SHA-256 HWID locking and zero-downtime architecture.
+  </p>
+
+  <div class="hero-cta">
+    <a href="/keyauth/register" class="btn btn-primary" id="heroGetStartedBtn">
+      <i class="fa-solid fa-rocket"></i> Get Started Free
+    </a>
+    <a href="#api-docs" class="btn btn-ghost" id="heroExploreBtn">
+      <i class="fa-solid fa-code"></i> Integration SDKs
+    </a>
+    <a href="/keyauth/admin" class="btn btn-purple" id="heroAdminBtn">
+      <i class="fa-solid fa-shield-halved"></i> Admin Console
+    </a>
+    <a href="/keyauth/login" class="btn btn-ghost" style="border-color: rgba(255,117,151,0.3);">
+      <i class="fa-solid fa-right-to-bracket"></i> User Portal
+    </a>
+  </div>
+
+  <!-- Compatibility Pill -->
+  <div style="margin-top: 2.2rem; display: inline-flex; align-items: center; gap: 10px; padding: 8px 18px; border-radius: 9999px; background: rgba(255,42,95,0.08); border: 1px solid rgba(255,42,95,0.25); font-size: 0.82rem; color: #fecdd3;">
+    <i class="fa-solid fa-circle-check" style="color: #ff2a5f;"></i>
+    <span>Compatible with all official KeyAuth C++, C#, ImGui, Python &amp; Android Dark X Auth clients</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     STATS ROW
+═══════════════════════════════════════════ -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: rgba(255,42,95,0.15); color: #ff2a5f;"><i class="fa-solid fa-bolt"></i></div>
+      <span class="stat-badge" style="background: rgba(255,42,95,0.15); color: #ff7597; border: 1px solid rgba(255,42,95,0.3);">Ultra Fast</span>
+    </div>
+    <div class="stat-value" style="color: #fff;">&lt; 10ms</div>
+    <div class="stat-label">Average API Latency</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: rgba(225,29,72,0.15); color: #e11d48;"><i class="fa-solid fa-fingerprint"></i></div>
+      <span class="stat-badge" style="background: rgba(225,29,72,0.15); color: #ff7597; border: 1px solid rgba(225,29,72,0.3);">Encrypted</span>
+    </div>
+    <div class="stat-value" style="color: #fff;">SHA-256</div>
+    <div class="stat-label">Hardware Lock Protection</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: rgba(255,117,151,0.15); color: #ff7597;"><i class="fa-solid fa-network-wired"></i></div>
+      <span class="stat-badge" style="background: rgba(255,117,151,0.15); color: #ff7597; border: 1px solid rgba(255,117,151,0.3);">KeyAuth 1.2</span>
+    </div>
+    <div class="stat-value" style="color: #fff;">100%</div>
+    <div class="stat-label">Protocol Compatibility</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: rgba(255,42,95,0.15); color: #ff2a5f;"><i class="fa-solid fa-database"></i></div>
+      <span class="stat-badge" style="background: rgba(255,42,95,0.15); color: #ff7597; border: 1px solid rgba(255,42,95,0.3);">Dual Sync</span>
+    </div>
+    <div class="stat-value" style="color: #fff;">MongoDB + JSON</div>
+    <div class="stat-label">Zero Data Loss Architecture</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     INTERACTIVE LIVE KEY CHECKER WIDGET
+═══════════════════════════════════════════ -->
+<section class="section" style="padding-top: 1rem;">
+  <div style="background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-xl); padding: 2.2rem 2.5rem; position: relative; overflow: hidden; box-shadow: var(--shadow-glass);">
+    <div style="position: absolute; top: -50px; right: -50px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(255,42,95,0.2) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #ff7597; letter-spacing: 1.5px; margin-bottom: 6px;">
+          <i class="fa-solid fa-satellite-dish" style="color: #ff2a5f;"></i> Live Sandbox
+        </div>
+        <h3 style="font-size: 1.45rem; font-weight: 800; color: #fff;">Instant License Key Tester</h3>
+        <p style="font-size: 0.88rem; color: var(--text-2); margin-top: 4px;">Verify any key or test the live REST validation API right from your browser.</p>
+      </div>
+      <span class="badge-sakura"><i class="fa-solid fa-code"></i> KeyAuth Endpoint: <code>/api/1.2/</code></span>
+    </div>
+
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 260px;">
+        <input id="testKeyInput" class="form-input" placeholder="Enter license key (e.g. KRISHU-XXXX-XXXX)" style="text-transform: uppercase; letter-spacing: 1.5px; font-family: 'JetBrains Mono', monospace;">
+      </div>
+      <button onclick="testKeyLive()" class="btn btn-primary" id="testKeyBtn">
+        <i class="fa-solid fa-bolt"></i> Verify License Key
+      </button>
+    </div>
+
+    <div id="testKeyResult" style="display: none; margin-top: 1.2rem; padding: 1rem 1.25rem; border-radius: var(--r-md); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6;"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FEATURES SECTION
+═══════════════════════════════════════════ -->
+<section class="section">
+  <div class="section-heading">
+    <div class="section-label" style="color: #ff7597;"><i class="fa-solid fa-sparkles"></i> Unmatched Architecture</div>
+    <h2 class="section-title">Built For Developers,<br><span class="hero-gradient-text" style="background: linear-gradient(135deg, #ff2a5f 0%, #ff7597 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Designed For Domination</span></h2>
+    <p class="section-sub">Everything you need to run your private tool empire with enterprise security and zero third-party subscription fees.</p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background: rgba(255,42,95,0.15); color: #ff2a5f;"><i class="fa-solid fa-microchip"></i></div>
+      <div class="feature-title">SHA-256 HWID Lock</div>
+      <div class="feature-desc">Bind licenses to hardware signatures. Eliminates account sharing instantly. Admins can grant or reset HWID binds in 1-click.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background: rgba(225,29,72,0.15); color: #e11d48;"><i class="fa-solid fa-key"></i></div>
+      <div class="feature-title">Bulk License Generator</div>
+      <div class="feature-desc">Generate 1 to 500 keys in seconds with custom prefix, durations (1 day, 7 days, 30 days, lifetime), and subscription levels.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background: rgba(255,117,151,0.15); color: #ff7597;"><i class="fa-solid fa-network-wired"></i></div>
+      <div class="feature-title">KeyAuth 1.2 Compatible</div>
+      <div class="feature-desc">Drop-in replacement for official KeyAuth APIs. Point your C++, C#, ImGui, or Android Dark X Auth clients straight to this server.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background: rgba(255,42,95,0.15); color: #ff2a5f;"><i class="fa-solid fa-sliders"></i></div>
+      <div class="feature-title">Remote Variables & Config</div>
+      <div class="feature-desc">Push runtime settings, offsets, URLs, and secrets to your software instantly without recompiling your client executables.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background: rgba(225,29,72,0.15); color: #e11d48;"><i class="fa-solid fa-crown"></i></div>
+      <div class="feature-title">Reseller Portal System</div>
+      <div class="feature-desc">Assign dedicated reseller master keys per application so trusted sellers can generate keys without accessing your full admin panel.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background: rgba(255,117,151,0.15); color: #ff7597;"><i class="fa-solid fa-shield-virus"></i></div>
+      <div class="feature-title">Zero-Trust Admin Console</div>
+      <div class="feature-desc">Manage applications, user accounts, audit security logs, and test endpoints live with an ultra-sleek Cherry Blossom dashboard.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     DEVELOPER SDK INTEGRATION
+═══════════════════════════════════════════ -->
+<section class="section" id="api-docs">
+  <div class="section-heading">
+    <div class="section-label" style="color: #ff7597;"><i class="fa-solid fa-terminal"></i> Easy Integration</div>
+    <h2 class="section-title">Drop-In <span class="hero-gradient-text" style="background: linear-gradient(135deg, #ff2a5f, #ff7597); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Client SDKs</span></h2>
+    <p class="section-sub">Choose your language below to integrate Krishu X Auth into your tool in under 2 minutes.</p>
+  </div>
+
+  <div class="content-panel" style="border-color: rgba(255,42,95,0.25);">
+    <div class="sdk-tabs" id="sdkTabBar">
+      <button class="sdk-tab active" onclick="switchSdk('cpp')" id="sdkTab-cpp"><i class="fa-brands fa-cuttlefish"></i> C++ / ImGui</button>
+      <button class="sdk-tab" onclick="switchSdk('csharp')" id="sdkTab-csharp"><i class="fa-brands fa-microsoft"></i> C# (.NET)</button>
+      <button class="sdk-tab" onclick="switchSdk('python')" id="sdkTab-python"><i class="fa-brands fa-python"></i> Python</button>
+      <button class="sdk-tab" onclick="switchSdk('android')" id="sdkTab-android"><i class="fa-brands fa-android"></i> Android (Dark X Auth)</button>
+      <button class="sdk-tab" onclick="switchSdk('curl')" id="sdkTab-curl"><i class="fa-solid fa-terminal"></i> cURL / REST</button>
+    </div>
+
+    <!-- C++ / ImGui -->
+    <div id="sdk-cpp" class="sdk-pane">
+      <div class="code-block" style="border-color: rgba(255,42,95,0.2);">
+        <button class="copy-btn" onclick="copyCode('sdk-cpp')"><i class="fa-regular fa-copy"></i> Copy C++ Code</button>
+<pre><span class="comment">// ═════════════════════════════════════════════════════════════════════════════</span>
+<span class="comment">// KRISHU X AUTH — C++ / IMGUI LOADER INTEGRATION (KeyAuth v1.2 Protocol)</span>
+<span class="comment">// ═════════════════════════════════════════════════════════════════════════════</span>
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include "keyauth.hpp"
+
+<span class="keyword">using namespace</span> KeyAuth;
+
+<span class="comment">// Configure your application credentials</span>
+std::string name     = <span class="string">"KRISHU X CHEATS"</span>;
+std::string ownerid  = <span class="string">"KRISHUAUTH1"</span>;
+std::string secret   = <span class="string">"krishu_master_secret_2026"</span>;
+std::string version  = <span class="string">"1.0.0"</span>;
+std::string url      = <span class="string">"http://127.0.0.1:5000/api/1.2/"</span>; <span class="comment">// Or your live domain</span>
+
+api KeyAuthApp(name, ownerid, secret, version, url);
+
+<span class="keyword">int</span> main() {
+    std::cout &lt;&lt; <span class="string">"Connecting to Krishu X Auth (Sakura Engine)...\\n"</span>;
+    KeyAuthApp.init();
+
+    <span class="keyword">if</span> (!KeyAuthApp.response.success) {
+        std::cout &lt;&lt; <span class="string">"Init failed: "</span> &lt;&lt; KeyAuthApp.response.message &lt;&lt; std::endl;
+        <span class="keyword">return</span> 1;
+    }
+
+    std::string key;
+    std::cout &lt;&lt; <span class="string">"Enter License Key: "</span>;
+    std::cin &gt;&gt; key;
+
+    KeyAuthApp.license(key);
+
+    <span class="keyword">if</span> (KeyAuthApp.response.success) {
+        std::cout &lt;&lt; <span class="string">"\\n[+] Authenticated Successfully!"</span> &lt;&lt; std::endl;
+        std::cout &lt;&lt; <span class="string">"[+] Expiry: "</span> &lt;&lt; KeyAuthApp.user_data.expiry &lt;&lt; std::endl;
+        <span class="comment">// Launch your protected cheat / tool / ImGui window here</span>
+    } <span class="keyword">else</span> {
+        std::cout &lt;&lt; <span class="string">"\\n[-] Error: "</span> &lt;&lt; KeyAuthApp.response.message &lt;&lt; std::endl;
+    }
+    <span class="keyword">return</span> 0;
+}</pre>
+      </div>
+    </div>
+
+    <!-- C# / .NET -->
+    <div id="sdk-csharp" class="sdk-pane" style="display:none">
+      <div class="code-block" style="border-color: rgba(255,42,95,0.2);">
+        <button class="copy-btn" onclick="copyCode('sdk-csharp')"><i class="fa-regular fa-copy"></i> Copy C# Code</button>
+<pre><span class="comment">// ═════════════════════════════════════════════════════════════════════════════</span>
+<span class="comment">// KRISHU X AUTH — C# / WINFORMS / WPF SDK</span>
+<span class="comment">// ═════════════════════════════════════════════════════════════════════════════</span>
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> KeyAuth;
+
+<span class="keyword">namespace</span> KrishuLoader
+{
+    <span class="keyword">class</span> Program
+    {
+        <span class="keyword">public static</span> api KeyAuthApp = <span class="keyword">new</span> api(
+            name: <span class="string">"KRISHU X CHEATS"</span>,
+            ownerid: <span class="string">"KRISHUAUTH1"</span>,
+            secret: <span class="string">"krishu_master_secret_2026"</span>,
+            version: <span class="string">"1.0.0"</span>,
+            path: <span class="string">"http://127.0.0.1:5000/api/1.2/"</span>
+        );
+
+        <span class="keyword">static void</span> Main(<span class="keyword">string</span>[] args)
+        {
+            Console.WriteLine(<span class="string">"🌸 Initializing Krishu X Auth..."</span>);
+            KeyAuthApp.init();
+
+            Console.Write(<span class="string">"Enter Key: "</span>);
+            <span class="keyword">string</span> key = Console.ReadLine();
+
+            KeyAuthApp.license(key);
+
+            <span class="keyword">if</span> (KeyAuthApp.response.success)
+            {
+                Console.WriteLine($<span class="string">"[+] Welcome! Subscription: {KeyAuthApp.user_data.subscriptions[0].subscription}"</span>);
+                <span class="comment">// Execute protected logic</span>
+            }
+            <span class="keyword">else</span>
+            {
+                Console.WriteLine($<span class="string">"[-] Failed: {KeyAuthApp.response.message}"</span>);
+            }
+        }
+    }
+}</pre>
+      </div>
+    </div>
+
+    <!-- Python -->
+    <div id="sdk-python" class="sdk-pane" style="display:none">
+      <div class="code-block" style="border-color: rgba(255,42,95,0.2);">
+        <button class="copy-btn" onclick="copyCode('sdk-python')"><i class="fa-regular fa-copy"></i> Copy Python Code</button>
+<pre><span class="comment"># ═════════════════════════════════════════════════════════════════════════════</span>
+<span class="comment"># KRISHU X AUTH — PYTHON SDK</span>
+<span class="comment"># ═════════════════════════════════════════════════════════════════════════════</span>
+<span class="keyword">import</span> requests, hashlib, platform
+
+SERVER_URL = <span class="string">"http://127.0.0.1:5000"</span>
+APP_ID     = <span class="string">"app_krishu_main"</span>
+
+<span class="keyword">def</span> get_hwid():
+    raw = platform.node() + <span class="string">"-"</span> + platform.machine()
+    <span class="keyword">return</span> hashlib.sha256(raw.encode()).hexdigest()
+
+<span class="keyword">def</span> authenticate_license(license_key):
+    <span class="comment"># Handshake init</span>
+    init_res = requests.post(f<span class="string">"{SERVER_URL}/api/v1/init"</span>, json={<span class="string">"appId"</span>: APP_ID}).json()
+    <span class="keyword">if not</span> init_res.get(<span class="string">"success"</span>):
+        <span class="keyword">return</span> False, init_res.get(<span class="string">"message"</span>)
+
+    <span class="comment"># 1-Click License Login</span>
+    res = requests.post(f<span class="string">"{SERVER_URL}/api/v1/license"</span>, json={
+        <span class="string">"appId"</span>: APP_ID,
+        <span class="string">"key"</span>: license_key,
+        <span class="string">"hwid"</span>: get_hwid()
+    }).json()
+
+    <span class="keyword">return</span> res.get(<span class="string">"success"</span>), res.get(<span class="string">"message"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    key = input(<span class="string">"Enter Krishu License Key: "</span>).strip()
+    ok, msg = authenticate_license(key)
+    print(f<span class="string">"Result: {msg}"</span>)</pre>
+      </div>
+    </div>
+
+    <!-- Android (Dark X Auth Compatible) -->
+    <div id="sdk-android" class="sdk-pane" style="display:none">
+      <div class="code-block" style="border-color: rgba(255,42,95,0.2);">
+        <button class="copy-btn" onclick="copyCode('sdk-android')"><i class="fa-regular fa-copy"></i> Copy Android Code</button>
+<pre><span class="comment">// ═════════════════════════════════════════════════════════════════════════════</span>
+<span class="comment">// KRISHU X AUTH — ANDROID STUDIO (DARK X AUTH COMPATIBLE)</span>
+<span class="comment">// Configured in strings.xml &amp; AuthClient</span>
+<span class="comment">// ═════════════════════════════════════════════════════════════════════════════</span>
+
+<span class="comment">// In your app's NetworkConfig or strings.xml:</span>
+<span class="keyword">public static final</span> String API_BASE_URL = <span class="string">"http://127.0.0.1:5000/api/1.2/"</span>;
+<span class="keyword">public static final</span> String APP_NAME     = <span class="string">"KRISHU X CHEATS"</span>;
+<span class="keyword">public static final</span> String OWNER_ID     = <span class="string">"KRISHUAUTH1"</span>;
+<span class="keyword">public static final</span> String APP_SECRET   = <span class="string">"krishu_master_secret_2026"</span>;
+<span class="keyword">public static final</span> String APP_VERSION  = <span class="string">"1.0.0"</span>;
+
+<span class="comment">// In your LoginActivity.java:</span>
+<span class="keyword">void</span> loginWithLicense(String licenseKey, String androidHWID) {
+    RequestBody formBody = <span class="keyword">new</span> FormBody.Builder()
+        .add(<span class="string">"type"</span>, <span class="string">"license"</span>)
+        .add(<span class="string">"key"</span>, licenseKey)
+        .add(<span class="string">"hwid"</span>, androidHWID)
+        .add(<span class="string">"name"</span>, APP_NAME)
+        .add(<span class="string">"ownerid"</span>, OWNER_ID)
+        .build();
+
+    Request request = <span class="keyword">new</span> Request.Builder()
+        .url(API_BASE_URL)
+        .post(formBody)
+        .build();
+
+    <span class="comment">// Response contains official KeyAuth JSON: { "success": true, "message": "Logged in!" }</span>
+}</pre>
+      </div>
+    </div>
+
+    <!-- cURL / REST -->
+    <div id="sdk-curl" class="sdk-pane" style="display:none">
+      <div class="code-block" style="border-color: rgba(255,42,95,0.2);">
+        <button class="copy-btn" onclick="copyCode('sdk-curl')"><i class="fa-regular fa-copy"></i> Copy cURL</button>
+<pre><span class="comment"># 1. Official KeyAuth v1.2 Protocol (Form-Encoded)</span>
+curl -X POST "http://127.0.0.1:5000/api/1.2/" \
+  -d "type=init" \
+  -d "name=KRISHU X CHEATS" \
+  -d "ownerid=KRISHUAUTH1"
+
+<span class="comment"># 2. License Key Verification (Official KeyAuth 1.2)</span>
+curl -X POST "http://127.0.0.1:5000/api/1.2/" \
+  -d "type=license" \
+  -d "key=KRISHU-XXXX-XXXX" \
+  -d "hwid=WINDOWS-MACHINE-HWID-001" \
+  -d "name=KRISHU X CHEATS"
+
+<span class="comment"># 3. Modern REST JSON Endpoint (/api/v1/license)</span>
+curl -X POST "http://127.0.0.1:5000/api/v1/license" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "appId": "app_krishu_main",
+    "key": "KRISHU-XXXX-XXXX",
+    "hwid": "WINDOWS-MACHINE-HWID-001"
+  }'</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CTA BOTTOM
+═══════════════════════════════════════════ -->
+<section class="section" style="text-align: center; padding: 4rem 0 2rem;">
+  <div class="hero-eyebrow" style="background: rgba(255,42,95,0.1); border-color: rgba(255,42,95,0.3); color: #ff7597;">
+    <i class="fa-solid fa-shield-halved"></i> 100% Native &amp; Self-Hosted Control
+  </div>
+  <h2 class="section-title" style="margin-bottom: 1rem;">Ready to Secure Your <span class="hero-gradient-text" style="background: linear-gradient(135deg, #ff2a5f, #ff7597); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Tools?</span></h2>
+  <p class="section-sub" style="margin-bottom: 2rem;">Create your developer account, launch your app, and generate cryptographic licenses in minutes.</p>
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="/keyauth/register" class="btn btn-primary" id="ctaRegisterBtn"><i class="fa-solid fa-user-plus"></i> Create Free Account</a>
+    <a href="/keyauth/login" class="btn btn-ghost" id="ctaLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal</a>
+    <a href="/keyauth/admin" class="btn btn-purple"><i class="fa-solid fa-terminal"></i> Admin Console</a>
+  </div>
+</section>
+
+<script>
+  function switchSdk(lang) {
+    document.querySelectorAll('.sdk-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.sdk-tab').forEach(t => t.classList.remove('active'));
+    const pane = document.getElementById('sdk-' + lang);
+    const tab = document.getElementById('sdkTab-' + lang);
+    if (pane) pane.style.display = 'block';
+    if (tab) tab.classList.add('active');
+  }
+
+  function copyCode(paneId) {
+    const pre = document.querySelector('#' + paneId + ' pre');
+    if (!pre) return;
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+      showToast('🌸 Code snippet copied to clipboard!', 'success');
+    });
+  }
+
+  async function testKeyLive() {
+    const input = document.getElementById('testKeyInput');
+    const resultBox = document.getElementById('testKeyResult');
+    const btn = document.getElementById('testKeyBtn');
+    const key = (input.value || '').trim();
+
+    if (!key) {
+      showToast('Please enter a license key to verify', 'warning');
+      input.focus();
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking...';
+
+    try {
+      const res = await fetch('/api/1.2/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          type: 'license',
+          key: key,
+          hwid: 'BROWSER-SANDBOX-VERIFY',
+          name: 'KRISHU X CHEATS'
+        })
+      });
+      const data = await res.json();
+      resultBox.style.display = 'block';
+      if (data.success) {
+        resultBox.style.background = 'rgba(16, 185, 129, 0.12)';
+        resultBox.style.border = '1px solid rgba(16, 185, 129, 0.35)';
+        resultBox.style.color = '#a7f3d0';
+        resultBox.innerHTML = `
+          <div style="font-weight: 700; margin-bottom: 4px; color: #34d399;">
+            <i class="fa-solid fa-circle-check"></i> LICENSE VALID & ACTIVE
+          </div>
+          <div>Status: <strong>${data.message}</strong></div>
+          <div>Level: <strong>${data.info?.subscriptions?.[0]?.subscription || 'Tier-1'}</strong></div>
+          <div>HWID: <strong>${data.info?.hwid || 'Bound to session'}</strong></div>
+        `;
+        showToast('License Key is VALID!', 'success');
+      } else {
+        resultBox.style.background = 'rgba(244, 63, 94, 0.12)';
+        resultBox.style.border = '1px solid rgba(244, 63, 94, 0.35)';
+        resultBox.style.color = '#fecdd3';
+        resultBox.innerHTML = `
+          <div style="font-weight: 700; margin-bottom: 4px; color: #f43f5e;">
+            <i class="fa-solid fa-triangle-exclamation"></i> VERIFICATION FAILED
+          </div>
+          <div>Message: <strong>${data.message || 'Invalid license key'}</strong></div>
+        `;
+        showToast(data.message || 'Invalid license key', 'error');
+      }
+    } catch (err) {
+      resultBox.style.display = 'block';
+      resultBox.style.background = 'rgba(244, 63, 94, 0.12)';
+      resultBox.style.border = '1px solid rgba(244, 63, 94, 0.35)';
+      resultBox.style.color = '#fecdd3';
+      resultBox.innerHTML = `<div><i class="fa-solid fa-circle-xmark"></i> Network error connecting to KeyAuth API</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Verify License Key';
+    }
+  }
+
+  // Update dynamic nav if logged in
+  (function() {
+    const token = localStorage.getItem('token');
+    const adminToken = localStorage.getItem('adminToken');
+    const nav = document.getElementById('navAuthSection');
+    if (!nav) return;
+    if (token) {
+      nav.innerHTML = `
+        <a href="/keyauth/portal" class="nav-link"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="/keyauth/dashboard" class="btn btn-primary btn-sm"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="/keyauth/admin" class="nav-admin"><i class="fa-solid fa-terminal"></i> Admin</a>
+      `;
+    } else if (adminToken) {
+      nav.innerHTML = `
+        <a href="/keyauth/portal" class="nav-link"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="/admin/dashboard" class="btn btn-purple btn-sm"><i class="fa-solid fa-shield-halved"></i> Admin Console</a>
+      `;
+    }
+  })();
+</script>
+
+{% include 'keyauth_footer.html' %}
