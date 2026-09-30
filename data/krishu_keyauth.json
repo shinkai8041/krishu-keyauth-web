@@ -28,24 +28,223 @@
       "createdAt": "2026-09-29T10:34:09.079751+00:00"
     }
   ],
-  "licenses": [],
+  "licenses": [
+    {
+      "_id": "KRISHU-WQRJL-MM6XY-2D6UF",
+      "key": "KRISHU-WQRJL-MM6XY-2D6UF",
+      "appId": "app_krishu_main",
+      "duration": 30,
+      "level": "1",
+      "status": "unused",
+      "hwidCheck": true,
+      "hwid": "",
+      "ip": "",
+      "usedBy": "",
+      "note": "Generated 2026-09-30",
+      "banned": false,
+      "banReason": "",
+      "activatedAt": null,
+      "expiresAt": null,
+      "createdAt": "2026-09-30T19:53:45.312262+00:00"
+    },
+    {
+      "_id": "KRISHU-LE86W-3BTYL-A74ED",
+      "key": "KRISHU-LE86W-3BTYL-A74ED",
+      "appId": "app_krishu_main",
+      "duration": 30,
+      "level": "1",
+      "status": "used",
+      "hwidCheck": true,
+      "hwid": "HWID-LIVE-TEST",
+      "ip": "127.0.0.1",
+      "usedBy": "",
+      "note": "Generated 2026-09-30",
+      "banned": false,
+      "banReason": "",
+      "activatedAt": "2026-09-30T19:58:00.191496+00:00",
+      "expiresAt": "2026-10-30T19:58:00.191496+00:00",
+      "createdAt": "2026-09-30T19:58:00.160253+00:00"
+    },
+    {
+      "_id": "KRISHU-YT86B-VWKKR-2TJ3Z",
+      "key": "KRISHU-YT86B-VWKKR-2TJ3Z",
+      "appId": "app_krishu_main",
+      "duration": 30,
+      "level": "1",
+      "status": "used",
+      "hwidCheck": true,
+      "hwid": "HWID-LIVE-TEST",
+      "ip": "127.0.0.1",
+      "usedBy": "",
+      "note": "Generated 2026-09-30",
+      "banned": false,
+      "banReason": "",
+      "activatedAt": "2026-09-30T19:59:11.107658+00:00",
+      "expiresAt": "2026-10-30T19:59:11.107658+00:00",
+      "createdAt": "2026-09-30T19:59:10.375238+00:00"
+    }
+  ],
   "users": [],
   "logs": [
     {
-      "_id": "92dbd6c13862",
-      "action": "LICENSE_DELETED",
-      "details": "License KRISHU-FG364-KJT8T-PCZQD deleted",
+      "_id": "e1c5f5231b70",
+      "action": "LICENSE_LOGIN",
+      "details": "License 'KRISHU-YT86B-VWKKR-2TJ3Z' authenticated successfully (Duration: 30d)",
+      "message": "License 'KRISHU-YT86B-VWKKR-2TJ3Z' authenticated successfully (Duration: 30d)",
+      "username": "KRISHU-YT86B-VWKKR-2TJ3Z",
       "ip": "127.0.0.1",
-      "appId": null,
-      "timestamp": "2026-09-29T11:33:55.262417+00:00"
+      "hwid": "HWID-LIVE-TEST",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:59:11.566596+00:00",
+      "timestamp": "2026-09-30T19:59:11.566596+00:00"
     },
     {
-      "_id": "88d0a1cb2642",
+      "_id": "9b024254a333",
       "action": "LICENSES_CREATED",
       "details": "Generated 1 license key(s) [app: app_krishu_main, duration: 30d, hwidCheck: True]",
+      "message": "Generated 1 license key(s) [app: app_krishu_main, duration: 30d, hwidCheck: True]",
+      "username": "System",
       "ip": "127.0.0.1",
-      "appId": null,
-      "timestamp": "2026-09-29T11:33:47.240009+00:00"
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:59:10.560276+00:00",
+      "timestamp": "2026-09-30T19:59:10.560276+00:00"
+    },
+    {
+      "_id": "141a27b45c09",
+      "action": "LOGIN_FAILED",
+      "details": "Login failed: Unknown user 'test_intruder'",
+      "message": "Login failed: Unknown user 'test_intruder'",
+      "username": "test_intruder",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": false,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:59:10.333398+00:00",
+      "timestamp": "2026-09-30T19:59:10.333398+00:00"
+    },
+    {
+      "_id": "23e0a5da2e33",
+      "action": "CLIENT_INIT",
+      "details": "Client handshake initialized for app 'KRISHU X CHEATS' (v1.0.0)",
+      "message": "Client handshake initialized for app 'KRISHU X CHEATS' (v1.0.0)",
+      "username": "KRISHU X CHEATS",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:59:10.237663+00:00",
+      "timestamp": "2026-09-30T19:59:10.237663+00:00"
+    },
+    {
+      "_id": "29107490843f",
+      "action": "LICENSES_CREATED",
+      "details": "Generated 1 license key(s) [app: app_krishu_main, duration: 30d, hwidCheck: True]",
+      "message": "Generated 1 license key(s) [app: app_krishu_main, duration: 30d, hwidCheck: True]",
+      "username": "System",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:58:00.175873+00:00",
+      "timestamp": "2026-09-30T19:58:00.175873+00:00"
+    },
+    {
+      "_id": "71ebf594e777",
+      "action": "LOGIN_FAILED",
+      "details": "Login failed: Unknown user 'test_intruder'",
+      "message": "Login failed: Unknown user 'test_intruder'",
+      "username": "test_intruder",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": false,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:58:00.129015+00:00",
+      "timestamp": "2026-09-30T19:58:00.129015+00:00"
+    },
+    {
+      "_id": "5d44e8050bfb",
+      "action": "CLIENT_INIT",
+      "details": "Client handshake initialized for app 'KRISHU X CHEATS' (v1.0.0)",
+      "message": "Client handshake initialized for app 'KRISHU X CHEATS' (v1.0.0)",
+      "username": "KRISHU X CHEATS",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:58:00.082135+00:00",
+      "timestamp": "2026-09-30T19:58:00.082135+00:00"
+    },
+    {
+      "_id": "d7a5a917992a",
+      "action": "LOGIN_FAILED",
+      "details": "Login failed: Unknown user 'non_existent_user_999'",
+      "message": "Login failed: Unknown user 'non_existent_user_999'",
+      "username": "non_existent_user_999",
+      "ip": "127.0.0.1",
+      "hwid": "HWID-TEST-FAIL",
+      "success": false,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:57:41.202242+00:00",
+      "timestamp": "2026-09-30T19:57:41.202242+00:00"
+    },
+    {
+      "_id": "c7b66d19a96b",
+      "action": "CLIENT_INIT",
+      "details": "Client handshake initialized for app 'KRISHU X CHEATS' (v1.0.0)",
+      "message": "Client handshake initialized for app 'KRISHU X CHEATS' (v1.0.0)",
+      "username": "KRISHU X CHEATS",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:57:41.160004+00:00",
+      "timestamp": "2026-09-30T19:57:41.160004+00:00"
+    },
+    {
+      "_id": "1a7c63e1797f",
+      "action": "LICENSES_CREATED",
+      "details": "Generated 1 license key(s) [app: app_krishu_main, duration: 30d, hwidCheck: True]",
+      "message": "Generated 1 license key(s) [app: app_krishu_main, duration: 30d, hwidCheck: True]",
+      "username": "System",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-09-30T19:53:45.327887+00:00",
+      "timestamp": "2026-09-30T19:53:45.327887+00:00"
     }
   ],
   "admin": {
@@ -54,10 +253,10 @@
   },
   "webhooks": {
     "admin_master": {
-      "url": "https://discord.com/api/webhooks/1554851534506827961/v7WYDAbetcnXUD9mARYfZtKQJfaUlvwvqglIpOgFJN-B42NdfcF5zE042u4AYZZqGy2r",
+      "url": "",
       "enabled": false,
       "scope": "admin",
-      "updatedAt": "2026-09-30T13:45:12.741192+00:00"
+      "updatedAt": "2026-09-30T19:57:41.251588+00:00"
     }
   },
   "reseller_keys": [

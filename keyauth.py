@@ -15,6 +15,7 @@ import string
 import hashlib
 import hmac
 import threading
+import requests
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional, List
@@ -38,7 +39,7 @@ JWT_SECRET     = os.environ.get('JWT_SECRET', 'krishu_x_keyauth_sakura_master_se
 MONGODB_URI    = os.environ.get('MONGODB_URI', 'mongodb+srv://luckyarmy145_db_user:jA3g2jX1tVCZHaJq@cluster0.nrtqz27.mongodb.net/?retryWrites=true&w=majority')
 OWNER_ID       = os.environ.get('KEYAUTH_OWNER_ID', 'KRISHUAUTH1')
 
-_lock = threading.Lock()
+_lock = threading.RLock()
 
 
 def _hash_pass(password: str) -> str:
@@ -395,7 +396,7 @@ class KrishuKeyAuthEngine:
 
             return sorted(licenses, key=lambda x: x.get("createdAt", ""), reverse=True)
 
-    def get_license(self, key: str) -> Optional[dict]:
+    def get_license(self, key: str, app_id: str = None) -> Optional[dict]:
         clean_key = (key or "").strip()
         with _lock:
             data = self._read_data()
@@ -603,6 +604,7 @@ class KrishuKeyAuthEngine:
             return {"success": False, "message": "Application is currently paused by admin"}
 
         session_id = secrets.token_hex(16)
+        self.log_action("CLIENT_INIT", f"Client handshake initialized for app '{app.get('name')}' (v{version})", app_id=app.get("appId"), username=app.get("name"), success=True)
         return {
             "success": True,
             "message": "Initialized successfully",
@@ -617,7 +619,8 @@ class KrishuKeyAuthEngine:
 
     def client_license_login(self, app_id: str, key: str, hwid: str = "", ip: str = "") -> dict:
         """1-Click License Key Authentication for game loaders"""
-        app = self.get_app(app_id)
+        app = self.resolve_app(app_id)
+        real_app_id = app.get("appId") if app else app_id
         if not app:
             return {"success": False, "message": "Application not registered"}
 
@@ -662,6 +665,7 @@ class KrishuKeyAuthEngine:
                 except Exception:
                     pass
 
+        self.log_action("LICENSE_LOGIN", f"License '{key}' authenticated successfully (Duration: {lic.get('duration')}d)", ip=ip, hwid=hwid, app_id=real_app_id, username=key, success=True)
         return {
             "success": True,
             "message": "License Authenticated Successfully!",
@@ -680,17 +684,21 @@ class KrishuKeyAuthEngine:
         real_app_id = app.get("appId") if app else app_id
         user = self.get_user(username, real_app_id)
         if not user:
+            self.log_action("LOGIN_FAILED", f"Login failed: Unknown user '{username}'", ip=ip, hwid=hwid, app_id=real_app_id, username=username, success=False)
             return {"success": False, "message": "Username not found"}
 
         if user.get("passwordHash") != _hash_pass(password):
+            self.log_action("LOGIN_FAILED", f"Login failed: Incorrect password for user '{username}'", ip=ip, hwid=hwid, app_id=real_app_id, username=username, success=False)
             return {"success": False, "message": "Incorrect password"}
 
         if user.get("banned"):
+            self.log_action("BANNED_ATTEMPT", f"Banned user '{username}' attempted access: {user.get('banReason', 'Banned')}", ip=ip, hwid=hwid, app_id=real_app_id, username=username, success=False)
             return {"success": False, "message": f"Account Suspended: {user.get('banReason', 'Banned')}"}
 
         # Check HWID
         if user.get("hwidLocked", True) and user.get("hwid"):
             if hwid and user.get("hwid") != hwid:
+                self.log_action("HWID_MISMATCH", f"HWID mismatch for user '{username}'", ip=ip, hwid=hwid, app_id=real_app_id, username=username, success=False)
                 return {"success": False, "message": "HWID Mismatch. Request reset from admin."}
         elif hwid:
             self.update_user(username, {"hwid": hwid})
@@ -702,11 +710,13 @@ class KrishuKeyAuthEngine:
             try:
                 exp_dt = datetime.fromisoformat(exp_str)
                 if now_dt > exp_dt:
+                    self.log_action("LOGIN_FAILED", f"Login failed: Subscription expired for user '{username}'", ip=ip, hwid=hwid, app_id=real_app_id, username=username, success=False)
                     return {"success": False, "message": "Subscription expired"}
             except Exception:
                 pass
 
         self.update_user(username, {"lastLogin": now_dt.isoformat(), "ip": ip or ""})
+        self.log_action("CLIENT_LOGIN", f"User '{username}' logged in successfully", ip=ip, hwid=hwid, app_id=real_app_id, username=username, success=True)
 
         return {
             "success": True,
@@ -723,22 +733,87 @@ class KrishuKeyAuthEngine:
     # AUDIT LOGS
     # ============================================================
 
-    def log_action(self, action: str, details: str, ip: str = "127.0.0.1", app_id: str = None):
+    def send_discord_webhook(self, event_title: str, description: str, fields: list = None, color: int = 0xff2a5f, scope: str = 'admin', identifier: str = 'master'):
+        """Asynchronously dispatches rich Discord embed to configured webhook."""
+        def _worker():
+            try:
+                conf = self.get_webhook_config(scope, identifier)
+                url = conf.get("url", "").strip() if conf.get("enabled", True) else ""
+                if not url and scope != 'admin':
+                    admin_conf = self.get_webhook_config('admin', 'master')
+                    if admin_conf.get("enabled", True):
+                        url = admin_conf.get("url", "").strip()
+                if not url:
+                    url = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
+
+                if not url or not (url.startswith("https://discord.com/api/webhooks/") or url.startswith("https://discordapp.com/api/webhooks/")):
+                    return
+
+                embed = {
+                    "title": f"🌸 Krishu X Sentinel • {event_title}",
+                    "description": description,
+                    "color": color,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "fields": fields or [],
+                    "footer": {
+                        "text": "KRISHU X KEYAUTH • Real-Time Security Sentinel",
+                        "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
+                    }
+                }
+                requests.post(url, json={
+                    "username": "Krishu X Sentinel",
+                    "avatar_url": "https://cdn.discordapp.com/embed/avatars/1.png",
+                    "embeds": [embed]
+                }, headers={"Content-Type": "application/json"}, timeout=6)
+            except Exception:
+                pass
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def log_action(self, action: str, details: str, ip: str = "127.0.0.1", app_id: str = None, username: str = None, hwid: str = None, success: bool = True):
         with _lock:
             data = self._read_data()
+            now_iso = datetime.now(timezone.utc).isoformat()
+            app_obj = self.resolve_app(app_id) if app_id else None
+            app_name = app_obj.get("name", "KRISHU X CHEATS") if app_obj else "KRISHU X CHEATS"
+            real_app_id = app_obj.get("appId", "app_krishu_main") if app_obj else "app_krishu_main"
+
             log_entry = {
                 "_id": uuid.uuid4().hex[:12],
-                "action": action,
-                "details": details,
-                "ip": ip,
-                "appId": app_id,
-                "timestamp": datetime.now(timezone.utc).isoformat()
+                "action": str(action).upper(),
+                "details": str(details),
+                "message": str(details),
+                "username": str(username) if username else (app_name if action.startswith("APP") else "System"),
+                "ip": str(ip or "127.0.0.1"),
+                "hwid": str(hwid or ""),
+                "success": bool(success),
+                "appId": {"name": app_name, "_id": real_app_id},
+                "createdAt": now_iso,
+                "timestamp": now_iso
             }
             logs = data.setdefault("logs", [])
             logs.insert(0, log_entry)
-            # Cap at 500 logs
-            data["logs"] = logs[:500]
+            data["logs"] = logs[:1000]
             self._save_data(data)
+
+        # Send Discord notification for real-time security events
+        try:
+            self.send_discord_webhook(
+                event_title=f"{action} • {'PASS' if success else 'FAIL'}",
+                description=str(details),
+                fields=[
+                    {"name": "Action", "value": f"`{action}`", "inline": True},
+                    {"name": "User / Entity", "value": f"`{username or 'System'}`", "inline": True},
+                    {"name": "Status", "value": "🟢 Success / Allowed" if success else "🔴 Failed / Blocked", "inline": True},
+                    {"name": "IP Address", "value": str(ip or '127.0.0.1'), "inline": True},
+                    {"name": "HWID", "value": f"`{hwid[:16]}...`" if hwid else "—", "inline": True},
+                    {"name": "Application", "value": app_name, "inline": True}
+                ],
+                color=0x00ff88 if success else 0xff2a5f,
+                scope='admin',
+                identifier='master'
+            )
+        except Exception:
+            pass
 
     def list_logs(self) -> list:
         with _lock:

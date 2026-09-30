@@ -2231,6 +2231,14 @@
       } catch (e) { console.error(e); }
     };
 
+    // Auto-refresh audit logs live every 5 seconds when tab-logs is active
+    setInterval(() => {
+      const pane = document.getElementById('tab-logs');
+      if (pane && pane.classList.contains('active')) {
+        loadLogs();
+      }
+    }, 5000);
+
     // ── APPLICATIONS ──
     window.loadApps = async function() {
       try {

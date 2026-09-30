@@ -1610,13 +1610,10 @@ def keyauth_api_client_register():
 
 
 
-    duration = lic.get('duration', 30)
-
-
+        duration = lic.get('duration', 30)
     user_doc = KeyAuth.create_user(username, password, duration, app_id, key=key)
-
-
     KeyAuth.update_license(key, {'status': 'used', 'usedBy': username, 'hwid': hwid, 'ip': ip})
+    KeyAuth.log_action("CLIENT_REGISTER", f"New user '{username}' registered with license key '{key}'", ip=ip, hwid=hwid, app_id=app_id, username=username, success=True)
 
 
 
