@@ -285,6 +285,17 @@
                 </select>
               </div>
               <div>
+                <label class="form-label" style="color:var(--cyan);">Quantity (Batch)</label>
+                <select id="kuCount" class="form-input">
+                  <option value="1" selected>1 Key</option>
+                  <option value="5">5 Keys</option>
+                  <option value="10">10 Keys</option>
+                  <option value="25">25 Keys</option>
+                  <option value="50">50 Keys</option>
+                  <option value="100">100 Keys (Bulk)</option>
+                </select>
+              </div>
+              <div>
                 <label class="form-label">Note / Tag</label>
                 <input id="kuNote" class="form-input" placeholder="Optional note">
               </div>
@@ -294,7 +305,7 @@
               </div>
               <div style="padding-top:1.3rem;">
                 <button type="submit" id="btnCreateKeyUser" class="btn btn-full" style="background:linear-gradient(135deg,var(--cyan),#0070f3);color:#fff;font-weight:bold;">
-                  <i class="fa-solid fa-key"></i> Generate Key
+                  <i class="fa-solid fa-key"></i> Generate Key(s)
                 </button>
               </div>
             </div>
@@ -302,13 +313,17 @@
 
           <!-- Generated Key Display -->
           <div id="generatedKeyBox" style="display:none; margin-top:1.25rem; padding:1rem 1.25rem; border-radius:var(--r-md); background:rgba(var(--cyan-rgb),0.07); border:1px solid rgba(var(--cyan-rgb),0.3);">
-            <div style="font-size:0.75rem; color:var(--cyan); text-transform:uppercase; font-weight:700; margin-bottom:8px;">✅ Key Generated — Share with user</div>
-            <div id="generatedKeyValue" style="font-family:monospace; font-size:1.1rem; color:#fff; letter-spacing:2px; cursor:pointer;" onclick="copyText(document.getElementById('generatedKeyValue').textContent)">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-size:0.75rem; color:var(--cyan); text-transform:uppercase; font-weight:700;">✅ Generated Key(s) — Share with user</span>
+              <button type="button" onclick="copyGeneratedKeys()" class="btn btn-xs btn-primary"><i class="fa-solid fa-copy"></i> Copy All</button>
+            </div>
+            <div id="generatedKeyValue" style="font-family:monospace; font-size:1.02rem; color:#fff; letter-spacing:1px; max-height:140px; overflow-y:auto; line-height:1.6; cursor:pointer;" onclick="copyGeneratedKeys()">
               KEYAUTH-...
             </div>
-            <div style="font-size:0.78rem; color:var(--text-dim); margin-top:6px;">Click key to copy</div>
+            <div style="font-size:0.78rem; color:var(--text-dim); margin-top:6px;">Click box or button to copy all generated keys</div>
           </div>
         </div>
+
 
         <!-- RESELLER USERS TABLE -->
         <div class="content-panel">
@@ -1068,6 +1083,18 @@
   }
 
   async function loadUserProfile() {
+    const cachedUser = localStorage.getItem('user');
+    if (cachedUser) {
+      try {
+        const cu = JSON.parse(cachedUser);
+        const isR = cu.isReseller || cu.role === 'reseller';
+        const rNav = document.getElementById('navReseller');
+        if (rNav && isR) {
+          rNav.style.display = 'flex';
+          rNav.innerHTML = '<i class="fa-solid fa-crown" style="color:#ffd700;"></i> Reseller Panel <span class="badge" style="background:#ffd700;color:#000;font-size:0.6rem;padding:1px 5px;margin-left:auto;">ACTIVE</span>';
+        }
+      } catch(e) {}
+    }
     try {
       const res = await fetch('/auth/profile', { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
@@ -1075,12 +1102,13 @@
 
       const user = data.user;
       _user = user;
+      localStorage.setItem('user', JSON.stringify(user));
 
       // Sidebar
       document.getElementById('sidebarUsername').textContent = user.username;
-      document.getElementById('sidebarAvatar').textContent = user.username.charAt(0).toUpperCase();
+      document.getElementById('sidebarAvatar').textContent = (user.username || 'U').charAt(0).toUpperCase();
 
-      const isReseller = user.isReseller;
+      const isReseller = user.isReseller || user.role === 'reseller';
       document.getElementById('sidebarRole').textContent = isReseller ? '⭐ Reseller' : (user.isKeyUser ? '🔑 Key User' : 'User');
       document.getElementById('accountRole').textContent = isReseller ? 'Reseller' : (user.isKeyUser ? 'Key User' : 'User');
       document.getElementById('usernameDisplay').textContent = user.username;
@@ -1092,7 +1120,7 @@
         resellerNav.innerHTML = '<i class="fa-solid fa-crown" style="color:#ffd700;"></i> Reseller Panel <span class="badge" style="background:#ffd700;color:#000;font-size:0.6rem;padding:1px 5px;margin-left:auto;">ACTIVE</span>';
         // Populate reseller info
         if (user.resellerApp) {
-          document.getElementById('resellerAppName').textContent = user.resellerApp.name;
+          document.getElementById('resellerAppName').textContent = user.resellerApp.name || 'Application';
           document.getElementById('resellerAppVersion').textContent = 'v' + (user.resellerApp.version || '1.0.0');
           // Announcement
           if (user.resellerApp.announcement) {
@@ -1101,11 +1129,14 @@
           }
         }
         const kd = document.getElementById('resellerKeyDisplay');
-        kd.dataset.key = user.resellerKey || '';
-        kd.innerHTML = (user.resellerKey || '—') + ' <i class="fa-solid fa-copy"></i>';
+        if (kd) {
+          kd.dataset.key = user.resellerKey || '';
+          kd.innerHTML = (user.resellerKey || '—') + ' <i class="fa-solid fa-copy"></i>';
+        }
       } else {
         resellerNav.style.display = 'none';
       }
+
 
       // HWID
       document.getElementById('hwidDisplay').textContent = user.hwid ? user.hwid.substring(0,20)+'...' : 'Not registered';
@@ -1205,6 +1236,12 @@
     document.getElementById('keyPreview').textContent = clean ? `KEYAUTH-${clean}-????` : 'KEYAUTH-name-????';
   }
 
+  window.copyGeneratedKeys = function() {
+    const el = document.getElementById('generatedKeyValue');
+    const val = el ? (el.dataset.allKeys || el.innerText || el.textContent) : '';
+    if (val) copyText(val.trim());
+  };
+
   async function handleCreateUserPass(e) {
     e.preventDefault();
     const btn = document.getElementById('btnCreateUserPass');
@@ -1229,11 +1266,14 @@
         document.getElementById('formCreateUserPass').reset();
         loadResellerUsers();
       } else {
-        showToast(data.message || 'Failed', 'error');
+        showToast(data.message || 'Failed to create user', 'error');
         if (data.revoked) setTimeout(() => logoutUser(), 2000);
       }
-    } catch { showToast('Network error', 'error'); }
-    finally { btn.disabled = false; btn.innerHTML = orig; }
+    } catch (err) {
+      showToast(err.message || 'Failed to create user', 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = orig;
+    }
   }
 
   async function handleCreateKeyUser(e) {
@@ -1243,6 +1283,9 @@
     btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Generating...';
 
     try {
+      const countEl = document.getElementById('kuCount');
+      const countVal = countEl ? parseInt(countEl.value) || 1 : 1;
+
       const res = await fetch('/auth/reseller/create-key-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -1250,24 +1293,37 @@
           name: document.getElementById('kuName').value.trim(),
           duration: parseInt(document.getElementById('kuDuration').value),
           hwidLocked: document.getElementById('kuHwidLocked').checked,
-          note: document.getElementById('kuNote').value
+          note: document.getElementById('kuNote').value,
+          count: countVal
         })
       });
       const data = await res.json();
       if (data.success) {
-        showToast('Key created!', 'success');
+        showToast(data.message || 'Key(s) created!', 'success');
         document.getElementById('formCreateKeyUser').reset();
         document.getElementById('keyPreview').textContent = 'KEYAUTH-name-????';
         const box = document.getElementById('generatedKeyBox');
-        document.getElementById('generatedKeyValue').textContent = data.loginKey;
+        const keyDisplay = document.getElementById('generatedKeyValue');
+
+        if (data.keys && data.keys.length > 1) {
+          keyDisplay.innerHTML = data.keys.map(k => `<div style="padding:2px 0;">${k}</div>`).join('');
+          keyDisplay.dataset.allKeys = data.keys.join('\n');
+        } else {
+          keyDisplay.textContent = data.loginKey;
+          keyDisplay.dataset.allKeys = data.loginKey;
+        }
+
         box.style.display = 'block';
         loadResellerUsers();
       } else {
-        showToast(data.message || 'Failed', 'error');
+        showToast(data.message || 'Failed to generate key', 'error');
         if (data.revoked) setTimeout(() => logoutUser(), 2000);
       }
-    } catch { showToast('Network error', 'error'); }
-    finally { btn.disabled = false; btn.innerHTML = orig; }
+    } catch (err) {
+      showToast(err.message || 'Failed to generate key', 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = orig;
+    }
   }
 
   async function loadResellerUsers() {
@@ -1277,9 +1333,9 @@
     try {
       const res = await fetch('/auth/reseller/users', { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
-      if (!data.success) { tb.innerHTML = `<tr><td colspan="7" class="table-empty">${data.message}</td></tr>`; return; }
+      if (!data.success) { tb.innerHTML = `<tr><td colspan="7" class="table-empty text-danger">${data.message || 'Could not load users'}</td></tr>`; return; }
       const users = data.users || [];
-      if (!users.length) { tb.innerHTML = '<tr><td colspan="7" class="table-empty"><i class="fa-solid fa-users"></i> No users yet</td></tr>'; return; }
+      if (!users.length) { tb.innerHTML = '<tr><td colspan="7" class="table-empty"><i class="fa-solid fa-users"></i> No users or keys created yet. Generate one above!</td></tr>'; return; }
       tb.innerHTML = users.map(u => {
         const exp = u.expiresAt ? new Date(u.expiresAt).toLocaleDateString() : (u.duration === -1 ? 'Lifetime' : '—');
         const hwidStatus = u.hwid ? `<span class="badge" style="background:rgba(0,240,255,0.1);color:var(--cyan);font-size:0.7rem;">Locked</span>` : `<span class="badge" style="font-size:0.7rem;">Free</span>`;
@@ -1308,7 +1364,9 @@
           </td>
         </tr>`;
       }).join('');
-    } catch { tb.innerHTML = '<tr><td colspan="7" class="table-empty">Error loading users</td></tr>'; }
+    } catch (err) {
+      tb.innerHTML = `<tr><td colspan="7" class="table-empty text-danger">Error loading users: ${err.message || 'Check network'}</td></tr>`;
+    }
   }
 
   async function resellerBanUser(userId, banned) {
@@ -1317,7 +1375,9 @@
       const data = await res.json();
       if (data.success) { showToast(data.message, 'success'); loadResellerUsers(); }
       else showToast(data.message||'Failed', 'error');
-    } catch { showToast('Network error', 'error'); }
+    } catch (err) {
+      showToast(err.message || 'Action failed', 'error');
+    }
   }
 
   async function resellerResetHwid(userId) {
@@ -1326,7 +1386,9 @@
       const data = await res.json();
       if (data.success) { showToast(data.message, 'success'); loadResellerUsers(); }
       else showToast(data.message||'Failed', 'error');
-    } catch { showToast('Network error', 'error'); }
+    } catch (err) {
+      showToast(err.message || 'Action failed', 'error');
+    }
   }
 
   async function resellerDeleteUser(userId, username) {
@@ -1336,8 +1398,11 @@
       const data = await res.json();
       if (data.success) { showToast(data.message, 'success'); loadResellerUsers(); }
       else showToast(data.message||'Failed', 'error');
-    } catch { showToast('Network error', 'error'); }
+    } catch (err) {
+      showToast(err.message || 'Action failed', 'error');
+    }
   }
+
 
   async function handleActivateKey(e) {
     e.preventDefault();

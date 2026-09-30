@@ -106,13 +106,39 @@ class KrishuKeyAuthEngine:
 
     def _save_data(self, data: dict):
         try:
-            # Atomic write
-            temp_file = f"{self.data_file}.tmp"
-            with open(temp_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2)
-            os.replace(temp_file, self.data_file)
+            # Safe write with retry and fallback
+            saved = False
+            for attempt in range(4):
+                try:
+                    temp_file = f"{self.data_file}.tmp"
+                    with open(temp_file, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=2)
+                    if os.path.exists(self.data_file):
+                        try:
+                            os.replace(temp_file, self.data_file)
+                            saved = True
+                            break
+                        except Exception:
+                            # Direct write fallback if os.replace is locked on Windows
+                            with open(self.data_file, 'w', encoding='utf-8') as f:
+                                json.dump(data, f, indent=2)
+                            if os.path.exists(temp_file):
+                                try: os.remove(temp_file)
+                                except Exception: pass
+                            saved = True
+                            break
+                    else:
+                        os.rename(temp_file, self.data_file)
+                        saved = True
+                        break
+                except Exception:
+                    time.sleep(0.05)
+            if not saved:
+                with open(self.data_file, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2)
         except Exception as e:
             logger.error(f"Error saving KeyAuth data: {e}")
+
 
     # ============================================================
     # ADMIN AUTH & JWT
@@ -355,7 +381,7 @@ class KrishuKeyAuthEngine:
         with _lock:
             data = self._read_data()
             for lic in data.get("licenses", []):
-                if lic.get("key", "").lower() == clean_key.lower():
+                if lic.get("key", "").lower() == clean_key.lower() or lic.get("_id") == clean_key:
                     return lic
             return None
 
@@ -365,7 +391,7 @@ class KrishuKeyAuthEngine:
             data = self._read_data()
             target_lic = None
             for lic in data.get("licenses", []):
-                if lic.get("key", "").lower() == clean_key.lower():
+                if lic.get("key", "").lower() == clean_key.lower() or lic.get("_id") == clean_key:
                     for k, v in updates.items():
                         lic[k] = v
                     target_lic = lic
@@ -408,15 +434,16 @@ class KrishuKeyAuthEngine:
         clean_key = (key or "").strip()
         with _lock:
             data = self._read_data()
-            lics = [l for l in data.get("licenses", []) if l.get("key", "").lower() != clean_key.lower()]
+            lics = [l for l in data.get("licenses", []) if l.get("key", "").lower() != clean_key.lower() and l.get("_id") != clean_key]
             data["licenses"] = lics
             # Also dissociate from user
             for u in data.get("users", []):
-                if u.get("key", "").lower() == clean_key.lower():
+                if u.get("key", "").lower() == clean_key.lower() or u.get("key") == clean_key:
                     u["key"] = ""
             self._save_data(data)
         self.log_action("LICENSE_DELETED", f"License {key} deleted")
         return True
+
 
     # ============================================================
     # USER MANAGEMENT
@@ -443,7 +470,7 @@ class KrishuKeyAuthEngine:
                         return u
             return None
 
-    def create_user(self, username: str, password: str, duration: int = 30, app_id: str = None, key: str = "", level: str = "1", note: str = "") -> dict:
+    def create_user(self, username: str, password: str, duration: int = 30, app_id: str = None, key: str = "", level: str = "1", note: str = "", hwid_locked: bool = True) -> dict:
         clean_user = username.strip()
         now_dt = datetime.now(timezone.utc)
         exp_dt = (now_dt + timedelta(days=duration)).isoformat() if duration > 0 else None
@@ -458,7 +485,7 @@ class KrishuKeyAuthEngine:
             "expiresAt": exp_dt,
             "hwid": "",
             "ip": "",
-            "hwidLocked": True,
+            "hwidLocked": bool(hwid_locked),
             "level": str(level),
             "banned": False,
             "banReason": "",
@@ -466,6 +493,7 @@ class KrishuKeyAuthEngine:
             "lastLogin": None,
             "createdAt": now_dt.isoformat()
         }
+
 
         with _lock:
             data = self._read_data()
@@ -968,6 +996,28 @@ class KrishuKeyAuthEngine:
                     self.log_action("RESELLER_HWID_RESET", f"HWID cleared for reseller key '{key}'")
                     return True
             return False
+
+    def get_reseller_key(self, key: str) -> Optional[dict]:
+        clean_key = (key or "").strip().lower()
+        with _lock:
+            data = self._read_data()
+            for k in data.get("reseller_keys", []):
+                if k.get("key", "").strip().lower() == clean_key:
+                    return k
+            return None
+
+    def record_reseller_usage(self, key: str, count: int = 1):
+        clean_key = (key or "").strip().lower()
+        now_iso = datetime.now(timezone.utc).isoformat()
+        with _lock:
+            data = self._read_data()
+            for k in data.get("reseller_keys", []):
+                if k.get("key", "").strip().lower() == clean_key:
+                    k["keysCreated"] = k.get("keysCreated", 0) + count
+                    k["lastUsed"] = now_iso
+                    self._save_data(data)
+                    break
+
 
     # ============================================================
     # DISCORD WEBHOOK CONFIGURATION

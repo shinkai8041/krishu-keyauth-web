@@ -272,6 +272,7 @@
       });
       const data = await res.json();
       if (data.success) {
+        if (data.user) data.user.isReseller = true;
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         showToast(data.message || 'Reseller access granted!', 'success');
@@ -281,12 +282,13 @@
         btn.disabled = false;
         btn.innerHTML = orig;
       }
-    } catch {
-      showToast('Cannot reach server', 'error');
+    } catch (err) {
+      showToast(err.message || 'Cannot reach server', 'error');
       btn.disabled = false;
       btn.innerHTML = orig;
     }
   }
+
 </script>
 
 {% include 'keyauth_footer.html' %}
