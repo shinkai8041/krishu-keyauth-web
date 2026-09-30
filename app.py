@@ -2333,698 +2333,287 @@ def keyauth_web_reseller_login():
 
 
 
-@app.route('/auth/profile', methods=['GET'])
+def verify_reseller_session(token):
+    """
+    Validates reseller access against the database.
+    - If admin deleted the key: returns None, error (403 revoked)
+    - If the key is expired (auto time ke sath expire): returns None, error (403 revoked)
+    - If the key is banned/suspended by admin: returns None, error (403 revoked)
+    - If valid: returns session dict bound to assigned appId
+    """
+    if not token:
+        return None, (jsonify({'success': False, 'message': 'Authorization token required', 'revoked': True}), 401)
 
+    session = ACTIVE_SESSIONS.get(token)
+    if not session or not (session.get('isReseller') or session.get('role') == 'reseller'):
+        return None, (jsonify({'success': False, 'message': 'Invalid or expired reseller session', 'revoked': True}), 401)
 
-def keyauth_web_profile():
+    res_key = (session.get('resellerKey') or '').strip()
+    if not res_key:
+        ACTIVE_SESSIONS.pop(token, None)
+        return None, (jsonify({'success': False, 'message': 'Reseller key missing. Access revoked.', 'revoked': True}), 403)
 
-
-    token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
-
-
-    
-
-
-    # 1. Match from active memory session
-
-
-    if token and token in ACTIVE_SESSIONS:
-
-
-        return jsonify({'success': True, 'user': ACTIVE_SESSIONS[token]})
-
-
-
-
-
-    # 2. Reseller token fallback
-
-
-    if token and token.startswith('kauth_reseller_'):
-
-
+    # 1. Fetch live reseller key from KeyAuth storage
+    rk = KeyAuth.get_reseller_key(res_key)
+    if not rk:
+        # Check fallback application-level key
         apps = KeyAuth.list_apps()
+        matched_app = next((a for a in apps if a.get('resellerKey') and a.get('resellerKey').strip().lower() == res_key.lower()), None)
+        if not matched_app:
+            # Reseller key was deleted by Admin!
+            ACTIVE_SESSIONS.pop(token, None)
+            return None, (jsonify({
+                'success': False,
+                'message': 'This Reseller Key has been deleted by Admin. Access has been revoked.',
+                'revoked': True
+            }), 403)
+        session['appId'] = matched_app.get('appId') or matched_app.get('_id')
+        session['resellerApp'] = matched_app
+    else:
+        # Check if banned by Admin
+        if rk.get('banned'):
+            ACTIVE_SESSIONS.pop(token, None)
+            return None, (jsonify({
+                'success': False,
+                'message': 'This Reseller Key has been suspended by Admin. Access has been revoked.',
+                'revoked': True
+            }), 403)
+
+        # Check auto-expiration with time
+        exp = rk.get('expiresAt')
+        if exp and exp != "Lifetime":
+            try:
+                exp_dt = datetime.fromisoformat(exp.replace('Z', '+00:00'))
+                if datetime.now(timezone.utc) > exp_dt:
+                    ACTIVE_SESSIONS.pop(token, None)
+                    return None, (jsonify({
+                        'success': False,
+                        'message': 'This Reseller Key has expired. Access has been revoked.',
+                        'revoked': True
+                    }), 403)
+            except Exception:
+                pass
+
+        # Strictly lock to assigned application
+        target_app_id = rk.get('appId')
+        apps = KeyAuth.list_apps()
+        matched_app = next((a for a in apps if a.get('appId') == target_app_id or a.get('_id') == target_app_id), None)
+        if matched_app:
+            session['appId'] = matched_app.get('appId') or matched_app.get('_id')
+            session['resellerApp'] = matched_app
+        elif target_app_id:
+            session['appId'] = target_app_id
+
+    return session, None
 
 
-        app_obj = apps[0] if apps else {'name': 'KRISHU X CHEATS', 'appId': 'app_krishu_main', 'version': '1.0.0'}
+@app.route('/auth/profile', methods=['GET'])
+def keyauth_web_profile():
+    token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+    if not token:
+        return jsonify({'success': False, 'message': 'Token missing'}), 401
 
+    session = ACTIVE_SESSIONS.get(token)
+    if session and (session.get('isReseller') or session.get('role') == 'reseller'):
+        valid_session, err = verify_reseller_session(token)
+        if err:
+            return err
+        return jsonify({'success': True, 'user': valid_session})
+    elif session:
+        return jsonify({'success': True, 'user': session})
 
-        reseller_user = {
-
-
-            'username': 'Reseller VIP',
-
-
-            'role': 'reseller',
-
-
-            'isReseller': True,
-
-
-            'resellerKey': 'ACTIVE-RESELLER',
-
-
-            'resellerApp': app_obj,
-
-
-            'appId': app_obj.get('appId'),
-
-
-            'duration': -1,
-
-
-            'hwid': 'Active',
-
-
-            'level': 'Reseller'
-
-
-        }
-
-
-        ACTIVE_SESSIONS[token] = reseller_user
-
-
-        return jsonify({'success': True, 'user': reseller_user})
-
-
-
-
-
-    # 3. Default user fallback
-
+    if token.startswith('kauth_reseller_'):
+        valid_session, err = verify_reseller_session(token)
+        if err:
+            return err
+        return jsonify({'success': True, 'user': valid_session})
 
     users = KeyAuth.list_users()
-
-
     user = users[0] if users else {'username': 'VIP_Client', 'duration': 30, 'hwid': 'Active', 'isReseller': False}
-
-
     return jsonify({'success': True, 'user': user})
 
 
-
-
-
-
-
-
-@app.route('/auth/reset-hwid', methods=['POST'])
-
-
-def keyauth_web_reset_hwid():
-
-
-    data = request.json or {}
-
-
-    username = data.get('username', '').strip()
-
-
-    key = data.get('key', '').strip()
-
-
-    if key:
-
-
-        KeyAuth.reset_license_hwid(key)
-
-
-        return jsonify({'success': True, 'message': 'License HWID has been reset'})
-
-
-    if username:
-
-
-        KeyAuth.reset_user_hwid(username)
-
-
-        return jsonify({'success': True, 'message': 'User HWID has been reset'})
-
-
-    return jsonify({'success': False, 'message': 'Identifier required'}), 400
-
-
-
-
-
-
-
-
-@app.route('/auth/register', methods=['POST'])
-
-
-def keyauth_web_user_register():
-
-
-    data = request.json or {}
-
-
-    username = (data.get('username') or '').strip()
-
-
-    password = (data.get('password') or '').strip()
-
-
-    email = (data.get('email') or '').strip()
-
-
-
-
-
-    if not username or not password:
-
-
-        return jsonify({'success': False, 'message': 'Username and password required'}), 400
-
-
-    if len(username) < 3:
-
-
-        return jsonify({'success': False, 'message': 'Username must be at least 3 characters'}), 400
-
-
-    if len(password) < 6:
-
-
-        return jsonify({'success': False, 'message': 'Password must be at least 6 characters'}), 400
-
-
-
-
-
-    existing = KeyAuth.get_user(username)
-
-
-    if existing:
-
-
-        return jsonify({'success': False, 'message': f"Username '{username}' is already taken"}), 400
-
-
-
-
-
-    apps = KeyAuth.list_apps()
-
-
-    app_id = apps[0].get('appId') if apps else 'app_krishu_main'
-
-
-    user_doc = KeyAuth.create_user(username, password, duration=30, app_id=app_id, note=f"Web Register {email}".strip())
-
-
-    token = f"kauth_usr_{secrets.token_hex(24)}"
-
-
-    ACTIVE_SESSIONS[token] = user_doc
-
-
-    return jsonify({'success': True, 'message': 'Account registered successfully', 'token': token, 'user': user_doc})
-
-
-
-
-
-
-
-
-@app.route('/auth/activate-key', methods=['POST'])
-
-
-def keyauth_web_activate_key():
-
-
-    data = request.json or {}
-
-
-    key = (data.get('key') or '').strip()
-
-
-    if not key:
-
-
-        return jsonify({'success': False, 'message': 'License key is required'}), 400
-
-
-
-
-
-    lic = KeyAuth.get_license(key)
-
-
-    if not lic:
-
-
-        return jsonify({'success': False, 'message': 'Invalid License Key'}), 404
-
-
-    if lic.get('banned'):
-
-
-        return jsonify({'success': False, 'message': 'This license is banned'}), 403
-
-
-
-
-
-    duration = lic.get('duration', 30)
-
-
-    now_dt = datetime.now(timezone.utc)
-
-
-    KeyAuth.update_license(key, {'status': 'used', 'activatedAt': now_dt.isoformat()})
-
-
-    return jsonify({'success': True, 'message': f'License activated successfully for {duration} days!'})
-
-
-
-
-
-
-
-
 @app.route('/auth/reseller/create-user', methods=['POST'])
-
-
 def keyauth_reseller_create_user():
-
+    token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+    session, err = verify_reseller_session(token)
+    if err:
+        return err
 
     data = request.json or {}
-
-
     username = (data.get('username') or '').strip()
-
-
     password = (data.get('password') or '').strip()
-
-
     duration = int(data.get('duration', 30))
-
-
     note = (data.get('note') or 'Reseller created').strip()
-
-
     hwid_locked = bool(data.get('hwidLocked', True))
 
-
-
-
-
     if not username or not password:
-
-
         return jsonify({'success': False, 'message': 'Username and password required'}), 400
 
-
-
-
-
     existing = KeyAuth.get_user(username)
-
-
     if existing:
-
-
         return jsonify({'success': False, 'message': f"Username '{username}' already exists"}), 400
 
-
-
-
-
-    auth_header = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
-
-
-    session = ACTIVE_SESSIONS.get(auth_header, {})
-
-
     app_id = session.get('appId')
-
-
     if not app_id:
-
-
         apps = KeyAuth.list_apps()
-
-
         app_id = apps[0].get('appId') if apps else 'app_krishu_main'
 
-
-
-
-
-    user_doc = KeyAuth.create_user(username, password, duration=duration, app_id=app_id, note=note, hwid_locked=hwid_locked)
-
-
-    
-
-
-    # Record reseller usage count
-
-
-    res_key = session.get('resellerKey')
-
-
-    if res_key:
-
-
-        KeyAuth.record_reseller_usage(res_key, 1)
-
-
-
-
-
-    return jsonify({'success': True, 'message': f"User '{username}' created successfully!", 'user': user_doc})
-
-
-
-
-
-
-
-
-@app.route('/auth/reseller/create-key-user', methods=['POST'])
-
-
-def keyauth_reseller_create_key_user():
-
-
-    data = request.json or {}
-
-
-    name = (data.get('name') or 'VIP').strip()
-
-
-    duration = int(data.get('duration', 30))
-
-
-    note = (data.get('note') or 'Reseller Key User').strip()
-
-
-    hwid_locked = bool(data.get('hwidLocked', True))
-
-
-    count = int(data.get('count', 1))
-
-
-    count = max(1, min(count, 100))
-
-
-
-
-
-    auth_header = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
-
-
-    session = ACTIVE_SESSIONS.get(auth_header, {})
-
-
-    app_id = session.get('appId')
-
-
-    if not app_id:
-
-
-        apps = KeyAuth.list_apps()
-
-
-        app_id = apps[0].get('appId') if apps else 'app_krishu_main'
-
-
-
-
-
-    clean_prefix = f"KEYAUTH-{name.upper()}" if name else "KEYAUTH"
-
-
-    keys = KeyAuth.create_licenses(
-
-
-        app_id=app_id,
-
-
-        count=count,
-
-
+    # UNLIMITED user creation for the assigned application!
+    user_doc = KeyAuth.create_user(
+        username=username,
+        password=password,
         duration=duration,
-
-
-        level="1",
-
-
-        prefix=clean_prefix,
-
-
+        app_id=app_id,
         note=note,
-
-
-        hwid_check=hwid_locked
-
-
+        hwid_locked=hwid_locked
     )
 
-
-
-
-
     res_key = session.get('resellerKey')
-
-
     if res_key:
+        KeyAuth.update_user(username, {'resellerKey': res_key})
+        KeyAuth.record_reseller_usage(res_key, 1)
 
-
-        KeyAuth.record_reseller_usage(res_key, len(keys))
-
-
-
-
-
-    login_key = keys[0] if keys else f"{clean_prefix}-{secrets.token_hex(4).upper()}"
-
-
+    app_name = session.get('resellerApp', {}).get('name', 'Application')
     return jsonify({
-
-
         'success': True,
-
-
-        'message': f"Generated {len(keys)} License Key(s) successfully!",
-
-
-        'loginKey': login_key,
-
-
-        'keys': keys
-
-
+        'message': f"User '{username}' created successfully for {app_name}!",
+        'user': user_doc
     })
 
 
+@app.route('/auth/reseller/create-key-user', methods=['POST'])
+def keyauth_reseller_create_key_user():
+    token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+    session, err = verify_reseller_session(token)
+    if err:
+        return err
 
+    data = request.json or {}
+    name = (data.get('name') or 'VIP').strip()
+    duration = int(data.get('duration', 30))
+    note = (data.get('note') or 'Reseller Key User').strip()
+    hwid_locked = bool(data.get('hwidLocked', True))
+    count = int(data.get('count', 1))
+    count = max(1, min(count, 500))
 
+    app_id = session.get('appId')
+    if not app_id:
+        apps = KeyAuth.list_apps()
+        app_id = apps[0].get('appId') if apps else 'app_krishu_main'
 
+    clean_prefix = f"KEYAUTH-{name.upper()}" if name else "KEYAUTH"
+    keys = KeyAuth.create_licenses(
+        app_id=app_id,
+        count=count,
+        duration=duration,
+        level="1",
+        prefix=clean_prefix,
+        note=note,
+        hwid_check=hwid_locked
+    )
 
+    res_key = session.get('resellerKey')
+    if res_key:
+        for k in keys:
+            KeyAuth.update_license(k, {'resellerKey': res_key})
+        KeyAuth.record_reseller_usage(res_key, len(keys))
+
+    login_key = keys[0] if keys else f"{clean_prefix}-{secrets.token_hex(4).upper()}"
+    return jsonify({
+        'success': True,
+        'message': f"Generated {len(keys)} License Key(s) successfully!",
+        'loginKey': login_key,
+        'keys': keys
+    })
 
 
 @app.route('/auth/reseller/users', methods=['GET'])
-
-
 def keyauth_reseller_list_users():
-
-
-    auth_header = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
-
-
-    session = ACTIVE_SESSIONS.get(auth_header, {})
-
+    token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+    session, err = verify_reseller_session(token)
+    if err:
+        return err
 
     app_id = session.get('appId')
+    res_key = (session.get('resellerKey') or '').strip().lower()
 
+    all_users = KeyAuth.list_users(app_id=app_id) if app_id else KeyAuth.list_users()
+    all_licenses = KeyAuth.list_licenses(app_id=app_id) if app_id else KeyAuth.list_licenses()
 
-
-
-
-    users = KeyAuth.list_users(app_id=app_id) if app_id else KeyAuth.list_users()
-
-
-    licenses = KeyAuth.list_licenses(app_id=app_id) if app_id else KeyAuth.list_licenses()
-
+    reseller_users = [u for u in all_users if (u.get('resellerKey', '').lower() == res_key or not u.get('resellerKey'))]
+    reseller_licenses = [l for l in all_licenses if (l.get('resellerKey', '').lower() == res_key or not l.get('resellerKey'))]
 
     combined = []
-
-
-    for u in users:
-
-
+    for u in reseller_users:
         combined.append({
-
-
             '_id': u.get('_id'),
-
-
             'username': u.get('username'),
-
-
             'duration': u.get('duration'),
-
-
             'expiresAt': u.get('expiresAt'),
-
-
             'hwid': u.get('hwid'),
-
-
             'banned': u.get('banned'),
-
-
             'note': u.get('note'),
-
-
             'isKeyUser': False
-
-
         })
 
-
-    for l in licenses:
-
-
+    for l in reseller_licenses:
         combined.append({
-
-
             '_id': l.get('_id'),
-
-
             'username': l.get('key'),
-
-
-            'loginKey': l.get('key'),
-
-
             'duration': l.get('duration'),
-
-
             'expiresAt': l.get('expiresAt'),
-
-
             'hwid': l.get('hwid'),
-
-
             'banned': l.get('banned'),
-
-
             'note': l.get('note'),
-
-
+            'status': l.get('status'),
             'isKeyUser': True
-
-
         })
-
 
     return jsonify({'success': True, 'users': combined})
 
 
-
-
-
-
-
-
 @app.route('/auth/reseller/ban-user', methods=['POST'])
-
-
 def keyauth_reseller_ban_user():
-
+    token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+    session, err = verify_reseller_session(token)
+    if err:
+        return err
 
     data = request.json or {}
-
-
     user_id = data.get('userId') or ''
-
-
     banned = bool(data.get('banned', True))
-
-
     b_u = KeyAuth.ban_user(user_id, banned=banned, reason="Reseller Action")
-
-
     b_l = KeyAuth.ban_license(user_id, banned=banned, reason="Reseller Action")
-
-
     return jsonify({'success': True, 'message': f"Account {'suspended' if banned else 'reactivated'}"})
 
 
-
-
-
-
-
-
 @app.route('/auth/reseller/reset-hwid', methods=['POST'])
-
-
 def keyauth_reseller_reset_hwid():
-
+    token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+    session, err = verify_reseller_session(token)
+    if err:
+        return err
 
     data = request.json or {}
-
-
     user_id = data.get('userId') or ''
-
-
     KeyAuth.reset_user_hwid(user_id)
-
-
     KeyAuth.reset_license_hwid(user_id)
-
-
     return jsonify({'success': True, 'message': 'HWID reset successfully'})
 
 
-
-
-
-
-
-
 @app.route('/auth/reseller/delete-user', methods=['POST'])
-
-
 def keyauth_reseller_delete_user():
-
+    token = request.headers.get('Authorization', '').replace('Bearer ', '').strip()
+    session, err = verify_reseller_session(token)
+    if err:
+        return err
 
     data = request.json or {}
-
-
     user_id = data.get('userId') or ''
-
-
     KeyAuth.delete_user(user_id)
-
-
     KeyAuth.delete_license(user_id)
-
-
     return jsonify({'success': True, 'message': 'Account deleted successfully'})
-
-
-
-
-
-
-
-
-
-
-
-# ── DEDICATED ADMIN RESELLER MANAGEMENT APIS ──────────────────
-
-
-
-
 
 @app.route('/admin/api/resellers', methods=['GET', 'POST'])
 
@@ -3460,9 +3049,9 @@ def api_patcher_generate():
     if lang in ('c#', 'csharp', 'cs'):
         def find_method_span(code, method_name):
             pattern = re.compile(
-                r'(?:(?:public|private|protected|internal)\\s+)?(?:static\\s+)?(?:async\\s+)?(?:void|Task)\\s+' +
+                r'(?:(?:public|private|protected|internal)\s+)?(?:static\s+)?(?:async\s+)?(?:void|Task)\s+' +
                 re.escape(method_name) +
-                r'(?:_Click|_click)?\\s*\\([^)]*\\)\\s*\\{',
+                r'(?:_Click|_click)?\s*\([^)]*\)\s*\{',
                 re.IGNORECASE
             )
             m = pattern.search(code)
@@ -3479,6 +3068,8 @@ def api_patcher_generate():
                     if depth == 0:
                         return (start, i + 1)
             return None
+
+        nl = "\n"
 
         login_method = f"""
         // ── LOGIN BUTTON EVENT HANDLER ({btn_name}) ──
@@ -3503,7 +3094,7 @@ def api_patcher_generate():
                 {{
                     string exp = KeyAuthApp.user_data.lifetime ? "Lifetime" : KeyAuthApp.user_data.expires;
                     UpdateStatus("Login Successful! Welcome " + user, true);
-                    MessageBox.Show("Welcome back, " + user + "!\\\\nExpires: " + exp, "Access Granted", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Welcome back, " + user + "!\\nExpires: " + exp, "Access Granted", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     // ── REDIRECT TO MAIN DASHBOARD / CHEAT INTERFACE ──
                     // this.Hide();
@@ -3610,26 +3201,26 @@ namespace {target_ns}
 
             # 1. Ensure using KrishuXCheats;
             if 'using KrishuXCheats;' not in code and 'using KrishuXCheats' not in code:
-                using_matches = list(re.finditer(r'^\\s*using\\s+[\\w\\.]+;\\s*$', code, re.M))
+                using_matches = list(re.finditer(r'^\s*using\s+[\w\.]+;\s*$', code, re.M))
                 if using_matches:
                     last_using = using_matches[-1]
-                    code = code[:last_using.end()] + '\\nusing KrishuXCheats;' + code[last_using.end():]
+                    code = code[:last_using.end()] + nl + 'using KrishuXCheats;' + code[last_using.end():]
                 else:
-                    code = 'using KrishuXCheats;\\n' + code
+                    code = 'using KrishuXCheats;' + nl + code
 
             # 2. Update or Inject KeyAuthApp
-            field_pattern = re.search(r'public\\s+static\\s+KrishuXCheats\\.api\\s+KeyAuthApp\\s*=\\s*new\\s+KrishuXCheats\\.api\\s*\\([^;]*\\);', code, re.DOTALL)
+            field_pattern = re.search(r'public\s+static\s+KrishuXCheats\.api\s+KeyAuthApp\s*=\s*new\s+KrishuXCheats\.api\s*\([^;]*\);', code, re.DOTALL)
             if field_pattern:
                 code = code[:field_pattern.start()] + init_field.strip() + code[field_pattern.end():]
             elif 'KeyAuthApp' not in code:
                 class_open = re.search(r'\bclass\s+' + re.escape(target_class) + r'[^{]*{', code)
                 if class_open:
-                    code = code[:class_open.end()] + '\\n' + init_field + code[class_open.end():]
+                    code = code[:class_open.end()] + nl + init_field + code[class_open.end():]
 
             # 3. Hook constructor
             if 'InitializeKeyAuth();' not in code:
                 if 'InitializeComponent();' in code:
-                    code = code.replace('InitializeComponent();', 'InitializeComponent();\\n            InitializeKeyAuth();', 1)
+                    code = code.replace('InitializeComponent();', 'InitializeComponent();' + nl + '            InitializeKeyAuth();', 1)
 
             # 4. Replace or inject InitializeKeyAuth()
             init_span = find_method_span(code, 'InitializeKeyAuth')
@@ -3640,7 +3231,7 @@ namespace {target_ns}
                 if last_brace != -1:
                     second_last = code[:last_brace].rfind('}')
                     idx = second_last if second_last != -1 else last_brace
-                    code = code[:idx] + '\\n' + init_method + '\\n' + code[idx:]
+                    code = code[:idx] + nl + init_method + nl + code[idx:]
 
             # 5. Replace or inject loginbtn_Click()
             login_span = find_method_span(code, btn_name)
@@ -3651,7 +3242,7 @@ namespace {target_ns}
                 if last_brace != -1:
                     second_last = code[:last_brace].rfind('}')
                     idx = second_last if second_last != -1 else last_brace
-                    code = code[:idx] + '\\n' + login_method + '\\n' + code[idx:]
+                    code = code[:idx] + nl + login_method + nl + code[idx:]
 
             # 6. Replace or inject UpdateStatus()
             status_span = find_method_span(code, 'UpdateStatus')
@@ -3662,9 +3253,14 @@ namespace {target_ns}
                 if last_brace != -1:
                     second_last = code[:last_brace].rfind('}')
                     idx = second_last if second_last != -1 else last_brace
-                    code = code[:idx] + '\\n' + status_method + '\\n' + code[idx:]
+                    code = code[:idx] + nl + status_method + nl + code[idx:]
 
+            # Strictly remove any stray "/n" or literal escape artifacts
+            code = code.replace('/n', '\n')
             patched_code = code
+
+        # Sanitize final output to ensure no stray /n token exists
+        patched_code = patched_code.replace('/n', '\n')
     elif lang in ('cpp', 'c++'):
 
 
