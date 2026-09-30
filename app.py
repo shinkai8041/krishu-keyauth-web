@@ -3415,800 +3415,259 @@ def api_patcher_generate():
     owner_id = str(OWNER_ID)
 
     apps = KeyAuth.list_apps()
-
-
     default_app = apps[0] if apps else {}
-
-
     if (not data.get('appName') or app_name == 'KRISHU X CHEATS') and default_app:
-
-
         app_name = default_app.get('name', 'KRISHU X CHEATS')
-
-
         app_secret = default_app.get('secret') or default_app.get('apiKey', 'krishu_master_secret_2026')
-
-
         app_version = default_app.get('version', '1.0.0')
-
-
         owner_id = default_app.get('ownerId', str(OWNER_ID))
 
-
-
-
-
-        api_url = data.get('apiUrl')
+    api_url = data.get('apiUrl')
     if not api_url:
         host = request.headers.get('X-Forwarded-Host', request.host)
         proto = request.headers.get('X-Forwarded-Proto', request.scheme)
         if 'onrender.com' in host:
-            api_url = f"https://krishu-keyauth-web.onrender.com/api/v1"
+            api_url = "https://krishu-keyauth-web.onrender.com/api/v1"
         elif '127.0.0.1' in host or 'localhost' in host:
             api_url = f"{proto}://{host}/api/v1"
         else:
             api_url = f"{proto}://{host}/api/v1"
 
-
-
-
-
     if source_code:
-
-
         ns_m = re.search(r'\bnamespace\s+([\w\.]+)', source_code)
-
-
         target_ns = ns_m.group(1) if ns_m else 'XYZ'
 
-
-
-
-
         class_m = re.search(r'\b(?:public|internal|private)?\s*(?:partial\s+)?class\s+([\w]+)', source_code)
-
-
         target_class = class_m.group(1) if class_m else 'Form1'
 
-
-
-
-
         base_m = re.search(r'\bclass\s+[\w]+\s*:\s*([\w]+)', source_code)
-
-
         target_base = base_m.group(1) if base_m else 'Form'
 
-
-
-
-
-        if user_box == 'txtUsername':
-
-
+        if user_box in ('txtUsername', ''):
             m = re.search(r'\b(txtUsername|txtUser|tbUser|tbUsername|User|Username|txt_user|txt_username)\b', source_code, re.I)
-
-
             if m: user_box = m.group(1)
-
-
-        if pass_box == 'txtPassword':
-
-
+        if pass_box in ('txtPassword', ''):
             m = re.search(r'\b(txtPassword|txtPass|tbPass|tbPassword|Pass|Password|txt_pass|txt_password)\b', source_code, re.I)
-
-
             if m: pass_box = m.group(1)
-
-
-        if btn_name == 'btnLogin':
-
-
+        if btn_name in ('btnLogin', ''):
             m = re.search(r'\b(btnLogin|loginbtn|btn_login|buttonLogin|cmdLogin|button1)\b', source_code, re.I)
-
-
             if m: btn_name = m.group(1)
-
-
-        if status_box == 'lblStatus':
-
-
+        if status_box in ('lblStatus', ''):
             m = re.search(r'\b(lblStatus|sta|statuslbl|lbl_status|statusLabel|labelStatus|label1)\b', source_code, re.I)
-
-
             if m: status_box = m.group(1)
-
-
     else:
-
-
         target_ns = 'XYZ'
-
-
         target_class = 'Form1'
-
-
         target_base = 'Form'
 
-
-
-
-
     if lang in ('c#', 'csharp', 'cs'):
-
-
-        if source_code and 'class ' in source_code:
-
-
-            code = source_code
-
-
-            if 'using KrishuXCheats;' not in code and 'using KrishuXCheats' not in code:
-
-
-                using_matches = list(re.finditer(r'^\s*using\s+[\w\.]+;\s*$', code, re.M))
-
-
-                if using_matches:
-
-
-                    last_using = using_matches[-1]
-
-
-                    code = code[:last_using.end()] + '\nusing KrishuXCheats;' + code[last_using.end():]
-
-
-                else:
-
-
-                    code = 'using KrishuXCheats;\n' + code
-
-
-
-
-
-            if 'KeyAuthApp' not in code:
-
-
-                init_field = f"""
-
-
-        // ── KRISHU X KEYAUTH CORE API INITIALIZATION ──
-
-
-        public static KrishuXCheats.api KeyAuthApp = new KrishuXCheats.api(
-
-
-            name: "{app_name}",
-
-
-            ownerid: "{owner_id}",
-
-
-            secret: "{app_secret}",
-
-
-            version: "{app_version}",
-
-
-            apiUrl: "{api_url}"
-
-
-        );
-
-
-"""
-
-
-                class_open = re.search(r'\bclass\s+' + re.escape(target_class) + r'[^\{]*\{', code)
-
-
-                if class_open:
-
-
-                    code = code[:class_open.end()] + init_field + code[class_open.end():]
-
-
-
-
-
-            if 'KeyAuthApp.init()' not in code and 'KeyAuthApp.init();' not in code:
-
-
-                if 'InitializeComponent();' in code:
-
-
-                    code = code.replace('InitializeComponent();', 'InitializeComponent();\n            try { KeyAuthApp.init(); } catch { }', 1)
-
-
-
-
-
-            click_pattern = re.search(r'void\s+' + re.escape(btn_name) + r'(_Click|_click)?\s*\([^)]*\)\s*\{([^}]*)\}', code, re.DOTALL)
-
-
-            login_method = f"""
-
-
+        def find_method_span(code, method_name):
+            pattern = re.compile(
+                r'(?:(?:public|private|protected|internal)\\s+)?(?:static\\s+)?(?:async\\s+)?(?:void|Task)\\s+' +
+                re.escape(method_name) +
+                r'(?:_Click|_click)?\\s*\\([^)]*\\)\\s*\\{',
+                re.IGNORECASE
+            )
+            m = pattern.search(code)
+            if not m:
+                return None
+            start = m.start()
+            brace_start = m.end() - 1
+            depth = 0
+            for i in range(brace_start, len(code)):
+                if code[i] == '{':
+                    depth += 1
+                elif code[i] == '}':
+                    depth -= 1
+                    if depth == 0:
+                        return (start, i + 1)
+            return None
+
+        login_method = f"""
         // ── LOGIN BUTTON EVENT HANDLER ({btn_name}) ──
-
-
         private void {btn_name}_Click(object sender, EventArgs e)
-
-
         {{
-
-
             string user = {user_box}.Text.Trim();
-
-
             string pass = {pass_box}.Text.Trim();
 
-
-
-
-
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
-
-
             {{
-
-
                 UpdateStatus("Please enter username and password", false);
-
-
                 return;
-
-
             }}
-
-
-
-
 
             UpdateStatus("Authenticating credentials...", true);
-
-
             {btn_name}.Enabled = false;
 
-
-
-
-
             try
-
-
             {{
-
-
                 KeyAuthApp.login(user, pass);
-
-
                 if (KeyAuthApp.response.success)
-
-
                 {{
-
-
                     string exp = KeyAuthApp.user_data.lifetime ? "Lifetime" : KeyAuthApp.user_data.expires;
-
-
                     UpdateStatus("Login Successful! Welcome " + user, true);
-
-
-                    MessageBox.Show("Welcome back, " + user + "!\\nExpiry: " + exp, "Access Granted", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-
-
-
-
-                    // ── LOAD CHEATS / MAIN FORM ──
-
-
-                    // this.Hide();
-
-
-                }}
-
-
-                else
-
-
-                {{
-
-
-                    UpdateStatus("Login Failed: " + KeyAuthApp.response.message, false);
-
-
-                    MessageBox.Show(KeyAuthApp.response.message, "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-
-                }}
-
-
-            }}
-
-
-            catch (Exception ex)
-
-
-            {{
-
-
-                UpdateStatus("Authentication Exception: " + ex.Message, false);
-
-
-            }}
-
-
-            finally
-
-
-            {{
-
-
-                {btn_name}.Enabled = true;
-
-
-            }}
-
-
-        }}"""
-
-
-            if click_pattern:
-
-
-                code = code[:click_pattern.start()] + login_method.strip() + code[click_pattern.end():]
-
-
-            elif f"{btn_name}_Click" not in code:
-
-
-                last_brace = code.rfind('}')
-
-
-                if last_brace != -1:
-
-
-                    second_last_brace = code[:last_brace].rfind('}')
-
-
-                    idx = second_last_brace if second_last_brace != -1 else last_brace
-
-
-                    code = code[:idx] + login_method + '\n' + code[idx:]
-
-
-
-
-
-            if 'UpdateStatus' not in code:
-
-
-                status_method = f"""
-
-
-        // ── STATUS NOTIFICATION ROUTINE ──
-
-
-        private void UpdateStatus(string message, bool isSuccess)
-
-
-        {{
-
-
-            try
-
-
-            {{
-
-
-                if ({status_box} != null)
-
-
-                {{
-
-
-                    {status_box}.Text = message;
-
-
-                }}
-
-
-            }}
-
-
-            catch {{ }}
-
-
-        }}
-
-
-"""
-
-
-                last_brace = code.rfind('}')
-
-
-                if last_brace != -1:
-
-
-                    second_last_brace = code[:last_brace].rfind('}')
-
-
-                    idx = second_last_brace if second_last_brace != -1 else last_brace
-
-
-                    code = code[:idx] + status_method + '\n' + code[idx:]
-
-
-
-
-
-            patched_code = code
-
-
-        else:
-
-
-            patched_code = f"""/* =========================================================================
-
-
- * KRISHU X KEYAUTH — FULLY INJECTED & AUTO-PATCHED LOGIN MODULE
-
-
- * Language: C# (.NET Framework / .NET Core / WinForms / WPF / Unity)
-
-
- * Auto-Generated on: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
-
-
- * Target App: {app_name} | Version: {app_version}
-
-
- * ========================================================================= */
-
-
-
-
-
-using System;
-
-
-using System.IO;
-
-
-using System.Net;
-
-
-using System.Text;
-
-
-using System.Diagnostics;
-
-
-using System.Windows.Forms;
-
-
-using System.Security.Principal;
-
-
-using System.Runtime.InteropServices;
-
-
-using System.Collections.Specialized;
-
-
-using KrishuXCheats;
-
-
-
-
-
-namespace {target_ns}
-
-
-{{
-
-
-    public partial class {target_class} : {target_base}
-
-
-    {{
-
-
-        // ── 1. KRISHU X KEYAUTH API INITIALIZATION ──
-
-
-        public static KrishuXCheats.api KeyAuthApp = new KrishuXCheats.api(
-
-
-            name: "{app_name}",
-
-
-            ownerid: "{owner_id}",
-
-
-            secret: "{app_secret}",
-
-
-            version: "{app_version}",
-
-
-            apiUrl: "{api_url}"
-
-
-        );
-
-
-
-
-
-        public {target_class}()
-
-
-        {{
-
-
-            InitializeComponent();
-
-
-            InitializeKeyAuth();
-
-
-        }}
-
-
-
-
-
-        private void InitializeKeyAuth()
-
-
-        {{
-
-
-            try
-
-
-            {{
-
-
-                KeyAuthApp.init();
-
-
-                if (!KeyAuthApp.response.success)
-
-
-                {{
-
-
-                    UpdateStatus("KeyAuth Init Error: " + KeyAuthApp.response.message, false);
-
-
-                    MessageBox.Show("Initialization failed: " + KeyAuthApp.response.message, "Krishu X KeyAuth", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-
-                }}
-
-
-                else
-
-
-                {{
-
-
-                    UpdateStatus("Connected to KeyAuth Secure Core", true);
-
-
-                }}
-
-
-            }}
-
-
-            catch (Exception ex)
-
-
-            {{
-
-
-                UpdateStatus("Connection Error: " + ex.Message, false);
-
-
-            }}
-
-
-        }}
-
-
-
-
-
-        // ── 2. LOGIN BUTTON EVENT HANDLER ({btn_name}) ──
-
-
-        private void {btn_name}_Click(object sender, EventArgs e)
-
-
-        {{
-
-
-            string user = {user_box}.Text.Trim();
-
-
-            string pass = {pass_box}.Text.Trim();
-
-
-
-
-
-            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
-
-
-            {{
-
-
-                UpdateStatus("Please enter username and password", false);
-
-
-                return;
-
-
-            }}
-
-
-
-
-
-            UpdateStatus("Authenticating credentials...", true);
-
-
-            {btn_name}.Enabled = false;
-
-
-
-
-
-            try
-
-
-            {{
-
-
-                KeyAuthApp.login(user, pass);
-
-
-                if (KeyAuthApp.response.success)
-
-
-                {{
-
-
-                    string exp = KeyAuthApp.user_data.lifetime ? "Lifetime" : KeyAuthApp.user_data.expires;
-
-
-                    UpdateStatus("Login Successful! Welcome " + user, true);
-
-
-                    MessageBox.Show("Welcome back, " + user + "!\\nExpiry: " + exp, "Access Granted", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-
-
-
+                    MessageBox.Show("Welcome back, " + user + "!\\\\nExpires: " + exp, "Access Granted", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     // ── REDIRECT TO MAIN DASHBOARD / CHEAT INTERFACE ──
-
-
                     // this.Hide();
-
-
-                    // MainForm main = new MainForm();
-
-
-                    // main.ShowDialog();
-
-
-                    // this.Close();
-
-
                 }}
-
-
                 else
-
-
                 {{
-
-
                     UpdateStatus("Login Failed: " + KeyAuthApp.response.message, false);
-
-
                     MessageBox.Show(KeyAuthApp.response.message, "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-
                 }}
-
-
             }}
-
-
             catch (Exception ex)
-
-
             {{
-
-
                 UpdateStatus("Authentication Exception: " + ex.Message, false);
-
-
             }}
-
-
             finally
-
-
             {{
-
-
                 {btn_name}.Enabled = true;
-
-
             }}
+        }}"""
 
-
-        }}
-
-
-
-
-
-        // ── 3. STATUS & NOTIFICATION ROUTINE ──
-
-
-        private void UpdateStatus(string message, bool isSuccess)
-
-
+        init_method = f"""
+        // ── KRISHU X KEYAUTH CORE INITIALIZATION ──
+        private void InitializeKeyAuth()
         {{
-
-
             try
-
-
             {{
-
-
-                if ({status_box} != null)
-
-
+                KeyAuthApp.init();
+                if (!KeyAuthApp.response.success)
                 {{
-
-
-                    {status_box}.Text = message;
-
-
+                    UpdateStatus("KeyAuth Init: " + KeyAuthApp.response.message, false);
                 }}
-
-
+                else
+                {{
+                    UpdateStatus("Connected to KeyAuth Core", true);
+                }}
             }}
+            catch (Exception ex)
+            {{
+                UpdateStatus("Connection Error: " + ex.Message, false);
+            }}
+        }}"""
 
-
+        status_method = f"""
+        // ── STATUS & NOTIFICATION ROUTINE ──
+        private void UpdateStatus(string message, bool isSuccess)
+        {{
+            try
+            {{
+                if ({status_box} != null)
+                {{
+                    {status_box}.Text = message;
+                }}
+            }}
             catch {{ }}
+        }}"""
 
-
-        }}
-
-
-    }}
-
-
-}}
-
-
+        init_field = f"""
+        // ── KRISHU X KEYAUTH API INITIALIZATION ──
+        public static KrishuXCheats.api KeyAuthApp = new KrishuXCheats.api(
+            name: "{app_name}",
+            ownerid: "{owner_id}",
+            secret: "{app_secret}",
+            version: "{app_version}",
+            apiUrl: "{api_url}"
+        );
 """
 
+        if not source_code or 'class ' not in source_code:
+            patched_code = f"""/* =========================================================================
+ * KRISHU X KEYAUTH — FULLY INJECTED & AUTO-PATCHED LOGIN MODULE
+ * Language: C# (.NET Framework / .NET Core / WinForms / WPF / Unity)
+ * Target App: {app_name} | Version: {app_version}
+ * ========================================================================= */
 
+using System;
+using System.IO;
+using System.Net;
+using System.Text;
+using System.Diagnostics;
+using System.Windows.Forms;
+using System.Security.Principal;
+using System.Runtime.InteropServices;
+using System.Collections.Specialized;
+using KrishuXCheats;
+
+namespace {target_ns}
+{{
+    public partial class {target_class} : {target_base}
+    {{
+{init_field}
+        public {target_class}()
+        {{
+            InitializeComponent();
+            InitializeKeyAuth();
+        }}
+{init_method}
+{login_method}
+{status_method}
+    }}
+}}
+"""
+        else:
+            code = source_code
+
+            # 1. Ensure using KrishuXCheats;
+            if 'using KrishuXCheats;' not in code and 'using KrishuXCheats' not in code:
+                using_matches = list(re.finditer(r'^\\s*using\\s+[\\w\\.]+;\\s*$', code, re.M))
+                if using_matches:
+                    last_using = using_matches[-1]
+                    code = code[:last_using.end()] + '\\nusing KrishuXCheats;' + code[last_using.end():]
+                else:
+                    code = 'using KrishuXCheats;\\n' + code
+
+            # 2. Update or Inject KeyAuthApp
+            field_pattern = re.search(r'public\\s+static\\s+KrishuXCheats\\.api\\s+KeyAuthApp\\s*=\\s*new\\s+KrishuXCheats\\.api\\s*\\([^;]*\\);', code, re.DOTALL)
+            if field_pattern:
+                code = code[:field_pattern.start()] + init_field.strip() + code[field_pattern.end():]
+            elif 'KeyAuthApp' not in code:
+                class_open = re.search(r'\bclass\s+' + re.escape(target_class) + r'[^{]*{', code)
+                if class_open:
+                    code = code[:class_open.end()] + '\\n' + init_field + code[class_open.end():]
+
+            # 3. Hook constructor
+            if 'InitializeKeyAuth();' not in code:
+                if 'InitializeComponent();' in code:
+                    code = code.replace('InitializeComponent();', 'InitializeComponent();\\n            InitializeKeyAuth();', 1)
+
+            # 4. Replace or inject InitializeKeyAuth()
+            init_span = find_method_span(code, 'InitializeKeyAuth')
+            if init_span:
+                code = code[:init_span[0]] + init_method.strip() + code[init_span[1]:]
+            elif 'void InitializeKeyAuth' not in code:
+                last_brace = code.rfind('}')
+                if last_brace != -1:
+                    second_last = code[:last_brace].rfind('}')
+                    idx = second_last if second_last != -1 else last_brace
+                    code = code[:idx] + '\\n' + init_method + '\\n' + code[idx:]
+
+            # 5. Replace or inject loginbtn_Click()
+            login_span = find_method_span(code, btn_name)
+            if login_span:
+                code = code[:login_span[0]] + login_method.strip() + code[login_span[1]:]
+            elif f"{btn_name}_Click" not in code:
+                last_brace = code.rfind('}')
+                if last_brace != -1:
+                    second_last = code[:last_brace].rfind('}')
+                    idx = second_last if second_last != -1 else last_brace
+                    code = code[:idx] + '\\n' + login_method + '\\n' + code[idx:]
+
+            # 6. Replace or inject UpdateStatus()
+            status_span = find_method_span(code, 'UpdateStatus')
+            if status_span:
+                code = code[:status_span[0]] + status_method.strip() + code[status_span[1]:]
+            elif 'void UpdateStatus' not in code:
+                last_brace = code.rfind('}')
+                if last_brace != -1:
+                    second_last = code[:last_brace].rfind('}')
+                    idx = second_last if second_last != -1 else last_brace
+                    code = code[:idx] + '\\n' + status_method + '\\n' + code[idx:]
+
+            patched_code = code
     elif lang in ('cpp', 'c++'):
 
 
