@@ -69,9 +69,13 @@
       <span style="font-size: 0.78rem; color: var(--text-3);">
         <i class="fa-solid fa-circle-exclamation" style="color: #ff2a5f;"></i> Protected by Zero-Trust Sakura Firewall
       </span>
-      <div style="margin-top: 0.85rem; display: flex; justify-content: center; gap: 1rem;">
+      <div style="margin-top: 0.85rem; display: flex; justify-content: center; gap: 1rem; align-items: center;">
         <a href="/keyauth/login" style="color: var(--text-2); font-size: 0.8rem; text-decoration: none;">
           <i class="fa-solid fa-arrow-left"></i> User Login
+        </a>
+        <span style="color: var(--text-3);">|</span>
+        <a href="/keyauth/register" style="color: #ff7597; font-size: 0.8rem; text-decoration: none; font-weight: 700;">
+          <i class="fa-solid fa-user-plus"></i> Register Free
         </a>
         <span style="color: var(--text-3);">|</span>
         <a href="/keyauth/portal" style="color: var(--text-2); font-size: 0.8rem; text-decoration: none;">
@@ -133,6 +137,8 @@
       if (data.success) {
         localStorage.setItem('adminToken', data.token);
         localStorage.setItem('adminUser', data.username);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify({ username: data.username, role: data.role || 'admin', isSuperAdmin: !!data.isSuperAdmin }));
         showToast('Admin access verified. Redirecting...', 'success');
         setTimeout(() => window.location.replace('/admin/dashboard'), 700);
       } else {

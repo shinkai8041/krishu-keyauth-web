@@ -108,7 +108,7 @@
         <!-- BUY OWN WEBSITE HIGH PRIORITY CTA -->
         <button onclick="openBuyWebsiteModal()" class="btn btn-primary btn-sm neon-pulse-border" style="background: linear-gradient(135deg, #ff2a5f, #9f1239); font-weight: 800; font-size: 0.82rem;">
           <i class="fa-solid fa-crown" style="color: #ffd700;"></i> BUY OWN WEBSITE 
-          <span class="badge" style="background: rgba(0,0,0,0.35); color: #fff; margin-left: 5px; font-size: 0.72rem;" id="topbarPriceTag">₹499 / $6.99</span>
+          <span class="badge" style="background: rgba(0,0,0,0.35); color: #fff; margin-left: 5px; font-size: 0.72rem;" id="topbarPriceTag">₹399 / $4.99</span>
         </button>
 
         <!-- LANGUAGE MODE TOGGLE -->
@@ -1250,7 +1250,7 @@
             <button type="button" onclick="setBuyModalCurrency('USD')" id="buyModalUsdBtn" class="btn btn-xs btn-ghost" style="padding: 3px 10px; font-size: 0.76rem;">🇺🇸 USD</button>
           </div>
           <div style="font-size: 1.85rem; font-weight: 900; color: #00ff88; text-shadow: 0 0 16px rgba(0,255,136,0.5);" id="buyModalPriceTag">
-            ₹499 <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ Lifetime One-Time</span>
+            ₹399 <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ Lifetime One-Time</span>
           </div>
         </div>
       </div>
@@ -1479,8 +1479,11 @@
     const adminName = localStorage.getItem('adminUser') || 'Admin';
     const nameEl = document.getElementById('adminNameDisplay');
     const topEl = document.getElementById('topbarAdminName');
+    const roleEl = document.querySelector('.sidebar-user-info .sidebar-role');
+    const isMaster = adminName.toLowerCase() === 'krishu' || adminName.toLowerCase() === 'admin';
     if (nameEl) nameEl.textContent = adminName;
     if (topEl) topEl.textContent = adminName;
+    if (roleEl) roleEl.textContent = isMaster ? 'Master SuperAdmin' : 'Developer / Owner';
 
     initDashboard();
   })();
@@ -1569,11 +1572,11 @@
       const inrBtn = document.getElementById('buyModalInrBtn');
       const usdBtn = document.getElementById('buyModalUsdBtn');
       if (curr === 'INR') {
-        if (tag) tag.innerHTML = '₹499 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+        if (tag) tag.innerHTML = '₹399 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
         if (inrBtn) { inrBtn.className = 'btn btn-xs btn-primary'; }
         if (usdBtn) { usdBtn.className = 'btn btn-xs btn-ghost'; }
       } else {
-        if (tag) tag.innerHTML = '$6.99 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+        if (tag) tag.innerHTML = '$4.99 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
         if (inrBtn) { inrBtn.className = 'btn btn-xs btn-ghost'; }
         if (usdBtn) { usdBtn.className = 'btn btn-xs btn-primary'; }
       }
@@ -1598,7 +1601,7 @@
       const txt = document.getElementById('globalLangText');
       const topPrice = document.getElementById('topbarPriceTag');
       if (txt) txt.textContent = window.currentLangMode === 'hinglish' ? 'Hinglish' : 'English';
-      if (topPrice) topPrice.textContent = window.currentLangMode === 'hinglish' ? '₹499 / $6.99' : '$6.99 / ₹499';
+      if (topPrice) topPrice.textContent = window.currentLangMode === 'hinglish' ? '₹399 / $4.99' : '$4.99 / ₹399';
       showToast('Documentation language changed to ' + (window.currentLangMode === 'hinglish' ? '🌸 Hinglish Mode' : '🌐 English Mode'), 'info');
       setBuyModalCurrency(window.currentLangMode === 'hinglish' ? 'INR' : 'USD');
       renderHelpContent();
@@ -1662,7 +1665,7 @@
                 <i class="fa-solid fa-bag-shopping"></i> 5. Buy Own Website (White-Label)
               </div>
               <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
-                Agar aapko aisi hi complete KeyAuth website kharidni hai ya kisi ko sell karni hai, toh Price sirf <strong>₹499 INR</strong> hai. Direct developer ko Discord par DM karein: <strong>krishu.x.cheats</strong>.
+                Agar aapko aisi hi complete KeyAuth website kharidni hai ya kisi ko sell karni hai, toh Price sirf <strong>₹399 INR</strong> hai. Direct developer ko Discord par DM karein: <strong>krishu.x.cheats</strong>.
               </p>
             </div>
           </div>
@@ -1711,7 +1714,7 @@
                 <i class="fa-solid fa-bag-shopping"></i> 5. Commercial Source Package
               </div>
               <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
-                Own and host this entire KeyAuth platform with zero monthly royalties. One-time license fee: <strong>$6.99 USD / ₹499 INR</strong>. Contact primary architect on Discord: <strong>krishu.x.cheats</strong>.
+                Own and host this entire KeyAuth platform with zero monthly royalties. One-time license fee: <strong>$4.99 USD / ₹399 INR</strong>. Contact primary architect on Discord: <strong>krishu.x.cheats</strong>.
               </p>
             </div>
           </div>

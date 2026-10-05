@@ -82,11 +82,13 @@
       try { data = await res.json(); } catch(e) { data = { message: 'Server communication failed' }; }
 
       if (res.ok && data.success) {
-        showToast('🌸 Account created successfully!', 'success');
+        showToast('🌸 Account created successfully! Launching Console...', 'success');
         if (data.token) {
+          localStorage.setItem('adminToken', data.token);
+          localStorage.setItem('adminUser', data.user.username);
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
-          setTimeout(() => location.href = '/keyauth/dashboard', 600);
+          setTimeout(() => location.href = '/admin/dashboard', 700);
         } else {
           setTimeout(() => location.href = '/keyauth/login', 900);
         }

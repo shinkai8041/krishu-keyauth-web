@@ -204,8 +204,15 @@
       if (data.success) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        showToast('Login successful!', 'success');
-        setTimeout(() => location.href = '/keyauth/dashboard', 500);
+        if (data.isAdmin || (data.user && (data.user.role === 'admin' || data.user.isPanelAdmin || data.user.isSuperAdmin))) {
+          localStorage.setItem('adminToken', data.token);
+          localStorage.setItem('adminUser', data.user.username);
+          showToast('Welcome back, Developer!', 'success');
+          setTimeout(() => location.href = '/admin/dashboard', 500);
+        } else {
+          showToast('Login successful!', 'success');
+          setTimeout(() => location.href = '/keyauth/dashboard', 500);
+        }
       } else {
         showToast(data.message || 'Login failed', 'error');
         btn.disabled = false;

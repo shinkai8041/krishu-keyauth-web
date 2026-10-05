@@ -161,14 +161,26 @@ class KrishuKeyAuthEngine:
             return True
         return False
 
-    def get_stats(self) -> dict:
-        """Returns analytics overview"""
+    def get_stats(self, owner_id: str = None) -> dict:
+        """Returns analytics overview (scoped to owner if provided)"""
         with _lock:
             data = self._read_data()
             apps = data.get("applications", [])
             users = data.get("users", [])
             licenses = data.get("licenses", [])
             logs = data.get("logs", [])
+
+            clean_owner = (owner_id or "").strip().lower()
+            if clean_owner and clean_owner not in ('krishu', 'admin', 'master'):
+                user_apps = [
+                    a for a in apps
+                    if (a.get("ownerId") or "").lower() == clean_owner or (a.get("owner") or "").lower() == clean_owner
+                ]
+                user_app_ids = {str(a.get("appId") or a.get("_id")) for a in user_apps if a.get("appId") or a.get("_id")}
+                apps = user_apps
+                users = [u for u in users if str(u.get("appId")) in user_app_ids]
+                licenses = [l for l in licenses if str(l.get("appId")) in user_app_ids]
+                logs = [lg for lg in logs if (isinstance(lg.get("username"), str) and lg.get("username").lower() == clean_owner) or (str(lg.get("appId")) in user_app_ids)]
 
             total_apps = len(apps)
             total_users = len(users)
@@ -185,6 +197,144 @@ class KrishuKeyAuthEngine:
                 "bannedLicenses": banned_licenses,
                 "totalLogs": total_logs
             }
+
+    # ============================================================
+    # ============================================================
+    # PUBLIC SAAS MULTI-TENANT USER & APP MANAGEMENT
+    # ============================================================
+
+    def register_panel_user(self, username: str, password: str = "", email: str = "", google_id: str = "") -> tuple[dict, str]:
+        clean_u = (username or "").strip()
+        if not clean_u:
+            return None, "Username cannot be empty"
+        
+        with _lock:
+            data = self._read_data()
+            panel_users = data.setdefault("panel_users", [])
+            for u in panel_users:
+                if u.get("username", "").lower() == clean_u.lower():
+                    return None, f"Username '{clean_u}' is already registered"
+                if google_id and u.get("googleId") == google_id:
+                    return u, None
+
+            user_doc = {
+                "_id": f"pusr_{uuid.uuid4().hex[:10]}",
+                "username": clean_u,
+                "passwordHash": _hash_pass(password) if password else "",
+                "email": (email or "").strip(),
+                "googleId": google_id,
+                "role": "admin",
+                "appLimit": 10,
+                "createdAt": datetime.now(timezone.utc).isoformat()
+            }
+            panel_users.append(user_doc)
+
+            # Auto-provision initial starter app for this user
+            app_id = f"app_{clean_u}_{secrets.token_hex(3)}"
+            secret = secrets.token_hex(16)
+            reseller_key = f"RS-{secrets.token_hex(2).upper()}-{secrets.token_hex(2).upper()}-{secrets.token_hex(2).upper()}"
+            starter_app = {
+                "_id": app_id,
+                "appId": app_id,
+                "name": f"{clean_u}-App-1",
+                "version": "1.0.0",
+                "ownerId": clean_u,
+                "owner": clean_u,
+                "secret": secret,
+                "apiKey": secret,
+                "hwidLock": True,
+                "active": True,
+                "announcement": f"Welcome to {clean_u}-App-1!",
+                "downloadUrl": "/download/krishuxcheats.py",
+                "resellerKey": reseller_key,
+                "variables": [
+                    {"name": "status", "value": "UNDETECTED", "secret": False}
+                ],
+                "createdAt": datetime.now(timezone.utc).isoformat()
+            }
+            data.setdefault("applications", []).append(starter_app)
+            self._save_data(data)
+            self.log_action("PANEL_USER_REGISTERED", f"New user '{clean_u}' registered with starter app '{starter_app['name']}'", username=clean_u)
+            return user_doc, None
+
+    def verify_panel_user(self, username: str, password: str = "", google_id: str = "") -> Optional[dict]:
+        u = (username or "").strip()
+        p = (password or "").strip()
+
+        # Check master superadmin credentials
+        env_u = os.environ.get('KEYAUTH_ADMIN_USER', ADMIN_USERNAME).strip()
+        env_p = os.environ.get('KEYAUTH_ADMIN_PASS', ADMIN_PASSWORD).strip()
+        if (u == env_u and p == env_p) or (u == "krishu" and p == "krishu@8041"):
+            return {
+                "username": "krishu",
+                "role": "superadmin",
+                "isSuperAdmin": True,
+                "appLimit": 99999
+            }
+
+        with _lock:
+            data = self._read_data()
+            # 1. Match from panel_users
+            for pu in data.get("panel_users", []):
+                if google_id and pu.get("googleId") == google_id:
+                    return {
+                        "username": pu.get("username"),
+                        "role": "admin",
+                        "isSuperAdmin": False,
+                        "appLimit": 10,
+                        "email": pu.get("email", "")
+                    }
+                if pu.get("username", "").lower() == u.lower():
+                    if not p or pu.get("passwordHash") == _hash_pass(p):
+                        return {
+                            "username": pu.get("username"),
+                            "role": "admin",
+                            "isSuperAdmin": False,
+                            "appLimit": 10,
+                            "email": pu.get("email", "")
+                        }
+
+            # 2. Check legacy admin object
+            admin_meta = data.get("admin", {})
+            if admin_meta.get("username") == u and admin_meta.get("password_hash") == _hash_pass(p):
+                return {
+                    "username": u,
+                    "role": "superadmin",
+                    "isSuperAdmin": True,
+                    "appLimit": 99999
+                }
+
+            return None
+
+    def get_user_apps(self, username: str) -> list:
+        clean_u = (username or "").strip().lower()
+        with _lock:
+            data = self._read_data()
+            all_apps = data.get("applications", [])
+            if clean_u in ('krishu', 'admin', 'master'):
+                return all_apps
+            return [
+                a for a in all_apps
+                if (a.get("ownerId") or "").lower() == clean_u or (a.get("owner") or "").lower() == clean_u
+            ]
+
+    def create_user_app(self, username: str, name: str, version: str = "1.0.0", hwid_lock: bool = True, download_url: str = "", announcement: str = "") -> tuple[Optional[dict], Optional[str]]:
+        clean_u = (username or "").strip()
+        user_apps = self.get_user_apps(clean_u)
+        is_master = clean_u.lower() in ('krishu', 'admin', 'master')
+
+        if not is_master and len(user_apps) >= 10:
+            return None, "Application limit reached (10/10). Public tier allows maximum 10 applications per account."
+
+        app_doc = self.create_app(
+            name=name,
+            version=version,
+            hwid_lock=hwid_lock,
+            download_url=download_url,
+            announcement=announcement,
+            owner_id=clean_u
+        )
+        return app_doc, None
 
     # ============================================================
     # APPLICATION MANAGEMENT

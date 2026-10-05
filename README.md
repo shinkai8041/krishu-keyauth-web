@@ -41,10 +41,11 @@ Supports **100% Official KeyAuth v1.2 Protocol** (drop-in compatibility for C++,
    python app.py
    ```
 2. Open in your browser: `http://127.0.0.1:5000`
-3. **Admin Terminal:** `http://127.0.0.1:5000/admin`
-   - **Admin Username:** `darkmafia076`
-   - **Admin Password:** `OneAmXiters@levi704092`
-4. **User Portal:** `http://127.0.0.1:5000/login`
+3. **Public Registration:** `http://127.0.0.1:5000/register` (Instant free developer account with starter application)
+4. **Developer & Admin Console:** `http://127.0.0.1:5000/admin`
+   - Sign in with your registered account or master credentials.
+5. **User Portal:** `http://127.0.0.1:5000/login`
+   - License subscribers and developers can both sign in from the portal.
 
 ---
 

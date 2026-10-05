@@ -7,6 +7,88 @@
 
   <!-- Footer (public pages only) -->
   {% if not sidebarLayout %}
+  <!-- BUY OWN WEBSITE MODAL FOR PUBLIC PAGES -->
+  <div id="buyWebsiteModal" class="cyber-modal-overlay">
+    <div class="cyber-modal animated-border" style="max-width: 680px; --spin-color: #ff2a5f;">
+      <div class="cyber-modal-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 9px; color: #fff;">
+          <i class="fa-solid fa-crown" style="color: #ffd700;"></i>
+          <span>OWN YOUR OWN KEYAUTH PLATFORM</span>
+        </div>
+        <button onclick="closeBuyWebsiteModal()" class="btn btn-xs btn-ghost" style="padding: 4px 8px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="cyber-modal-body" style="padding-top: 0.5rem;">
+        <div style="background: linear-gradient(135deg, rgba(255,42,95,0.2), rgba(225,29,72,0.1)); border: 1px solid rgba(255,42,95,0.4); border-radius: var(--r-md); padding: 1.25rem; text-align: center; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #ff7597; font-weight: 800; margin-bottom: 6px;">
+            PREMIUM WHITE-LABEL LICENSING SYSTEM
+          </div>
+          <div style="font-size: 1.55rem; font-weight: 900; color: #fff; margin-bottom: 8px;">
+            Deploy Your Own KeyAuth Website In 5 Minutes
+          </div>
+          <div style="font-size: 0.86rem; color: #cbd5e1; max-width: 520px; margin: 0 auto; line-height: 1.5;">
+            Get the complete, world-class standalone KeyAuth website with zero restrictions, full source code, unlimited apps, and direct Discord integration.
+          </div>
+
+          <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 1rem;">
+            <div style="background: rgba(0,0,0,0.5); padding: 6px 14px; border-radius: var(--r-full); border: 1px solid rgba(255,42,95,0.3); display: flex; gap: 8px;">
+              <button type="button" onclick="setPublicBuyModalCurrency('INR')" id="pubBuyModalInrBtn" class="btn btn-xs btn-primary" style="padding: 3px 10px; font-size: 0.76rem;">🇮🇳 INR</button>
+              <button type="button" onclick="setPublicBuyModalCurrency('USD')" id="pubBuyModalUsdBtn" class="btn btn-xs btn-ghost" style="padding: 3px 10px; font-size: 0.76rem;">🇺🇸 USD</button>
+            </div>
+            <div style="font-size: 1.85rem; font-weight: 900; color: #00ff88; text-shadow: 0 0 16px rgba(0,255,136,0.5);" id="pubBuyModalPriceTag">
+              ₹399 <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ Lifetime One-Time</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.83rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+            <div><strong style="color:#fff;">UNLIMITED Applications:</strong> Create unlimited software targets.</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+            <div><strong style="color:#fff;">Dedicated Reseller System:</strong> Set custom duration &amp; HWID locks.</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+            <div><strong style="color:#fff;">Auto Code Patcher:</strong> Auto-inject C#, C++, Python, and Java.</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+            <div><strong style="color:#fff;">Discord Webhook Sentinel:</strong> Live login, fail, and redeem alerts.</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+            <div><strong style="color:#fff;">Dual Persistent Storage:</strong> MongoDB Atlas + Local JSON safety.</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <i class="fa-solid fa-circle-check" style="color: #00ff88; margin-top: 3px;"></i>
+            <div><strong style="color:#fff;">Sakura Crimson Theme:</strong> Animated 3D falling petals &amp; glass UI.</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.4); border-radius: var(--r-md); padding: 1rem; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+          <div style="font-size: 0.85rem; color: #f1f5f9; text-align: center;">
+            To purchase your full website package instantly, DM developer on Discord:
+          </div>
+          <div style="display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap;">
+            <a href="https://discord.com/users/krishu.x.cheats" target="_blank" class="btn btn-primary" style="flex: 1; min-width: 240px; background: linear-gradient(135deg, #5865F2, #404EED); box-shadow: 0 4px 20px rgba(88,101,242,0.4);">
+              <i class="fa-brands fa-discord"></i> DM on Discord: <strong>krishu.x.cheats</strong>
+            </a>
+            <button type="button" onclick="copyText('krishu.x.cheats', 'Discord Username')" class="btn btn-ghost">
+              <i class="fa-solid fa-copy"></i> Copy Username
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cyber-modal-actions" style="margin-top: 1rem;">
+        <button onclick="closeBuyWebsiteModal()" class="btn btn-ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="site-footer-minimal">
     <div class="footer-min-container">
       <span>&copy; 2026 <strong>Krishu X Auth</strong> &mdash; Red Cherry Blossom Edition</span>
@@ -301,11 +383,46 @@ if (typeof window.logoutUser !== 'function') {
   };
 }
 
-if (typeof window.logoutAdmin !== 'function') {
-  window.logoutAdmin = function() {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
-    window.location.replace('/keyauth/admin');
+if (typeof window.openBuyWebsiteModal !== 'function') {
+  window.openBuyWebsiteModal = function() {
+    const m = document.getElementById('buyWebsiteModal');
+    if (m) m.classList.add('active');
+  };
+}
+
+if (typeof window.closeBuyWebsiteModal !== 'function') {
+  window.closeBuyWebsiteModal = function() {
+    const m = document.getElementById('buyWebsiteModal');
+    if (m) m.classList.remove('active');
+  };
+}
+
+if (typeof window.setPublicBuyModalCurrency !== 'function') {
+  window.setPublicBuyModalCurrency = function(curr) {
+    const tag = document.getElementById('pubBuyModalPriceTag');
+    const inrBtn = document.getElementById('pubBuyModalInrBtn');
+    const usdBtn = document.getElementById('pubBuyModalUsdBtn');
+    if (curr === 'INR') {
+      if (tag) tag.innerHTML = '₹399 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+      if (inrBtn) inrBtn.className = 'btn btn-xs btn-primary';
+      if (usdBtn) usdBtn.className = 'btn btn-xs btn-ghost';
+    } else {
+      if (tag) tag.innerHTML = '$4.99 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+      if (inrBtn) inrBtn.className = 'btn btn-xs btn-ghost';
+      if (usdBtn) usdBtn.className = 'btn btn-xs btn-primary';
+    }
+  };
+}
+
+if (typeof window.copyText !== 'function') {
+  window.copyText = function(text, label) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast((label || 'Content') + ' copied to clipboard!', 'success');
+      });
+    } else {
+      showToast('Copied: ' + text, 'info');
+    }
   };
 }
 </script>

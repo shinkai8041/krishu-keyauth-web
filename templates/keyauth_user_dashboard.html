@@ -28,6 +28,10 @@
         </div>
       </button>
 
+      <a href="/admin/dashboard" id="navAdminConsoleLink" class="sidebar-item" style="display: none; background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.3); color: #c084fc; text-decoration: none;">
+        <i class="fa-solid fa-shield-halved" style="color: #c084fc;"></i> <span>Developer Console</span>
+      </a>
+
       <button class="sidebar-item" onclick="showPane('panePatcher')" id="navPatcher">
         <i class="fa-solid fa-wand-magic-sparkles" style="color: #ff7597;"></i> <span>Auto-Patcher</span>
       </button>
@@ -100,7 +104,7 @@
         <!-- BUY OWN WEBSITE BUTTON -->
         <button onclick="openBuyWebsiteModal()" class="btn btn-primary btn-sm neon-pulse-border" style="background: linear-gradient(135deg, #ff2a5f, #9f1239); font-weight: 800; font-size: 0.82rem;">
           <i class="fa-solid fa-crown" style="color: #ffd700;"></i> BUY OWN WEBSITE 
-          <span class="badge" style="background: rgba(0,0,0,0.35); color: #fff; margin-left: 5px; font-size: 0.72rem;" id="userTopbarPriceTag">₹499 / $6.99</span>
+          <span class="badge" style="background: rgba(0,0,0,0.35); color: #fff; margin-left: 5px; font-size: 0.72rem;" id="userTopbarPriceTag">₹399 / $4.99</span>
         </button>
 
         <!-- LANGUAGE TOGGLE -->
@@ -675,7 +679,7 @@
             <button type="button" onclick="setUserBuyModalCurrency('USD')" id="userBuyModalUsdBtn" class="btn btn-xs btn-ghost" style="padding: 3px 10px; font-size: 0.76rem;">🇺🇸 USD</button>
           </div>
           <div style="font-size: 1.85rem; font-weight: 900; color: #00ff88; text-shadow: 0 0 16px rgba(0,255,136,0.5);" id="userBuyModalPriceTag">
-            ₹499 <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ Lifetime One-Time</span>
+            ₹399 <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ Lifetime One-Time</span>
           </div>
         </div>
       </div>
@@ -740,8 +744,13 @@
     }
   })();
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
   if (!token) location.href = '/keyauth/login';
+
+  if (localStorage.getItem('adminToken')) {
+    const adminLink = document.getElementById('navAdminConsoleLink');
+    if (adminLink) adminLink.style.display = 'flex';
+  }
 
   let _user = null;
   let _resellerUsers = [];
@@ -788,11 +797,11 @@
     const inrBtn = document.getElementById('userBuyModalInrBtn');
     const usdBtn = document.getElementById('userBuyModalUsdBtn');
     if (curr === 'INR') {
-      if (tag) tag.innerHTML = '₹499 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+      if (tag) tag.innerHTML = '₹399 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
       if (inrBtn) inrBtn.className = 'btn btn-xs btn-primary';
       if (usdBtn) usdBtn.className = 'btn btn-xs btn-ghost';
     } else {
-      if (tag) tag.innerHTML = '$6.99 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
+      if (tag) tag.innerHTML = '$4.99 <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">/ Lifetime One-Time</span>';
       if (inrBtn) inrBtn.className = 'btn btn-xs btn-ghost';
       if (usdBtn) usdBtn.className = 'btn btn-xs btn-primary';
     }
@@ -815,7 +824,7 @@
     const txt = document.getElementById('userLangText');
     const topPrice = document.getElementById('userTopbarPriceTag');
     if (txt) txt.textContent = currentUserLang === 'hinglish' ? 'Hinglish' : 'English';
-    if (topPrice) topPrice.textContent = currentUserLang === 'hinglish' ? '₹499 / $6.99' : '$6.99 / ₹499';
+    if (topPrice) topPrice.textContent = currentUserLang === 'hinglish' ? '₹399 / $4.99' : '$4.99 / ₹399';
     showToast('Switched guide mode to ' + (currentUserLang === 'hinglish' ? '🌸 Hinglish Mode' : '🌐 English Mode'), 'info');
     setUserBuyModalCurrency(currentUserLang === 'hinglish' ? 'INR' : 'USD');
     renderUserHelpContent();
