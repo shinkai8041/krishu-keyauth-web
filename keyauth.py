@@ -370,7 +370,15 @@ class KrishuKeyAuthEngine:
             return apps[0]
 
     def get_app(self, app_id: str) -> Optional[dict]:
-        return self.resolve_app(app_id)
+        if not app_id:
+            return None
+        clean = str(app_id).strip()
+        with _lock:
+            data = self._read_data()
+            for a in data.get("applications", []):
+                if a.get("appId") == clean or a.get("_id") == clean:
+                    return a
+        return None
 
     def create_app(self, name: str, version: str = "1.0.0", hwid_lock: bool = True, download_url: str = "", announcement: str = "", owner_id: str = None) -> dict:
         clean_name = name.strip()
@@ -385,6 +393,7 @@ class KrishuKeyAuthEngine:
             "name": clean_name,
             "version": version or "1.0.0",
             "ownerId": owner_id,
+            "owner": owner_id,
             "secret": secret,
             "apiKey": secret,
             "hwidLock": hwid_lock,
@@ -965,15 +974,46 @@ class KrishuKeyAuthEngine:
         except Exception:
             pass
 
-    def list_logs(self) -> list:
+    def list_logs(self, app_ids: set = None, username: str = None) -> list:
         with _lock:
             data = self._read_data()
-            return data.get("logs", [])
+            logs = data.get("logs", [])
+            if app_ids is not None or username is not None:
+                clean_u = (username or "").strip().lower()
+                clean_ids = {str(i).lower() for i in (app_ids or set())}
+                filtered = []
+                for lg in logs:
+                    lg_app = lg.get("appId")
+                    if isinstance(lg_app, dict):
+                        lg_app_id = str(lg_app.get("_id") or lg_app.get("appId") or "").lower()
+                    else:
+                        lg_app_id = str(lg_app or "").lower()
+                    lg_u = (lg.get("username") or "").lower()
+                    if (clean_ids and lg_app_id in clean_ids) or (clean_u and lg_u == clean_u):
+                        filtered.append(lg)
+                return filtered
+            return logs
 
-    def clear_logs(self) -> bool:
+    def clear_logs(self, app_ids: set = None, username: str = None) -> bool:
         with _lock:
             data = self._read_data()
-            data["logs"] = []
+            if app_ids is None and username is None:
+                data["logs"] = []
+            else:
+                clean_u = (username or "").strip().lower()
+                clean_ids = {str(i).lower() for i in (app_ids or set())}
+                remaining = []
+                for lg in data.get("logs", []):
+                    lg_app = lg.get("appId")
+                    if isinstance(lg_app, dict):
+                        lg_app_id = str(lg_app.get("_id") or lg_app.get("appId") or "").lower()
+                    else:
+                        lg_app_id = str(lg_app or "").lower()
+                    lg_u = (lg.get("username") or "").lower()
+                    match = (clean_ids and lg_app_id in clean_ids) or (clean_u and lg_u == clean_u)
+                    if not match:
+                        remaining.append(lg)
+                data["logs"] = remaining
             self._save_data(data)
         return True
 

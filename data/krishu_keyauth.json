@@ -26,6 +26,190 @@
         }
       ],
       "createdAt": "2026-09-29T10:34:09.079751+00:00"
+    },
+    {
+      "_id": "app_dev_test_alice_866187",
+      "appId": "app_dev_test_alice_866187",
+      "name": "dev_test_alice-App-1",
+      "version": "1.0.0",
+      "ownerId": "dev_test_alice",
+      "owner": "dev_test_alice",
+      "secret": "2fd4851f56da5006228c5d0d0c23dbb5",
+      "apiKey": "2fd4851f56da5006228c5d0d0c23dbb5",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to dev_test_alice-App-1!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-1D9B-DEC2-443D",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-10-06T04:31:56.123064+00:00"
+    },
+    {
+      "_id": "app_alice_1791261149_af7560",
+      "appId": "app_alice_1791261149_af7560",
+      "name": "alice_1791261149-App-1",
+      "version": "1.0.0",
+      "ownerId": "alice_1791261149",
+      "owner": "alice_1791261149",
+      "secret": "27ca9d757b95ab4b54fd76b3de34e890",
+      "apiKey": "27ca9d757b95ab4b54fd76b3de34e890",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to alice_1791261149-App-1!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-DCB5-582B-2BA6",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-10-06T04:32:29.877531+00:00"
+    },
+    {
+      "_id": "app_alice_1791261299_690dfb",
+      "appId": "app_alice_1791261299_690dfb",
+      "name": "alice_1791261299-App-1",
+      "version": "1.0.0",
+      "ownerId": "alice_1791261299",
+      "owner": "alice_1791261299",
+      "secret": "29950ca36bfdc9eac94153f2f782a060",
+      "apiKey": "29950ca36bfdc9eac94153f2f782a060",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to alice_1791261299-App-1!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-1E11-5067-D18A",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-10-06T04:34:59.560802+00:00"
+    },
+    {
+      "_id": "app_bob_1791261299_b11dba",
+      "appId": "app_bob_1791261299_b11dba",
+      "name": "bob_1791261299-App-1",
+      "version": "1.0.0",
+      "ownerId": "bob_1791261299",
+      "owner": "bob_1791261299",
+      "secret": "9269092f63d2cc143dd7714303d3d014",
+      "apiKey": "9269092f63d2cc143dd7714303d3d014",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to bob_1791261299-App-1!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-3DEA-BA0C-3888",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-10-06T04:34:59.600984+00:00"
+    },
+    {
+      "_id": "app_alice_1791261344_a4605b",
+      "appId": "app_alice_1791261344_a4605b",
+      "name": "alice_1791261344-App-1",
+      "version": "1.0.0",
+      "ownerId": "alice_1791261344",
+      "owner": "alice_1791261344",
+      "secret": "ce76d0cc1420ec21678681e0beb4ec0c",
+      "apiKey": "ce76d0cc1420ec21678681e0beb4ec0c",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to alice_1791261344-App-1!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-46DC-4009-821E",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-10-06T04:35:44.093402+00:00"
+    },
+    {
+      "_id": "app_bob_1791261344_2a2e22",
+      "appId": "app_bob_1791261344_2a2e22",
+      "name": "bob_1791261344-App-1",
+      "version": "1.0.0",
+      "ownerId": "bob_1791261344",
+      "owner": "bob_1791261344",
+      "secret": "4c62a6621749088c1c8e4c8295e8034d",
+      "apiKey": "4c62a6621749088c1c8e4c8295e8034d",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to bob_1791261344-App-1!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-ADF2-C6F3-4FEF",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-10-06T04:35:44.143362+00:00"
+    },
+    {
+      "_id": "app_alice_1791261406_ed9da6",
+      "appId": "app_alice_1791261406_ed9da6",
+      "name": "alice_1791261406-App-1",
+      "version": "1.0.0",
+      "ownerId": "alice_1791261406",
+      "owner": "alice_1791261406",
+      "secret": "b7f8b290d9078cc49b755d0c647feb0f",
+      "apiKey": "b7f8b290d9078cc49b755d0c647feb0f",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to alice_1791261406-App-1!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-EF2B-6D34-7D3A",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-10-06T04:36:46.347388+00:00"
+    },
+    {
+      "_id": "app_bob_1791261406_ff57b3",
+      "appId": "app_bob_1791261406_ff57b3",
+      "name": "bob_1791261406-App-1",
+      "version": "1.0.0",
+      "ownerId": "bob_1791261406",
+      "owner": "bob_1791261406",
+      "secret": "f92e05025bbbd80e366e29d7d556c1fc",
+      "apiKey": "f92e05025bbbd80e366e29d7d556c1fc",
+      "hwidLock": true,
+      "active": true,
+      "announcement": "Welcome to bob_1791261406-App-1!",
+      "downloadUrl": "/download/krishuxcheats.py",
+      "resellerKey": "RS-2070-359C-5BA4",
+      "variables": [
+        {
+          "name": "status",
+          "value": "UNDETECTED",
+          "secret": false
+        }
+      ],
+      "createdAt": "2026-10-06T04:36:46.368509+00:00"
     }
   ],
   "licenses": [
@@ -353,6 +537,198 @@
     }
   ],
   "logs": [
+    {
+      "_id": "5b2ff6586700",
+      "action": "PANEL_USER_REGISTERED",
+      "details": "New user 'bob_1791261406' registered with starter app 'bob_1791261406-App-1'",
+      "message": "New user 'bob_1791261406' registered with starter app 'bob_1791261406-App-1'",
+      "username": "bob_1791261406",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:36:46.384135+00:00",
+      "timestamp": "2026-10-06T04:36:46.384135+00:00"
+    },
+    {
+      "_id": "871aeda0351e",
+      "action": "LICENSES_CREATED",
+      "details": "Generated 1 license key(s) [app: app_alice_1791261406_ed9da6, duration: 30d, hwidCheck: True]",
+      "message": "Generated 1 license key(s) [app: app_alice_1791261406_ed9da6, duration: 30d, hwidCheck: True]",
+      "username": "System",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:36:46.368509+00:00",
+      "timestamp": "2026-10-06T04:36:46.368509+00:00"
+    },
+    {
+      "_id": "b3ca4662effb",
+      "action": "PANEL_USER_REGISTERED",
+      "details": "New user 'alice_1791261406' registered with starter app 'alice_1791261406-App-1'",
+      "message": "New user 'alice_1791261406' registered with starter app 'alice_1791261406-App-1'",
+      "username": "alice_1791261406",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:36:46.352877+00:00",
+      "timestamp": "2026-10-06T04:36:46.352877+00:00"
+    },
+    {
+      "_id": "3cba8ba07acf",
+      "action": "PANEL_USER_REGISTERED",
+      "details": "New user 'bob_1791261344' registered with starter app 'bob_1791261344-App-1'",
+      "message": "New user 'bob_1791261344' registered with starter app 'bob_1791261344-App-1'",
+      "username": "bob_1791261344",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:35:44.149357+00:00",
+      "timestamp": "2026-10-06T04:35:44.149357+00:00"
+    },
+    {
+      "_id": "aedebb4a85c2",
+      "action": "LICENSES_CREATED",
+      "details": "Generated 1 license key(s) [app: app_alice_1791261344_a4605b, duration: 30d, hwidCheck: True]",
+      "message": "Generated 1 license key(s) [app: app_alice_1791261344_a4605b, duration: 30d, hwidCheck: True]",
+      "username": "System",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:35:44.127166+00:00",
+      "timestamp": "2026-10-06T04:35:44.127166+00:00"
+    },
+    {
+      "_id": "1d54901e7d12",
+      "action": "PANEL_USER_REGISTERED",
+      "details": "New user 'alice_1791261344' registered with starter app 'alice_1791261344-App-1'",
+      "message": "New user 'alice_1791261344' registered with starter app 'alice_1791261344-App-1'",
+      "username": "alice_1791261344",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:35:44.093402+00:00",
+      "timestamp": "2026-10-06T04:35:44.093402+00:00"
+    },
+    {
+      "_id": "1f6f1b3a3b2f",
+      "action": "PANEL_USER_REGISTERED",
+      "details": "New user 'bob_1791261299' registered with starter app 'bob_1791261299-App-1'",
+      "message": "New user 'bob_1791261299' registered with starter app 'bob_1791261299-App-1'",
+      "username": "bob_1791261299",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:34:59.605874+00:00",
+      "timestamp": "2026-10-06T04:34:59.605874+00:00"
+    },
+    {
+      "_id": "04dbaf718082",
+      "action": "LICENSES_CREATED",
+      "details": "Generated 1 license key(s) [app: app_alice_1791261299_690dfb, duration: 30d, hwidCheck: True]",
+      "message": "Generated 1 license key(s) [app: app_alice_1791261299_690dfb, duration: 30d, hwidCheck: True]",
+      "username": "System",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:34:59.579118+00:00",
+      "timestamp": "2026-10-06T04:34:59.579118+00:00"
+    },
+    {
+      "_id": "cf676e361d46",
+      "action": "PANEL_USER_REGISTERED",
+      "details": "New user 'alice_1791261299' registered with starter app 'alice_1791261299-App-1'",
+      "message": "New user 'alice_1791261299' registered with starter app 'alice_1791261299-App-1'",
+      "username": "alice_1791261299",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:34:59.560802+00:00",
+      "timestamp": "2026-10-06T04:34:59.560802+00:00"
+    },
+    {
+      "_id": "6d3f020c926d",
+      "action": "LICENSES_CREATED",
+      "details": "Generated 1 license key(s) [app: app_alice_1791261149_af7560, duration: 30d, hwidCheck: True]",
+      "message": "Generated 1 license key(s) [app: app_alice_1791261149_af7560, duration: 30d, hwidCheck: True]",
+      "username": "System",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:32:29.907668+00:00",
+      "timestamp": "2026-10-06T04:32:29.907668+00:00"
+    },
+    {
+      "_id": "8ea522d6ba1b",
+      "action": "PANEL_USER_REGISTERED",
+      "details": "New user 'alice_1791261149' registered with starter app 'alice_1791261149-App-1'",
+      "message": "New user 'alice_1791261149' registered with starter app 'alice_1791261149-App-1'",
+      "username": "alice_1791261149",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:32:29.890163+00:00",
+      "timestamp": "2026-10-06T04:32:29.890163+00:00"
+    },
+    {
+      "_id": "b91b28cc7f77",
+      "action": "PANEL_USER_REGISTERED",
+      "details": "New user 'dev_test_alice' registered with starter app 'dev_test_alice-App-1'",
+      "message": "New user 'dev_test_alice' registered with starter app 'dev_test_alice-App-1'",
+      "username": "dev_test_alice",
+      "ip": "127.0.0.1",
+      "hwid": "",
+      "success": true,
+      "appId": {
+        "name": "KRISHU X CHEATS",
+        "_id": "app_krishu_main"
+      },
+      "createdAt": "2026-10-06T04:31:56.135077+00:00",
+      "timestamp": "2026-10-06T04:31:56.135077+00:00"
+    },
     {
       "_id": "3ef4867bf2d2",
       "action": "RESELLER_KEY_DELETED",
@@ -805,5 +1181,7 @@
       "lastUsed": "2026-09-30T20:47:12.870604+00:00",
       "keysCreated": 7
     }
-  ]
+  ],
+  "panel_users": [],
+  "apps": []
 }

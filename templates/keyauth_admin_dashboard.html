@@ -2004,7 +2004,8 @@
     // ── DISCORD WEBHOOK SENTINEL ──
     window.loadWebhookConfig = async function() {
       try {
-        const res = await fetch('/api/webhook/config?scope=admin&identifier=master', { headers: adminHeaders() });
+        const uName = localStorage.getItem('adminUser') || 'master';
+        const res = await fetch(`/api/webhook/config?scope=admin&identifier=${encodeURIComponent(uName)}`, { headers: adminHeaders() });
         const data = await res.json();
         if (data.success && data.config) {
           const urlInput = document.getElementById('adminWebhookUrlInput');
@@ -2020,11 +2021,12 @@
     window.saveAdminWebhookConfig = async function() {
       const url = document.getElementById('adminWebhookUrlInput').value.trim();
       const enabled = document.getElementById('adminWebhookEnableToggle').checked;
+      const uName = localStorage.getItem('adminUser') || 'master';
       try {
         const res = await fetch('/api/webhook/config', {
           method: 'POST',
           headers: adminHeaders(),
-          body: JSON.stringify({ url, enabled, scope: 'admin', identifier: 'master' })
+          body: JSON.stringify({ url, enabled, scope: 'admin', identifier: uName })
         });
         const data = await res.json();
         if (data.success) {
@@ -2042,11 +2044,12 @@
       btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending Test...';
 
       const url = document.getElementById('adminWebhookUrlInput').value.trim();
+      const uName = localStorage.getItem('adminUser') || 'master';
       try {
         const res = await fetch('/api/webhook/test', {
           method: 'POST',
           headers: adminHeaders(),
-          body: JSON.stringify({ url, scope: 'admin', identifier: 'master' })
+          body: JSON.stringify({ url, scope: 'admin', identifier: uName })
         });
         const data = await res.json();
         if (data.success) {
@@ -2065,7 +2068,8 @@
     // ── ADMIN PROFILE MANAGEMENT ──
     window.loadAdminProfile = async function() {
       try {
-        const res = await fetch('/admin/api/profile?username=krishu', { headers: adminHeaders() });
+        const uName = localStorage.getItem('adminUser') || 'krishu';
+        const res = await fetch(`/admin/api/profile?username=${encodeURIComponent(uName)}`, { headers: adminHeaders() });
         const data = await res.json();
         if (data.success && data.profile) {
           const p = data.profile;
@@ -2075,8 +2079,8 @@
           const dob = document.getElementById('adminProfileDobInput');
           const gen = document.getElementById('adminProfileGenderInput');
           const prev = document.getElementById('adminProfileAvatarPreview');
-          if (n) n.value = p.name || 'Master Krishu';
-          if (em) em.value = p.email || 'krishu@krishuxkeyauth.internal';
+          if (n) n.value = p.name || uName;
+          if (em) em.value = p.email || `${uName}@krishuxkeyauth.internal`;
           if (av) av.value = p.avatar || '/img/logo.png';
           if (prev) prev.src = p.avatar || '/img/logo.png';
           if (dob) dob.value = p.dob || '2000-01-01';
@@ -2094,6 +2098,7 @@
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
 
+      const uName = localStorage.getItem('adminUser') || 'krishu';
       const name = document.getElementById('adminProfileNameInput').value.trim();
       const email = document.getElementById('adminProfileEmailInput').value.trim();
       const avatar = document.getElementById('adminProfileAvatarInput').value.trim();
@@ -2104,11 +2109,11 @@
         const res = await fetch('/admin/api/profile', {
           method: 'POST',
           headers: adminHeaders(),
-          body: JSON.stringify({ username: 'krishu', name, email, avatar, dob, gender })
+          body: JSON.stringify({ username: uName, name, email, avatar, dob, gender })
         });
         const data = await res.json();
         if (data.success) {
-          showToast('Admin profile saved successfully!', 'success');
+          showToast('Profile saved successfully!', 'success');
           const nameEl = document.getElementById('adminNameDisplay');
           const topEl = document.getElementById('topbarAdminName');
           if (nameEl) nameEl.textContent = name;

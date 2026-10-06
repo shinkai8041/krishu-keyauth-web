@@ -18,55 +18,98 @@ import re
 import json
 
 import time
-
 import uuid
-
 import secrets
-
 import logging
-
 import urllib.request
+import base64
+import hmac
+import hashlib
 
 from datetime import datetime, timedelta, timezone
-
 from functools import wraps
-
+from typing import Optional, Dict, Any, List
 from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory, abort
 
 try:
-
     from flask_cors import CORS
-
 except ImportError:
-
     def CORS(app, *args, **kwargs):
-
         pass
 
 try:
-
     from dotenv import load_dotenv
-
     load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
-
 except ImportError:
-
     pass
 
 from keyauth import KeyAuth, KrishuKeyAuthEngine, _hash_pass, OWNER_ID
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
-
 logger = logging.getLogger('KrishuXCheats')
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-
-app.secret_key = os.environ.get('SECRET_KEY', os.urandom(32))
-
+# Consistent secret key so signed tokens remain valid across restarts/workers
+app.secret_key = os.environ.get('SECRET_KEY', 'krishu_auth_secure_secret_sign_key_9823482734').encode('utf-8')
 CORS(app, resources={r'/*': {'origins': '*'}})
 
-# In-memory session store for web users, key users & resellers
+# Fast in-memory cache for active sessions
 ACTIVE_SESSIONS = {}
+
+def create_admin_token(username: str, role: str = "admin", is_super_admin: bool = False) -> str:
+    clean_u = (username or "").strip()
+    is_master = clean_u.lower() in ('krishu', 'admin', 'master') or bool(is_super_admin)
+    payload = {
+        "u": clean_u,
+        "r": "superadmin" if is_master else (role or "admin"),
+        "sa": is_master,
+        "t": int(time.time())
+    }
+    raw = json.dumps(payload, separators=(',', ':')).encode('utf-8')
+    b64_payload = base64.urlsafe_b64encode(raw).decode('utf-8').rstrip('=')
+    secret = app.secret_key if isinstance(app.secret_key, bytes) else str(app.secret_key).encode('utf-8')
+    sig = hmac.new(secret, b64_payload.encode('utf-8'), hashlib.sha256).hexdigest()[:32]
+    token = f"kauth_v2_{b64_payload}_{sig}"
+    ACTIVE_SESSIONS[token] = {
+        "username": clean_u,
+        "role": payload["r"],
+        "isSuperAdmin": is_master
+    }
+    return token
+
+def verify_admin_token(token: str) -> Optional[dict]:
+    if not token:
+        return None
+    # 1. Fast cache check
+    if token in ACTIVE_SESSIONS:
+        return ACTIVE_SESSIONS[token]
+
+    # 2. Cryptographic signature check (survives server restart & multi-worker gunicorn)
+    if token.startswith("kauth_v2_"):
+        parts = token.split("_")
+        if len(parts) == 4:
+            b64_payload = parts[2]
+            sig = parts[3]
+            secret = app.secret_key if isinstance(app.secret_key, bytes) else str(app.secret_key).encode('utf-8')
+            expected_sig = hmac.new(secret, b64_payload.encode('utf-8'), hashlib.sha256).hexdigest()[:32]
+            if hmac.compare_digest(sig, expected_sig):
+                rem = len(b64_payload) % 4
+                padded = b64_payload + ('=' * (4 - rem) if rem else '')
+                try:
+                    payload = json.loads(base64.urlsafe_b64decode(padded.encode('utf-8')).decode('utf-8'))
+                    username = (payload.get("u") or "").strip()
+                    if username:
+                        is_master = username.lower() in ('krishu', 'admin', 'master') or bool(payload.get("sa"))
+                        user_data = {
+                            "username": username,
+                            "role": "superadmin" if is_master else payload.get("r", "admin"),
+                            "isSuperAdmin": is_master
+                        }
+                        ACTIVE_SESSIONS[token] = user_data
+                        return user_data
+                except Exception:
+                    pass
+    return None
 
 def get_current_admin():
     auth_header = request.headers.get('Authorization', '')
@@ -75,17 +118,26 @@ def get_current_admin():
         token = request.args.get('token', '') or request.headers.get('X-Admin-Token', '')
     if not token:
         return None
-    session = ACTIVE_SESSIONS.get(token)
-    if session:
-        return session
-    if token.startswith('kauth_admin_'):
-        return {
-            'username': 'krishu',
-            'role': 'superadmin',
-            'isSuperAdmin': True,
-            'appLimit': 99999
-        }
-    return None
+    return verify_admin_token(token)
+
+def user_owns_app(username: str, app_id: str) -> bool:
+    if not username or not app_id:
+        return False
+    clean_u = username.strip().lower()
+    if clean_u in ('krishu', 'admin', 'master'):
+        return True
+    app_doc = KeyAuth.get_app(app_id)
+    if not app_doc:
+        return False
+    owner = (app_doc.get("ownerId") or app_doc.get("owner") or "").strip().lower()
+    return owner == clean_u
+
+def get_user_app_ids(username: str) -> set:
+    clean_u = (username or "").strip().lower()
+    if clean_u in ('krishu', 'admin', 'master'):
+        return {str(a.get("appId") or a.get("_id")) for a in KeyAuth.list_apps()}
+    user_apps = KeyAuth.get_user_apps(clean_u)
+    return {str(a.get("appId") or a.get("_id")) for a in user_apps}
 
 
 # Also support /login, /dashboard, /register at root
@@ -340,14 +392,15 @@ def keyauth_api_admin_login():
 
     panel_user = KeyAuth.verify_panel_user(username, password)
     if panel_user:
-        token = f"kauth_admin_{secrets.token_hex(24)}"
-        ACTIVE_SESSIONS[token] = panel_user
+        u_name = panel_user.get('username')
+        is_master = bool(panel_user.get('isSuperAdmin')) or u_name.lower() in ('krishu', 'admin', 'master')
+        token = create_admin_token(username=u_name, role='superadmin' if is_master else 'admin', is_super_admin=is_master)
         return jsonify({
             'success': True,
             'token': token,
-            'username': panel_user.get('username'),
-            'role': panel_user.get('role', 'admin'),
-            'isSuperAdmin': panel_user.get('isSuperAdmin', False)
+            'username': u_name,
+            'role': 'superadmin' if is_master else 'admin',
+            'isSuperAdmin': is_master
         })
 
     return jsonify({'success': False, 'message': 'Invalid administrator credentials'}), 401
@@ -355,7 +408,9 @@ def keyauth_api_admin_login():
 @app.route('/admin/api/stats', methods=['GET'])
 def keyauth_api_admin_stats():
     admin = get_current_admin()
-    owner_id = admin.get('username') if admin else None
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+    owner_id = admin.get('username')
     stats = KeyAuth.get_stats(owner_id=owner_id)
     return jsonify({'success': True, 'stats': stats, 'dbStatus': {'connected': True, 'type': 'Active Engine'}})
 
@@ -366,7 +421,11 @@ def keyauth_api_admin_db_status():
 @app.route('/admin/api/apps', methods=['GET', 'POST'])
 def keyauth_api_admin_apps():
     admin = get_current_admin()
-    current_username = admin.get('username') if admin else 'krishu'
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required. Please log in.'}), 401
+
+    current_username = admin.get('username')
+    is_master = admin.get('isSuperAdmin', False)
 
     if request.method == 'POST':
         data = request.json or {}
@@ -392,21 +451,21 @@ def keyauth_api_admin_apps():
 
         return jsonify({'success': True, 'message': f"Application '{name}' created successfully!", 'app': app_doc})
 
-    apps = KeyAuth.get_user_apps(current_username)
+    # GET: Master sees all, regular user sees ONLY their own apps
+    if is_master:
+        apps = KeyAuth.list_apps()
+    else:
+        apps = KeyAuth.get_user_apps(current_username)
     return jsonify({'success': True, 'apps': apps})
 
 @app.route('/admin/api/apps/<app_id>', methods=['PUT', 'DELETE'])
 def keyauth_api_admin_app_modify(app_id):
     admin = get_current_admin()
-    current_username = (admin.get('username') if admin else 'krishu').lower()
-    is_master = current_username in ('krishu', 'admin', 'master') or (admin and admin.get('isSuperAdmin'))
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
-    app_info = KeyAuth.get_app(app_id)
-    if not app_info:
-        return jsonify({'success': False, 'message': 'Application not found'}), 404
-
-    app_owner = (app_info.get('ownerId') or app_info.get('owner') or '').lower()
-    if not is_master and app_owner and app_owner != current_username:
+    current_username = admin.get('username')
+    if not user_owns_app(current_username, app_id):
         return jsonify({'success': False, 'message': 'Access denied: You do not own this application'}), 403
 
     if request.method == 'DELETE':
@@ -421,281 +480,320 @@ def keyauth_api_admin_app_modify(app_id):
     return jsonify({'success': True, 'app': updated})
 
 @app.route('/admin/api/apps/<app_id>/reseller-key/create', methods=['POST'])
-
 def keyauth_api_admin_reseller_create(app_id):
+    admin = get_current_admin()
+    if not admin or not user_owns_app(admin.get('username'), app_id):
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
 
     new_reseller_key = f"RS-{secrets.token_hex(2).upper()}-{secrets.token_hex(2).upper()}-{secrets.token_hex(2).upper()}"
-
     app_doc = KeyAuth.update_app(app_id, {'resellerKey': new_reseller_key})
-
     if not app_doc:
-
         return jsonify({'success': False, 'message': 'Application not found'}), 404
-
     return jsonify({'success': True, 'key': new_reseller_key})
 
 @app.route('/admin/api/apps/<app_id>/reseller-key/reset', methods=['POST'])
-
 def keyauth_api_admin_reseller_reset(app_id):
+    admin = get_current_admin()
+    if not admin or not user_owns_app(admin.get('username'), app_id):
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
 
     new_reseller_key = f"RS-{secrets.token_hex(2).upper()}-{secrets.token_hex(2).upper()}-{secrets.token_hex(2).upper()}"
-
     app_doc = KeyAuth.update_app(app_id, {'resellerKey': new_reseller_key})
-
     return jsonify({'success': True, 'newKey': new_reseller_key, 'deletedUsersCount': 0})
 
 @app.route('/admin/api/apps/<app_id>/reseller-key/delete', methods=['POST'])
-
 def keyauth_api_admin_reseller_delete(app_id):
+    admin = get_current_admin()
+    if not admin or not user_owns_app(admin.get('username'), app_id):
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
 
     KeyAuth.update_app(app_id, {'resellerKey': ''})
-
     return jsonify({'success': True, 'deletedUsersCount': 0})
 
 @app.route('/admin/api/apps/<app_id>/variables', methods=['POST'])
-
 def keyauth_api_admin_add_var(app_id):
+    admin = get_current_admin()
+    if not admin or not user_owns_app(admin.get('username'), app_id):
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
 
     data = request.json or {}
-
     name = data.get('name', '').strip()
-
     value = data.get('value', '').strip()
-
     secret = data.get('secret', False)
-
     if not name or not value:
-
         return jsonify({'success': False, 'message': 'Name and value required'}), 400
-
     vars_list = KeyAuth.add_variable(app_id, name, value, secret)
-
     return jsonify({'success': True, 'variables': vars_list})
 
 @app.route('/admin/api/apps/<app_id>/variables/<var_name>', methods=['DELETE'])
-
 def keyauth_api_admin_del_var(app_id, var_name):
+    admin = get_current_admin()
+    if not admin or not user_owns_app(admin.get('username'), app_id):
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
 
     vars_list = KeyAuth.delete_variable(app_id, var_name)
-
     return jsonify({'success': True, 'variables': vars_list})
 
 @app.route('/admin/api/licenses', methods=['GET', 'POST'])
-
 def keyauth_api_admin_licenses():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+
+    current_username = admin.get('username')
+    my_app_ids = get_user_app_ids(current_username)
 
     if request.method == 'POST':
-
         data = request.json or {}
-
         app_id = data.get('appId')
+        if not app_id or not user_owns_app(current_username, app_id):
+            return jsonify({'success': False, 'message': 'You must select an application you own'}), 403
 
         count = int(data.get('count', 1))
-
         duration = int(data.get('duration', 30))
-
         level = data.get('level', '1')
-
         prefix = data.get('prefix', 'KRISHU').strip() or 'KRISHU'
-
         note = data.get('note', '').strip()
-
         hwid_check = data.get('hwidCheck', data.get('hwidLock', True))
 
         keys = KeyAuth.create_licenses(app_id, count, duration, level, prefix, note, hwid_check=hwid_check)
-
         return jsonify({'success': True, 'count': len(keys), 'keys': keys})
 
     app_id = request.args.get('appId')
-
     search = request.args.get('search')
-
-    licenses = KeyAuth.list_licenses(app_id, search)
+    if app_id:
+        if not user_owns_app(current_username, app_id):
+            return jsonify({'success': True, 'licenses': []})
+        licenses = KeyAuth.list_licenses(app_id, search)
+    else:
+        all_lics = KeyAuth.list_licenses(None, search)
+        licenses = [l for l in all_lics if str(l.get('appId')) in my_app_ids]
 
     return jsonify({'success': True, 'licenses': licenses})
 
 @app.route('/admin/api/licenses/ban', methods=['POST'])
-
 def keyauth_api_admin_ban_license():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     license_id = data.get('licenseId', '').strip()
+    lic = KeyAuth.get_license(license_id)
+    if not lic or not user_owns_app(admin.get('username'), lic.get('appId')):
+        return jsonify({'success': False, 'message': 'Access denied: License not found in your apps'}), 403
 
     banned = data.get('banned', True)
-
     reason = data.get('reason', 'Administrative action').strip()
-
     ok = KeyAuth.ban_license(license_id, banned, reason)
-
     return jsonify({'success': ok, 'message': f"License {'banned' if banned else 'unbanned'}"})
 
 @app.route('/admin/api/licenses/reset-hwid', methods=['POST'])
-
 def keyauth_api_admin_reset_license_hwid():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     license_id = data.get('licenseId', '').strip()
+    lic = KeyAuth.get_license(license_id)
+    if not lic or not user_owns_app(admin.get('username'), lic.get('appId')):
+        return jsonify({'success': False, 'message': 'Access denied: License not found in your apps'}), 403
 
     ok = KeyAuth.reset_license_hwid(license_id)
-
     return jsonify({'success': ok, 'message': 'Hardware ID reset successfully'})
 
 @app.route('/admin/api/licenses/<license_id>', methods=['DELETE'])
-
 def keyauth_api_admin_delete_license(license_id):
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+
+    lic = KeyAuth.get_license(license_id)
+    if not lic or not user_owns_app(admin.get('username'), lic.get('appId')):
+        return jsonify({'success': False, 'message': 'Access denied: License not found in your apps'}), 403
 
     KeyAuth.delete_license(license_id)
-
     return jsonify({'success': True, 'message': 'License deleted'})
 
 @app.route('/admin/api/users', methods=['GET'])
-
 def keyauth_api_admin_users():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
+    current_username = admin.get('username')
+    my_app_ids = get_user_app_ids(current_username)
     app_id = request.args.get('appId')
-
     search = request.args.get('search')
 
-    users = KeyAuth.list_users(app_id, search)
+    if app_id:
+        if not user_owns_app(current_username, app_id):
+            return jsonify({'success': True, 'users': []})
+        users = KeyAuth.list_users(app_id, search)
+    else:
+        all_users = KeyAuth.list_users(None, search)
+        users = [u for u in all_users if str(u.get('appId')) in my_app_ids]
 
     return jsonify({'success': True, 'users': users})
 
 @app.route('/admin/api/users/create', methods=['POST'])
-
 def keyauth_api_admin_create_user():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     username = data.get('username', '').strip()
-
     password = data.get('password', '').strip()
-
     duration = int(data.get('duration', 30))
-
     app_id = data.get('appId')
-
     key = data.get('key', '').strip()
-
     level = data.get('level', '1')
-
     note = data.get('note', '').strip()
 
     if not username or not password:
-
         return jsonify({'success': False, 'message': 'Username and password required'}), 400
+    if not app_id or not user_owns_app(admin.get('username'), app_id):
+        return jsonify({'success': False, 'message': 'Please select an application that you own'}), 403
 
     user_doc = KeyAuth.create_user(username, password, duration, app_id, key, level, note)
-
     return jsonify({'success': True, 'message': f"User '{username}' created successfully!", 'user': user_doc})
 
 @app.route('/admin/api/users/edit', methods=['PUT'])
-
 def keyauth_api_admin_edit_user():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     user_id = data.get('userId') or data.get('username')
+    target_u = KeyAuth.get_user(user_id)
+    if not target_u or not user_owns_app(admin.get('username'), target_u.get('appId')):
+        return jsonify({'success': False, 'message': 'Access denied: User not found in your apps'}), 403
 
     updates = {}
-
     if 'duration' in data: updates['duration'] = int(data['duration'])
-
     if 'level' in data: updates['level'] = str(data['level'])
-
     if 'note' in data: updates['note'] = data['note']
-
     updated = KeyAuth.update_user(user_id, updates)
-
     return jsonify({'success': bool(updated), 'user': updated})
 
 @app.route('/admin/api/users/extend', methods=['POST'])
-
 def keyauth_api_admin_extend_user():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     user_id = data.get('userId') or data.get('username', '').strip()
+    target_u = KeyAuth.get_user(user_id)
+    if not target_u or not user_owns_app(admin.get('username'), target_u.get('appId')):
+        return jsonify({'success': False, 'message': 'Access denied: User not found in your apps'}), 403
 
     days = int(data.get('days', 30))
-
     updated = KeyAuth.extend_user(user_id, days)
-
     return jsonify({'success': bool(updated), 'user': updated})
 
 @app.route('/admin/api/users/ban', methods=['POST'])
-
 def keyauth_api_admin_ban_user():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     user_id = data.get('userId') or data.get('username', '').strip()
+    target_u = KeyAuth.get_user(user_id)
+    if not target_u or not user_owns_app(admin.get('username'), target_u.get('appId')):
+        return jsonify({'success': False, 'message': 'Access denied: User not found in your apps'}), 403
 
     banned = data.get('banned', True)
-
     reason = data.get('reason', 'Suspended by admin').strip()
-
     ok = KeyAuth.ban_user(user_id, banned, reason)
-
     return jsonify({'success': ok, 'message': f"User {'suspended' if banned else 're-activated'}"})
 
 @app.route('/admin/api/users/reset-hwid', methods=['POST'])
-
 def keyauth_api_admin_reset_user_hwid():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     user_id = data.get('userId') or data.get('username', '').strip()
+    target_u = KeyAuth.get_user(user_id)
+    if not target_u or not user_owns_app(admin.get('username'), target_u.get('appId')):
+        return jsonify({'success': False, 'message': 'Access denied: User not found in your apps'}), 403
 
     ok = KeyAuth.reset_user_hwid(user_id)
-
     return jsonify({'success': ok, 'message': 'Hardware ID reset successfully'})
 
 @app.route('/admin/api/users/delete', methods=['POST'])
-
 def keyauth_api_admin_delete_user():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     user_id = data.get('userId') or data.get('username', '').strip()
+    target_u = KeyAuth.get_user(user_id)
+    if not target_u or not user_owns_app(admin.get('username'), target_u.get('appId')):
+        return jsonify({'success': False, 'message': 'Access denied: User not found in your apps'}), 403
 
     KeyAuth.delete_user(user_id)
-
     return jsonify({'success': True, 'message': 'User deleted successfully'})
 
 @app.route('/admin/api/users/delete-all', methods=['POST'])
-
 def keyauth_api_admin_delete_all_users():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
 
     data = request.json or {}
-
     app_id = data.get('appId')
+    current_username = admin.get('username')
+    my_app_ids = get_user_app_ids(current_username)
 
-    count = KeyAuth.delete_all_users(app_id)
+    if app_id:
+        if not user_owns_app(current_username, app_id):
+            return jsonify({'success': False, 'message': 'Access denied: Application not owned by you'}), 403
+        count = KeyAuth.delete_all_users(app_id)
+    else:
+        count = 0
+        for aid in my_app_ids:
+            count += KeyAuth.delete_all_users(aid)
 
     return jsonify({'success': True, 'message': f"Deleted {count} user accounts."})
 
 @app.route('/admin/api/logs', methods=['GET'])
-
 def keyauth_api_admin_logs():
-
-    logs = KeyAuth.list_logs()
-
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+    current_username = admin.get('username')
+    is_master = admin.get('isSuperAdmin', False)
+    if is_master:
+        logs = KeyAuth.list_logs()
+    else:
+        my_app_ids = get_user_app_ids(current_username)
+        logs = KeyAuth.list_logs(app_ids=my_app_ids, username=current_username)
     return jsonify({'success': True, 'logs': logs})
 
 @app.route('/admin/api/logs/clear', methods=['DELETE'])
-
 def keyauth_api_admin_clear_logs():
-
-    KeyAuth.clear_logs()
-
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+    current_username = admin.get('username')
+    is_master = admin.get('isSuperAdmin', False)
+    if is_master:
+        KeyAuth.clear_logs()
+    else:
+        my_app_ids = get_user_app_ids(current_username)
+        KeyAuth.clear_logs(app_ids=my_app_ids, username=current_username)
     return jsonify({'success': True, 'message': 'Logs cleared successfully'})
 
 @app.route('/admin/api/change-credentials', methods=['POST'])
-
 def keyauth_api_admin_change_creds():
-
     return jsonify({'success': False, 'message': 'Admin credentials are safe and managed in config.py / .env'})
 
 # ── OFFICIAL KEYAUTH 1.0 / 1.1 / 1.2 PROTOCOL ENGINE ─────────
@@ -925,7 +1023,7 @@ def keyauth_web_user_register():
     if err:
         return jsonify({'success': False, 'message': err}), 400
 
-    token = f"kauth_admin_{secrets.token_hex(24)}"
+    token = create_admin_token(username=user_doc['username'], role='admin', is_super_admin=False)
     session_data = {
         'username': user_doc['username'],
         'role': 'admin',
@@ -964,11 +1062,12 @@ def keyauth_web_user_login():
     # 1. Check if panel developer user (admin)
     panel_user = KeyAuth.verify_panel_user(username, password)
     if panel_user:
-        token = f"kauth_admin_{secrets.token_hex(24)}"
+        is_sa = panel_user.get('isSuperAdmin', False) or (panel_user.get('username', '').lower() == 'krishu')
+        token = create_admin_token(username=panel_user.get('username'), role=panel_user.get('role', 'admin'), is_super_admin=is_sa)
         session_user = {
             'username': panel_user.get('username'),
             'role': panel_user.get('role', 'admin'),
-            'isSuperAdmin': panel_user.get('isSuperAdmin', False),
+            'isSuperAdmin': is_sa,
             'isPanelAdmin': True,
             'appLimit': panel_user.get('appLimit', 10),
             'email': panel_user.get('email', '')
@@ -1577,69 +1676,99 @@ def keyauth_reseller_delete_user():
     return jsonify({'success': True, 'message': 'Account deleted successfully'})
 
 @app.route('/admin/api/resellers', methods=['GET', 'POST'])
-
 def admin_api_resellers():
+    caller = get_caller_admin()
+    if not caller:
+        return jsonify({'success': False, 'message': 'Admin authentication required'}), 401
+
+    caller_username = caller.get('username')
+    is_sa = is_super_admin(caller)
 
     if request.method == 'POST':
-
         data = request.json or {}
-
         app_id = (data.get('appId') or '').strip()
-
         reseller_name = (data.get('resellerName') or 'Master Reseller').strip()
-
         duration_days = int(data.get('durationDays', 30))
-
         hwid_lock = bool(data.get('hwidLock', True))
-
         note = (data.get('note') or f"Reseller for {reseller_name}").strip()
 
         if not app_id:
+            user_apps = get_user_app_ids(caller_username)
+            if not user_apps:
+                return jsonify({'success': False, 'message': 'Please create an application first'}), 400
+            app_id = list(user_apps)[0]
 
-            apps = KeyAuth.list_apps()
-
-            app_id = apps[0].get('appId') if apps else 'app_krishu_main'
+        if not user_owns_app(caller_username, app_id):
+            return jsonify({'success': False, 'message': 'Forbidden: You do not own this application'}), 403
 
         reseller_doc = KeyAuth.create_reseller_key(app_id, reseller_name, duration_days, hwid_lock, note)
-
         return jsonify({'success': True, 'message': f"Reseller key '{reseller_doc['key']}' created for {reseller_name}!", 'reseller': reseller_doc})
 
     app_id = request.args.get('appId')
+    allowed_apps = get_user_app_ids(caller_username)
 
-    resellers = KeyAuth.list_reseller_keys(app_id)
+    if app_id:
+        if not user_owns_app(caller_username, app_id):
+            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+        resellers = KeyAuth.list_reseller_keys(app_id)
+    else:
+        if is_sa:
+            resellers = KeyAuth.list_reseller_keys()
+        else:
+            resellers = [r for r in KeyAuth.list_reseller_keys() if r.get('appId') in allowed_apps]
 
     return jsonify({'success': True, 'resellers': resellers})
 
 @app.route('/admin/api/resellers/<key>', methods=['DELETE'])
-
 def admin_api_reseller_delete(key):
+    caller = get_caller_admin()
+    if not caller:
+        return jsonify({'success': False, 'message': 'Admin authentication required'}), 401
+
+    target = KeyAuth.get_reseller_key(key)
+    if not target:
+        return jsonify({'success': False, 'message': 'Reseller key not found'}), 404
+
+    if not user_owns_app(caller.get('username'), target.get('appId')):
+        return jsonify({'success': False, 'message': 'Forbidden'}), 403
 
     deleted = KeyAuth.delete_reseller_key(key)
-
     if deleted:
-
         return jsonify({'success': True, 'message': f"Reseller key '{key}' deleted"})
-
     return jsonify({'success': False, 'message': 'Reseller key not found'}), 404
 
 @app.route('/admin/api/resellers/<key>/ban', methods=['POST'])
-
 def admin_api_reseller_ban(key):
+    caller = get_caller_admin()
+    if not caller:
+        return jsonify({'success': False, 'message': 'Admin authentication required'}), 401
+
+    target = KeyAuth.get_reseller_key(key)
+    if not target:
+        return jsonify({'success': False, 'message': 'Reseller key not found'}), 404
+
+    if not user_owns_app(caller.get('username'), target.get('appId')):
+        return jsonify({'success': False, 'message': 'Forbidden'}), 403
 
     data = request.json or {}
-
     banned = bool(data.get('banned', True))
-
     KeyAuth.ban_reseller_key(key, banned)
-
     return jsonify({'success': True, 'message': f"Reseller key {'banned' if banned else 'unbanned'}"})
 
 @app.route('/admin/api/resellers/<key>/reset-hwid', methods=['POST'])
-
 def admin_api_reseller_reset_hwid(key):
+    caller = get_caller_admin()
+    if not caller:
+        return jsonify({'success': False, 'message': 'Admin authentication required'}), 401
+
+    target = KeyAuth.get_reseller_key(key)
+    if not target:
+        return jsonify({'success': False, 'message': 'Reseller key not found'}), 404
+
+    if not user_owns_app(caller.get('username'), target.get('appId')):
+        return jsonify({'success': False, 'message': 'Forbidden'}), 403
 
     KeyAuth.reset_reseller_hwid(key)
-
     return jsonify({'success': True, 'message': f"HWID reset for reseller key '{key}'"})
 
 # ── DISCORD WEBHOOK INTEGRATION APIS ──────────────────────────
